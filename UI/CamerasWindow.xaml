@@ -1,0 +1,382 @@
+﻿<local:HMWindow x:Name="window" x:Class="heliomaster_wpf.CamerasWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:heliomaster_wpf"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
+        xmlns:ASCOMDeviceInterface="clr-namespace:ASCOM.DeviceInterface;assembly=ASCOM.DeviceInterfaces"
+        xmlns:system="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="CamerasWindow" SizeToContent="WidthAndHeight" Height="670" Width="401"
+        >
+    <local:HMWindow.Resources>
+        <Style x:Key="TriStateCheckboxStyle" x:Shared="False">
+            <Setter Property="ContentControl.Content">
+                <Setter.Value>
+                    <Viewbox Width="20" Height="20" Child="{StaticResource icon-clock}" />
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding}" Value="false">
+                    <Setter Property="ContentControl.Content">
+                        <Setter.Value>
+                            <Viewbox Width="20" Height="20" Child="{StaticResource icon-alert}" />
+                        </Setter.Value>
+                    </Setter>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <DataTemplate x:Key="TimelapseTemplate" DataType="{x:Type local:Timelapse}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <GroupBox Header="{x:Static properties:Resources.headerInterval}" Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="{Binding Editable}">
+                    <xctk:TimeSpanUpDown x:Name="timelapseIntervalField" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="Auto" Value="{Binding Interval, Mode=TwoWay}" CurrentDateTimePart="Minute" />
+                </GroupBox>
+
+                <Button Margin="3,3,3,1" Grid.Row="1" Grid.Column="0" VerticalAlignment="Stretch" Click="timelapseButton_Click" IsEnabled="{Binding Free}">
+                    <Button.Style>
+                        <Style>
+                            <Setter Property="Button.Content" Value="{x:Static properties:Resources.start}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Running}" Value="True">
+                                    <Setter Property="Button.Content" Value="{x:Static properties:Resources.stop}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Button.Style>
+                </Button>
+                <Button Grid.Row="2" Grid.Column="0" Margin="3,1,3,3" Content="{x:Static properties:Resources.capture}" Click="captureButton_Click" />
+
+                <GroupBox Grid.Row="0" Grid.Column="1" Header="{x:Static properties:Resources.headerStopCondition}" Margin="0" Grid.RowSpan="3" IsEnabled="{Binding Editable}">
+                    <Grid Margin="0,3,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <RadioButton x:Name="stopRadioNshots" Content="{x:Static properties:Resources.nshots}" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left" IsEnabled="{Binding Editable}" IsChecked="{Binding StopMethod, ConverterParameter=0, Converter={local:RadioToIntConverter}, Mode=TwoWay}"/>
+                        <RadioButton x:Name="stopRadioDuration" Content="{x:Static properties:Resources.duration}" HorizontalAlignment="Left" Margin="0" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" IsEnabled="{Binding Editable}" IsChecked="{Binding StopMethod, ConverterParameter=1, Converter={local:RadioToIntConverter}, Mode=TwoWay}"/>
+                        <RadioButton x:Name="stopRadioEnd" Content="{x:Static properties:Resources.endat}" HorizontalAlignment="Left" Margin="0" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" IsEnabled="{Binding Editable}" IsChecked="{Binding StopMethod, ConverterParameter=2, Converter={local:RadioToIntConverter}, Mode=TwoWay}"/>
+
+                        <xctk:IntegerUpDown Grid.Row="0" Grid.Column="1" Margin="3,3,0,3" VerticalAlignment="Center" Value="{Binding Nshots, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=stopRadioNshots}" />
+                        <xctk:TimeSpanUpDown Grid.Column="1" Margin="3,0,0,0" Grid.Row="1" Value="{Binding Duration}" IsEnabled="{Binding IsChecked, ElementName=stopRadioDuration}" ClipValueToMinMax="True" Minimum="0" MouseWheelActiveTrigger="Disabled" CurrentDateTimePart="Minute" />
+                        <xctk:DateTimeUpDown Grid.Column="1" Margin="3,3,0,3" Grid.Row="2" VerticalAlignment="Center" Format="SortableDateTime" Value="{Binding End, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=stopRadioEnd}" CurrentDateTimePart="Minute" MouseWheelActiveTrigger="Disabled" ClipValueToMinMax="True"  />
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="FocuserTemplate" DataType="local:Focuser">
+            <Grid Margin="0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*"    />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Content="^" Click="focuserButton_Click" IsEnabled="{Binding Moveable}" Name="focuserUpButton" />
+                <Button Grid.Row="2" Content="v" Click="focuserButton_Click" IsEnabled="{Binding Moveable}" Name="focuserDownButton" />
+
+                <local:ScaledSlider
+                    Grid.Row="1" HorizontalAlignment="Center" Margin="3,3,3,2" Orientation="Vertical"
+                    Minimum="0" TickFrequency="{Binding LargeChange, RelativeSource={RelativeSource Self}}" TickPlacement="Both"
+                    CustomValue="{Binding SliderValue, Mode=TwoWay}"
+                    AutoToolTipPlacement="BottomRight"
+                    ToolTipFormat="{Binding SliderValueFormat}">
+                    <local:ScaledSlider.Style>
+                        <Style>
+                            <Setter Property="local:ScaledSlider.Maximum" Value="{Binding SliderMax}" />
+                            <Setter Property="local:ScaledSlider.LargeChange" Value="{Binding LargeChange}" />
+                            <Setter Property="local:ScaledSlider.SmallChange" Value="{Binding StepSize}" />
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding Absolute}" Value="false">
+                                    <Setter Property="local:ScaledSlider.Maximum" Value="1" />
+                                    <Setter Property="local:ScaledSlider.LargeChange" Value="0.1" />
+                                    <Setter Property="local:ScaledSlider.SmallChange" Value="0.01" />
+                                    <Setter Property="local:ScaledSlider.ValueToCustom" Value="{Binding SliderToSpeed}" />
+                                    <Setter Property="local:ScaledSlider.CustomToValue" Value="{Binding SpeedToSlider}" />
+                                    <Setter Property="local:ScaledSlider.Value" Value="0" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </local:ScaledSlider.Style>
+                    <local:ScaledSlider.ToolTip>
+                        <ToolTip Content="{Binding PlacementTarget.ToolTipContent, RelativeSource={RelativeSource Self}}" />
+                    </local:ScaledSlider.ToolTip>
+                </local:ScaledSlider>
+
+                <CheckBox Grid.Row="3" HorizontalAlignment="Center" Margin="0"  VerticalAlignment="Center"
+                          Content="auto" />
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="CameraTemplate" DataType="{x:Type local:CameraModel}">
+            <Grid Margin="0" VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Grid Margin="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border BorderBrush="Black" BorderThickness="1" Margin="3" LayoutTransform="{Binding FinalTransform}">
+                        <!-- <Border.Style> -->
+                        <!--     <Style> -->
+                        <!--         <Setter Property="Image.LayoutTransform" Value="{Binding Transform}" /> -->
+                        <!--         <Style.Triggers> -->
+                        <!--             <DataTrigger Binding="{Binding IsFlipped, Source={x:Static local:O.Mount}}" Value="true"> -->
+                        <!--                 <Setter Property="Image.LayoutTransform"> -->
+                        <!--                     <Setter.Value> -->
+                        <!--                         <TransformGroup> -->
+                        <!--                             <MatrixTransform Matrix="{Binding Transform.Value}" /> -->
+                        <!--                             <ScaleTransform ScaleX="-1" ScaleY="-1" /> -->
+                        <!--                         </TransformGroup> -->
+                        <!--                     </Setter.Value> -->
+                        <!--                 </Setter> -->
+                        <!-- -->
+                        <!--                 <Setter Property="Border.BorderBrush" Value="Red" /> -->
+                        <!--             </DataTrigger> -->
+                        <!--         </Style.Triggers> -->
+                        <!--     </Style> -->
+                        <!-- </Border.Style> -->
+                        <Image MinHeight="150" MaxHeight="480" StretchDirection="DownOnly"
+                               Source="/heliomaster-wpf;component/Resources/compass.png" />
+                               <!-- Source="{Binding Cam.View, Mode=OneWay}" /> -->
+                    </Border>
+                    <GroupBox Grid.Column="1" Header="{x:Static properties:Resources.headerFocus}" Margin="3" Content="{Binding Cam.Focuser}" ContentTemplate="{StaticResource FocuserTemplate}"
+                              Visibility="{Binding Cam.Focuser.Valid, Converter={local:VisibilityConverter}, FallbackValue=Collapsed}" />
+                </Grid>
+                <Grid Margin="0" Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <Label Grid.Column="0"
+                           Margin="3" HorizontalAlignment="Right"  VerticalAlignment="Center"
+                           Content="{x:Static properties:Resources.gain}"/>
+                    <xctk:IntegerUpDown Grid.Column="1"
+                                        Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                        Value="{Binding Cam.Gain}"/>
+
+                    <Label Grid.Column="2"
+                           Margin="3" HorizontalAlignment="Right" VerticalAlignment="Center"
+                           Content="{x:Static properties:Resources.exposure}" />
+                    <xctk:IntegerUpDown Grid.Column="3"
+                                        Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                        Value="{Binding Cam.Exposure}"/>
+
+                    <CheckBox Grid.Column="4"
+                              Margin="3" VerticalAlignment="Center" HorizontalAlignment="Center"
+                              Content="{x:Static properties:Resources.auto}" />
+                </Grid>
+
+                <GroupBox Margin="0" Grid.Row="2">
+                    <GroupBox.Header>
+                        <StackPanel Orientation="Horizontal">
+                            <CheckBox VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0" Checked="TiedRadio_Checked" Unchecked="TiedRadio_Checked">
+                                <CheckBox.IsChecked>
+                                    <MultiBinding Converter="{local:IndexConverter}" Mode="OneWay">
+                                        <Binding Path="Timelapse.Tied" RelativeSource="{RelativeSource AncestorType=local:HMWindow}" />
+                                        <Binding Path="Index" />
+                                    </MultiBinding>
+                                </CheckBox.IsChecked>
+                            </CheckBox>
+
+                            <RadioButton VerticalAlignment="Center" HorizontalAlignment="Left" GroupName="MainRadios" Margin="3,0,0,0" Checked="MainRadio_Checked">
+                                <RadioButton.IsChecked>
+                                    <MultiBinding Converter="{local:EqualityConverter}">
+                                        <Binding Path="Timelapse.i0" RelativeSource="{RelativeSource AncestorType=local:HMWindow}" />
+                                        <Binding Path="Index" />
+                                    </MultiBinding>
+                                </RadioButton.IsChecked>
+                            </RadioButton>
+                            <Label Content="{x:Static properties:Resources.headerAcquisition}" />
+                        </StackPanel>
+                    </GroupBox.Header>
+
+                    <Grid Margin="0,3,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="100"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid DataContext="{Binding Timelapse}">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                                <RowDefinition/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+
+                            <GroupBox Header="{x:Static properties:Resources.headerInterval}" Margin="0" HorizontalAlignment="Center" VerticalAlignment="Center" IsEnabled="{Binding Editable}">
+                                <xctk:TimeSpanUpDown x:Name="timelapseIntervalField" VerticalAlignment="Bottom" HorizontalAlignment="Stretch" Width="Auto" Value="{Binding Interval, Mode=TwoWay}" CurrentDateTimePart="Minute" />
+                            </GroupBox>
+
+                            <Button Margin="3,3,3,1" Grid.Row="1" Grid.Column="0" VerticalAlignment="Stretch" Click="timelapseButton_Click" IsEnabled="{Binding Free}">
+                                <Button.Style>
+                                    <Style>
+                                        <Setter Property="Button.Content" Value="{x:Static properties:Resources.start}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Running}" Value="True">
+                                                <Setter Property="Button.Content" Value="{x:Static properties:Resources.stop}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button Grid.Row="2" Grid.Column="0" Margin="3,1,3,3" Content="{x:Static properties:Resources.capture}" Click="captureButton_Click" />
+
+                            <GroupBox Grid.Row="0" Grid.Column="1" Header="{x:Static properties:Resources.headerStopCondition}" Margin="0" Grid.RowSpan="3" IsEnabled="{Binding Editable}">
+                                <Grid Margin="0,3,0,0">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                        <RowDefinition/>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+                                    <RadioButton x:Name="stopRadioNshots" Content="{x:Static properties:Resources.nshots}" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Left" IsEnabled="{Binding Editable}" IsChecked="{Binding StopMethod, ConverterParameter=0, Converter={local:RadioToIntConverter}, Mode=TwoWay}"/>
+                                    <RadioButton x:Name="stopRadioDuration" Content="{x:Static properties:Resources.duration}" HorizontalAlignment="Left" Margin="0" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center" IsEnabled="{Binding Editable}" IsChecked="{Binding StopMethod, ConverterParameter=1, Converter={local:RadioToIntConverter}, Mode=TwoWay}"/>
+                                    <RadioButton x:Name="stopRadioEnd" Content="{x:Static properties:Resources.endat}" HorizontalAlignment="Left" Margin="0" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center" IsEnabled="{Binding Editable}" IsChecked="{Binding StopMethod, ConverterParameter=2, Converter={local:RadioToIntConverter}, Mode=TwoWay}"/>
+
+                                    <xctk:IntegerUpDown Grid.Row="0" Grid.Column="1" Margin="3,3,0,3" VerticalAlignment="Center" Value="{Binding Nshots, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=stopRadioNshots}" />
+                                    <xctk:TimeSpanUpDown Grid.Column="1" Margin="3,0,0,0" Grid.Row="1" Value="{Binding Duration}" IsEnabled="{Binding IsChecked, ElementName=stopRadioDuration}" ClipValueToMinMax="True" Minimum="0" MouseWheelActiveTrigger="Disabled" CurrentDateTimePart="Minute" />
+                                    <xctk:DateTimeUpDown Grid.Column="1" Margin="3,3,0,3" Grid.Row="2" VerticalAlignment="Center" Format="SortableDateTime" Value="{Binding End, Mode=TwoWay}" IsEnabled="{Binding IsChecked, ElementName=stopRadioEnd}" CurrentDateTimePart="Minute" MouseWheelActiveTrigger="Disabled" ClipValueToMinMax="True"  />
+                                </Grid>
+                            </GroupBox>
+                        </Grid>
+
+                        <DataGrid HorizontalAlignment="Stretch" Height="Auto" Margin="0" Grid.Row="1" VerticalAlignment="Stretch" Width="Auto" HeadersVisibility="Column" ItemsSource="{Binding Images}" AutoGenerateColumns="False" CanUserAddRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Binding="{Binding LocalPath}"
+                                                    Header="File" IsReadOnly="True"/>
+                                <DataGridTemplateColumn Header="Saved" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="local:CapturedImage">
+                                            <ContentControl DataContext="{Binding IsSaved}">
+                                                <ContentControl.Style>
+                                                    <Style BasedOn="{StaticResource TriStateCheckboxStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding}" Value="true">
+                                                                <Setter Property="ContentControl.Content">
+                                                                    <Setter.Value>
+                                                                        <Viewbox Width="20" Height="20"
+                                                                                 Child="{StaticResource icon-check-cloud}" />
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ContentControl.Style>
+                                            </ContentControl>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Transferred" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="local:CapturedImage">
+                                            <ContentControl DataContext="{Binding IsTransferred}">
+                                                <ContentControl.Style>
+                                                    <Style BasedOn="{StaticResource TriStateCheckboxStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding}" Value="true">
+                                                                <Setter Property="ContentControl.Content">
+                                                                    <Setter.Value>
+                                                                        <Viewbox Width="20" Height="20"
+                                                                                 Child="{StaticResource icon-check-cloud}" />
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ContentControl.Style>
+                                            </ContentControl>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                                <DataGridTemplateColumn Header="Processed" IsReadOnly="True">
+                                    <DataGridTemplateColumn.CellTemplate>
+                                        <DataTemplate DataType="local:CapturedImage">
+                                            <ContentControl DataContext="{Binding IsProcessed}">
+                                                <ContentControl.Style>
+                                                    <Style BasedOn="{StaticResource TriStateCheckboxStyle}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding}" Value="true">
+                                                                <Setter Property="ContentControl.Content">
+                                                                    <Setter.Value>
+                                                                        <Viewbox Width="20" Height="20"
+                                                                                 Child="{StaticResource icon-check-gear}" />
+                                                                    </Setter.Value>
+                                                                </Setter>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </ContentControl.Style>
+                                            </ContentControl>
+                                        </DataTemplate>
+                                    </DataGridTemplateColumn.CellTemplate>
+                                </DataGridTemplateColumn>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <Grid Height="Auto" Margin="0" Grid.Row="2" VerticalAlignment="Stretch" Width="Auto" Visibility="{Binding Timelapse.Running, Converter={local:VisibilityConverter}, FallbackValue=Collapsed, Mode=OneWay}">
+                            <ProgressBar Grid.Column="0" Margin="0" VerticalAlignment="Stretch" Height="Auto" Maximum="1" LargeChange="0.1" SmallChange="0.01" Value="{Binding Timelapse.ProgressNext, Mode=OneWay}"/>
+                            <Label Content="{Binding Timelapse.ProgressNextLabel, FallbackValue=' ', Mode=OneWay}" Margin="0" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="2" />
+                        </Grid>
+
+                        <Grid Height="Auto" Margin="0" Grid.Row="3" VerticalAlignment="Stretch" Width="Auto"
+                              Visibility="{Binding Timelapse.Running, Converter={local:VisibilityConverter}, FallbackValue=Collapsed, Mode=OneWay}">
+                            <ProgressBar Grid.Column="0" Margin="0" VerticalAlignment="Stretch" Height="Auto" Maximum="1" LargeChange="0.1" SmallChange="0.01" Value="{Binding Timelapse.ProgressTotal, Mode=OneWay}"/>
+                            <Label Content="{Binding Timelapse.ProgressTotalLabel, FallbackValue=(timelapse progress), Mode=OneWay}"  Margin="0" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="2"/>
+                        </Grid>
+
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </DataTemplate>
+    </local:HMWindow.Resources>
+
+    <ItemsControl ItemTemplate="{StaticResource CameraTemplate}" ItemsSource="{Binding Models, RelativeSource={RelativeSource AncestorType=local:CamerasWindow}}">
+        <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate>
+                <WrapPanel Orientation="Horizontal" Margin="0" />
+            </ItemsPanelTemplate>
+        </ItemsControl.ItemsPanel>
+    </ItemsControl>
+    <!-- <ScrollViewer Margin="0,3,0,0" VerticalScrollBarVisibility="Auto"> -->
+    <!--     <WrapPanel Name="canvasPanel" Orientation="Horizontal" Margin="0"> -->
+    <!--         <GroupBox Header="CAM1" ContentTemplate="{StaticResource CameraTemplate}" /> -->
+    <!--     </WrapPanel> -->
+    <!-- </ScrollViewer> -->
+</local:HMWindow>

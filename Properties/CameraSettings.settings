@@ -1,0 +1,44 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="CameraSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="Gains" Type="System.Int32[]" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfInt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;int&gt;10&lt;/int&gt;
+  &lt;int&gt;10&lt;/int&gt;
+&lt;/ArrayOfInt&gt;</Value>
+    </Setting>
+    <Setting Name="Exposures" Type="System.Int32[]" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfInt xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;int&gt;20&lt;/int&gt;
+  &lt;int&gt;20&lt;/int&gt;
+&lt;/ArrayOfInt&gt;</Value>
+    </Setting>
+    <Setting Name="CameraModels" Type="System.Collections.ObjectModel.ObservableCollection&lt;heliomaster_wpf.CameraModel&gt;" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfCameraModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                        xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+                        &lt;CameraModel&gt;
+                            &lt;Index&gt;0&lt;/Index&gt;
+                            &lt;Name&gt;Visible&lt;/Name&gt;
+                            &lt;LocalPathFormat&gt;C:\\Users\\Kosio\\Desktop\\test_out\\visible\\{DateTime:yyyyMMddTHHmmss}.png&lt;/LocalPathFormat&gt;
+                            &lt;RemotePathFormat&gt;/home/sun_monitor/ftp_public/ftp_test/image_helios_{Cam}_{DateTime:yyyyMMddTHHmmss}.bmp&lt;/RemotePathFormat&gt;
+                            &lt;RemoteCommandFormat&gt;uptime 1&amp;gt;&amp;amp;2&lt;/RemoteCommandFormat&gt;
+                            &lt;Flip&gt;false&lt;/Flip&gt;
+                            &lt;Rotate&gt;0
+&lt;/Rotate&gt;
+                        &lt;/CameraModel&gt;
+                        &lt;CameraModel&gt;
+                            &lt;Index&gt;1&lt;/Index&gt;
+                            &lt;Name&gt;Halpha&lt;/Name&gt;
+                            &lt;LocalPathFormat&gt;C:\\Users\\Kosio\\Desktop\\test_out\\halpha\\{DateTime:yyyyMMddTHHmmss}.png&lt;/LocalPathFormat&gt;
+                            &lt;RemotePathFormat&gt;/home/sun_monitor/ftp_public/ftp_test/image_helios_{Cam}_{DateTime:yyyyMMddTHHmmss}.bmp&lt;/RemotePathFormat&gt;
+                            &lt;RemoteCommandFormat&gt;pwd&lt;/RemoteCommandFormat&gt;
+                            &lt;Flip&gt;false&lt;/Flip&gt;
+                            &lt;Rotate&gt;0&lt;/Rotate&gt;
+                        &lt;/CameraModel&gt;                    &lt;/ArrayOfCameraModel&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

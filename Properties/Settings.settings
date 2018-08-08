@@ -1,0 +1,39 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="timelapseStopMethod" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="timelapseInterval" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:01:00</Value>
+    </Setting>
+    <Setting Name="timelapseDurationIndex" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="timelapseNshots" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">10</Value>
+    </Setting>
+    <Setting Name="rateNonZero" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0.00027777778</Value>
+    </Setting>
+    <Setting Name="borderColor" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#FFD5DFE5</Value>
+    </Setting>
+    <Setting Name="colorOK" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#FF7CFC00</Value>
+    </Setting>
+    <Setting Name="colorWarning" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#FFFFFF00</Value>
+    </Setting>
+    <Setting Name="colorBad" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#FFFF0000</Value>
+    </Setting>
+    <Setting Name="Refresh" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:00:00.5000000</Value>
+    </Setting>
+    <Setting Name="colorValid" Type="System.Windows.Media.Color" Scope="User">
+      <Value Profile="(Default)">#00000000</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -1,0 +1,356 @@
+﻿<local:HMWindow
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:heliomaster_wpf"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Name="window" x:Class="heliomaster_wpf.MainWindow"
+        xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
+        xmlns:ASCOMDeviceInterface="clr-namespace:ASCOM.DeviceInterface;assembly=ASCOM.DeviceInterfaces"
+        mc:Ignorable="d"
+        Title="MainWindow" DataContext="{x:Static local:O.Default}" Closing="OnExit" SizeToContent="WidthAndHeight">
+    <local:HMWindow.Resources>
+        <xctk:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
+    </local:HMWindow.Resources>
+
+    <DockPanel>
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_Cameras" Click="CamerasMenu_Click" />
+            <MenuItem Header="_Settings" Click="SettingsMenu_Click" />
+        </Menu>
+
+        <Grid x:Name="windowCanvas" DockPanel.Dock="Bottom">
+            <GroupBox x:Name="mountGroup" Header="Mount" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top" Height="447" Width="188" DataContext="{Binding Mount, Mode=OneWay}" IsEnabled="{Binding Valid, Mode=OneWay}">
+                <Grid Margin="0">
+                    <Grid Height="156" Margin="10,10,10,0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Button x:Name="mountUp" Content="N" Grid.Column="2" Margin="0" Grid.Row="1" PreviewMouseDown="mountNav_Interact" PreviewMouseUp="mountNav_Interact"/>
+                        <Button x:Name="mountRight" Content="-" Grid.Column="3" Margin="0" Grid.Row="2" PreviewMouseDown="mountNav_Interact" PreviewMouseUp="mountNav_Interact"/>
+                        <Button x:Name="mountStop" Content="STOP" Grid.Column="2" Margin="0" Grid.Row="2" Click="mountStop_Click"/>
+                        <Button x:Name="mountDown" Content="S" Grid.Column="2" Margin="0" Grid.Row="3" PreviewMouseDown="mountNav_Interact" PreviewMouseUp="mountNav_Interact"/>
+                        <Button x:Name="mountLeft" Content="+" Margin="0" Grid.Row="2" Grid.Column="1" PreviewMouseDown="mountNav_Interact" PreviewMouseUp="mountNav_Interact"/>
+
+                        <ComboBox x:Name="primaryRatesComboBox" HorizontalAlignment="Left" Margin="0,3,3,0" Grid.Row="4"
+                              Grid.Column="0" VerticalAlignment="Center" IsEnabled="{Binding IsChecked, ElementName=checkBox, Mode=OneWay}" ItemsSource="{Binding PrimaryAxisRates, Mode=OneWay}" Width="25" Height="25" SelectedItem="{Binding SelectedPrimaryRate}" SelectedIndex="{Binding SelectedPrimaryRateIndex}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding Minimum}"  ContentStringFormat="{}{0:0.##}"></Label>
+                                        <Label Content=" - "></Label>
+                                        <Label Content="{Binding Maximum}" ContentStringFormat="{}{0:0.##}"></Label>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <local:ScaledSlider VerticalAlignment="Center" AutoToolTipPlacement="TopLeft" IsEnabled="{Binding IsChecked, ElementName=checkBox, Mode=OneWay}" Margin="0" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="3" SmallChange="0.01" LargeChange="0.1" TickFrequency="0.1" Minimum="0" Maximum="1"
+                                        ToolTipFormatter="{Binding RateFormatter, Mode=OneTime}"
+                                            CustomMinimum="{Binding SelectedItem.Minimum, ElementName=primaryRatesComboBox}"
+                                            CustomMaximum="{Binding SelectedItem.Maximum, ElementName=primaryRatesComboBox}"
+                                            ValueToCustom="{Binding LogValueToCustom, RelativeSource={RelativeSource Self}}"
+                                            CustomToValue="{Binding LogCustomToValue, RelativeSource={RelativeSource Self}}"
+                                        CustomValue="{Binding RatePrimary, Mode=TwoWay}"/>
+
+                        <ComboBox x:Name="secondaryRatesComboBox" Grid.Row="0" Grid.Column="4" HorizontalAlignment="Center" Margin="3,0,0,3" VerticalAlignment="Top" IsEnabled="{Binding IsChecked, ElementName=checkBox, Mode=OneWay}" ItemsSource="{Binding SecondaryAxisRates, Mode=OneWay}" Height="25" Width="25" SelectedItem="{Binding SelectedSecondaryRate}" SelectedIndex="{Binding SelectedSecondaryRateIndex}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Label Content="{Binding Minimum}"  ContentStringFormat="{}{0:0.##}"></Label>
+                                        <Label Content=" - "></Label>
+                                        <Label Content="{Binding Maximum}" ContentStringFormat="{}{0:0.##}"></Label>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <local:ScaledSlider x:Name="secondaryRateSlider" Margin="0" AutoToolTipPlacement="TopLeft" Grid.Row="1" Grid.Column="4" Grid.RowSpan="3" HorizontalAlignment="Center" Orientation="Vertical" IsEnabled="{Binding IsChecked, ElementName=checkBox, Mode=OneWay}" Minimum="0" Maximum="1"
+                                        ToolTipFormatter="{Binding RateFormatter, Mode=OneTime}"
+                                        CustomMinimum="{Binding SelectedItem.Minimum, ElementName=secondaryRatesComboBox}"
+                                        CustomMaximum="{Binding SelectedItem.Maximum, ElementName=secondaryRatesComboBox}"
+                                        ValueToCustom="{Binding LogValueToCustom, RelativeSource={RelativeSource Self}}"
+                                        CustomToValue="{Binding LogCustomToValue, RelativeSource={RelativeSource Self}}"
+                                        CustomValue="{Binding RateSecondary, Mode=TwoWay}" />
+
+                        <CheckBox x:Name="checkBox" Content="" Grid.Column="4" HorizontalAlignment="Center" Margin="0" Grid.Row="4" VerticalAlignment="Center" IsChecked="True"/>
+
+                    </Grid>
+                    <Grid Margin="10,0,0,73" VerticalAlignment="Bottom">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Label Content="LST" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
+                        <Label Content="RA" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="1"
+                           Grid.Column="0" />
+                        <Label Content="Dec" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="2"
+                           Grid.Column="0" />
+                        <Label Content="Az" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="3"
+                           Grid.Column="0" />
+                        <Label Content="Alt" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="4"
+                           Grid.Column="0" />
+                        <Label Content="{Binding SiderealTime, ConverterParameter=hours, Converter={local:AngleDisplayConverter}, FallbackValue=-}" Margin="0" VerticalAlignment="Center"
+                           Grid.Row="0" Grid.Column="1"/>
+                        <Label Content="{Binding RightAscension, ConverterParameter=hours, Converter={local:AngleDisplayConverter}, FallbackValue=-, Mode=OneWay}" Margin="0" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1"/>
+                        <Label Content="{Binding Declination, ConverterParameter=degrees, Converter={local:AngleDisplayConverter}, FallbackValue=-, Mode=OneWay}" Margin="0" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+                        <Label Content="{Binding Declination, ConverterParameter=degrees, Converter={local:AngleDisplayConverter}, FallbackValue=-, Mode=OneWay}" Margin="0" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+                        <Label Content="{Binding Azimuth, ConverterParameter=degrees, Converter={local:AngleDisplayConverter}, FallbackValue=-, Mode=OneWay}" Margin="0" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
+                        <Label Content="{Binding Altitude, ConverterParameter=degrees, Converter={local:AngleDisplayConverter}, FallbackValue=-, Mode=OneWay}" Margin="0" VerticalAlignment="Center" Grid.Row="4" Grid.Column="1"/>
+                    </Grid>
+                    <CheckBox Content="Parked" HorizontalAlignment="Left" Margin="10,357,0,0" VerticalAlignment="Top" IsEnabled="False" IsChecked="{Binding AtPark, Mode=OneWay}"/>
+                    <CheckBox Content="Slewing" HorizontalAlignment="Left" Margin="10,378,0,0" VerticalAlignment="Top" IsEnabled="False" IsChecked="{Binding Slewing, Mode=OneWay}"/>
+                    <CheckBox x:Name="mountTracking" Content="Tracking" HorizontalAlignment="Left" Margin="10,399,0,0" VerticalAlignment="Top" IsChecked="{Binding Tracking, Mode=OneWay}" IsEnabled="{Binding CanTrack, FallbackValue=false, Mode=OneWay}" Click="mountTracking_Checked"/>
+                    <Button Content="Go to Sun" HorizontalAlignment="Right" Margin="0,0,10,37" VerticalAlignment="Bottom" Width="75" Click="Button_Click_4" IsEnabled="{Binding CanGoTo, FallbackValue=false}"/>
+                    <Button x:Name="mountPark" Content="{Binding ParkAction, FallbackValue={x:Static properties:Resources.park}, Mode=OneWay}" HorizontalAlignment="Right" Margin="0,0,10,10" VerticalAlignment="Bottom" Width="75" Click="mountPark_Click" IsEnabled="{Binding CanPark, FallbackValue=false, Mode=OneWay}"/>
+                    <Label HorizontalAlignment="Right" Margin="0,0,10,208" VerticalAlignment="Bottom">
+                        <Label.Style>
+                           <Style>
+                               <Setter Property="Label.Content" Value="{x:Static properties:Resources.notavailable}" />
+                               <Style.Triggers>
+                                   <DataTrigger Binding="{Binding SideOfPier}" Value="{x:Static ASCOMDeviceInterface:PierSide.pierEast}">
+                                       <Setter Property="Label.Content" Value="{x:Static properties:Resources.east}" />
+                                   </DataTrigger>
+                                   <DataTrigger Binding="{Binding SideOfPier}" Value="{x:Static ASCOMDeviceInterface:PierSide.pierWest}">
+                                       <Setter Property="Label.Content" Value="{x:Static properties:Resources.west}" />
+                                   </DataTrigger>
+                               </Style.Triggers>
+                           </Style>
+                        </Label.Style>
+                    </Label>
+                </Grid>
+            </GroupBox>
+
+            <Button Content="Capture" HorizontalAlignment="Left" Margin="436,10,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
+            <Button Content="Dome" HorizontalAlignment="Left" Margin="436,64,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_3"/>
+            <Button Content="Mount" HorizontalAlignment="Left" Margin="436,91,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_2"/>
+            <Button Content="Weather" HorizontalAlignment="Left" Margin="436,118,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
+            <!-- <Button Content="Send file" HorizontalAlignment="Left" Margin="436,37,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_5"/> -->
+
+            <GroupBox Header="{x:Static properties:Resources.dome}" HorizontalAlignment="Left" DataContext="{x:Static local:O.Dome}" Height="225" Margin="203,158,0,0" VerticalAlignment="Top" Width="216">
+                <GroupBox.Style>
+                    <Style>
+                        <!-- <Setter Property="GroupBox.HeaderTemplate"> -->
+                        <!--     <Setter.Value> -->
+                        <!--         <DataTemplate DataType="local:BaseHardwareControl" /> -->
+                        <!--     </Setter.Value> -->
+                        <!-- </Setter> -->
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Valid}" Value="true">
+                                <Setter Property="GroupBox.BorderBrush" Value="LimeGreen" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </GroupBox.Style>
+                <Grid Margin="0">
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border BorderBrush="Black" BorderThickness="2" Grid.Row="0">
+                        <Image Margin="0"/>
+                    </Border>
+
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center">
+                            <Label Content="Az"/>
+                            <Label Content="{Binding Azimuth, ConverterParameter=degrees, Converter={local:AngleDisplayConverter}, FallbackValue={x:Static properties:Resources.notavailable}, Mode=OneWay}" />
+                        </StackPanel>
+
+                        <Grid Grid.Column="1" VerticalAlignment="Center" MinWidth="100">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="DomeMinusButton" Grid.Column="0" Content="-" Click="domeSlewButton_Click" />
+                            <Button x:Name="DomeStopButton" Grid.Column="1" Content="O" Click="domeSlewButton_Click" />
+                            <Button x:Name="DomePlusButton" Grid.Column="2" Content="+" Click="domeSlewButton_Click"/>
+                        </Grid>
+                    </Grid>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Label Grid.Column="0" DataContext="{Binding ElementName=DomePulseSlider}" Content="{Binding CustomValue}" ContentStringFormat="{Binding ToolTipFormat}" />
+                        <local:ScaledSlider x:Name="DomePulseSlider" Grid.Column="1"
+                                        AutoToolTipPlacement="TopLeft" ToolTipFormat="{}{0:F1}°/nudge"
+                                        Minimum="0" Maximum="1"
+                                        CustomMinimum="0.5" CustomMaximum="90"
+                                        ValueToCustom="{Binding LogValueToCustom, RelativeSource={RelativeSource Self}}"
+                                        CustomToValue="{Binding LogCustomToValue, RelativeSource={RelativeSource Self}}"
+                    />
+                    </Grid>
+
+                    <Grid Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <CheckBox Content="{x:Static properties:Resources.athome}" IsEnabled="False"
+                                  IsChecked="{Binding AtHome, Mode=OneWay}"/>
+                            <CheckBox Content="{x:Static properties:Resources.atpark}" IsEnabled="False"
+                                  IsChecked="{Binding AtPark, Mode=OneWay}"/>
+                            <CheckBox Content="{x:Static properties:Resources.slewing}" IsEnabled="False"
+                                  IsChecked="{Binding Slewing, Mode=OneWay}"/>
+                            <CheckBox Content="{x:Static properties:Resources.slaved}" IsEnabled="False"
+                                  IsChecked="{Binding Slaved, Mode=OneWay}"/>
+                        </StackPanel>
+
+                        <Grid Grid.Column="1">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition/>
+                                <ColumnDefinition/>
+                            </Grid.ColumnDefinitions>
+
+                            <Button x:Name="DomeOpenButton"
+                                Grid.Row="0" Grid.Column="0"
+                                IsEnabled="{Binding CanShutter, FallbackValue=false, Mode=OneWay}"
+                                Content="{x:Static properties:Resources.open}"
+                                ToolTip="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                Click="domeControlButton_Click" />
+                            <Button x:Name="DomeCloseButton"
+                                Grid.Row="0" Grid.Column="1"
+                                IsEnabled="{Binding CanShutter, FallbackValue=false, Mode=OneWay}"
+                                Content="{x:Static properties:Resources.close}"
+                                ToolTip="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                Click="domeControlButton_Click" />
+                            <Button x:Name="DomeSlaveButton"
+                                Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="2"
+                                IsEnabled="{Binding CanSlave, FallbackValue=false, Mode=OneWay}"
+                                ToolTip="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                Click="domeControlButton_Click">
+                                <Button.Style>
+                                    <Style>
+                                        <Setter Property="Button.Content" Value="{x:Static properties:Resources.slave}" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Slaved}" Value="true">
+                                                <Setter Property="Button.Content" Value="{x:Static properties:Resources.unslave}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                            </Button>
+                            <Button x:Name="DomeParkButton"
+                                Grid.Row="2" Grid.Column="0"
+                                IsEnabled="{Binding CanPark, FallbackValue=false, Mode=OneWay}"
+                                Content="{x:Static properties:Resources.park}"
+                                ToolTip="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                Click="domeControlButton_Click" />
+                            <Button x:Name="DomeHomeButton"
+                                Grid.Row="2" Grid.Column="1"
+                                IsEnabled="{Binding CanHome, FallbackValue=false, Mode=OneWay}"
+                                Content="{x:Static properties:Resources.home}"
+                                ToolTip="{Binding Content, RelativeSource={RelativeSource Self}}"
+                                Click="domeControlButton_Click" />
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox Grid.Row="0" Header="{x:Static properties:Resources.weather}" DataContext="{Binding Source={x:Static local:O.Weather}}" Margin="203,10,0,0" HorizontalAlignment="Left" Width="216" Height="143" VerticalAlignment="Top">
+                <GroupBox.BorderBrush>
+                    <PriorityBinding>
+                        <Binding Path="Condition" Converter="{local:WeatherConditionConverter}" />
+                        <Binding Path="borderColor" Source="{x:Static properties:Settings.Default}" Converter="{StaticResource ColorToSolidColorBrushConverter}" />
+                    </PriorityBinding>
+                </GroupBox.BorderBrush>
+                <WrapPanel Margin="0">
+                    <Grid HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.RowSpan="2" Child="{StaticResource icon-thermometer}"/>
+                        <ContentControl Content="{Binding Temperature}" Grid.Row="0" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding Pressure}" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="1"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.RowSpan="3" Child="{StaticResource icon-droplet}"/>
+                        <ContentControl Content="{Binding Humidity}" Grid.Row="0" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding RainRate}" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="1"/>
+                        <ContentControl Content="{Binding DewPoint}" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="2"/>
+                    </Grid>
+                    <Grid Margin="0" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <ContentControl Content="{Binding CloudCover}" Grid.Row="0" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding SkyBrightness}" Grid.Row="1" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding SkyQuality}" Grid.Row="2" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding SkyTemperature}" Grid.Row="3" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding StarFWHM}" Grid.Row="4" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                    </Grid>
+                    <Grid HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MaxWidth="24"/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <Viewbox Grid.RowSpan="3" Width="24" Child="{StaticResource icon-vane}" />
+                        <ContentControl Content="{Binding WindSpeed}" Grid.Row="0" Grid.Column="1" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <ContentControl Content="{Binding WindGust}" Grid.Column="1" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="1"/>
+                        <ContentControl Content="{Binding WindDirection}" Grid.Column="1" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="2"/>
+                    </Grid>
+                </WrapPanel>
+            </GroupBox>
+        </Grid>
+    </DockPanel>
+</local:HMWindow>

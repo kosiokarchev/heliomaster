@@ -1,0 +1,135 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="WeatherSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="WeatherID" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CloudCover" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;%&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                        &lt;Max&gt;100&lt;/Max&gt;
+                        &lt;IconKey&gt;icon-cloud&lt;/IconKey&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="DewPoint" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;°C&lt;/Unit&gt;
+                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="Pressure" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;hPa&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="RainRate" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;mm/h&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="SkyBrightness" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;lux&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+                        &lt;IconKey&gt;icon-bulb&lt;/IconKey&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="SkyQuality" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+                        &lt;IconKey&gt;icon-thumb&lt;/IconKey&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="SkyTemperature" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;°C&lt;/Unit&gt;
+                        &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="StarFWHM" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;"&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                        &lt;IconKey&gt;icon-eye&lt;/IconKey&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="Temperature" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;°C&lt;/Unit&gt;
+                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+                        &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="WindDirection" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;°&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                        &lt;Max&gt;360&lt;/Max&gt;
+                        &lt;Neglect&gt;true&lt;/Neglect&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="WindGust" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;m/s&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="WindSpeed" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;m/s&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="Humidity" Type="heliomaster_wpf.WeatherItem" Scope="User">
+      <Value Profile="(Default)">
+                    &lt;WeatherItem&gt;
+                        &lt;Unit&gt;%&lt;/Unit&gt;
+                        &lt;Min&gt;0&lt;/Min&gt;
+                        &lt;Max&gt;100&lt;/Max&gt;
+                        &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
+                    &lt;/WeatherItem&gt;
+                </Value>
+    </Setting>
+    <Setting Name="DriverRefresh" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:00:10</Value>
+    </Setting>
+    <Setting Name="DoLog" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="LogFileFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="LogInterval" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:00:10</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
