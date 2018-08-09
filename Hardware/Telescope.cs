@@ -104,7 +104,7 @@ namespace heliomaster_wpf {
                 gMode = guidingMode.moveAxis;
             }
 
-            OnConnected();
+            base.Initialize();
         }
 
 
@@ -160,9 +160,16 @@ namespace heliomaster_wpf {
 ////            } else return false;
 //        }
 
-        public void HandlePark() {
-            if (CanPark)
-                Task.Run(Driver.AtPark ? (Action) Driver.Unpark : (Action) Driver.Park);
+        public Task HandlePark() {
+            return Task.Run(() => {
+                if (CanPark) {
+                    if (Driver.AtPark)
+                        Driver.Unpark();
+                    else
+                        Driver.Park();
+                }
+            });
+            
         }
 
         public void Track(bool state) {

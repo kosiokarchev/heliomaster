@@ -35,9 +35,7 @@ namespace heliomaster_wpf {
 
         private async void Button_Click_2(object sender, RoutedEventArgs e) {
             if (string.IsNullOrEmpty(S.Mount.MountID)) return;
-            if (await O.Mount.Connect(S.Mount.MountID)) {
-                O.Refresh += O.Mount.Refresh;
-            } else
+            if (!await O.Mount.Connect(S.Mount.MountID))
                 MessageBox.Show($"Connecting to camera {S.Mount .MountID} failed.");
         }
 
@@ -77,9 +75,7 @@ namespace heliomaster_wpf {
 
         private async void Button_Click_3(object sender, RoutedEventArgs e) {
             if (string.IsNullOrEmpty(S.Dome.DomeID)) return;
-            if (await O.Dome.Connect(S.Dome.DomeID)) {
-                O.Refresh += O.Dome.Refresh;
-            } else
+            if (!await O.Dome.Connect(S.Dome.DomeID))
                 MessageBox.Show($"Connecting to dome {S.Dome.DomeID} failed.");
         }
 
@@ -171,9 +167,7 @@ namespace heliomaster_wpf {
 
         private async void Button_Click(object sender, RoutedEventArgs e) {
             if (string.IsNullOrEmpty(S.Weather.WeatherID)) return;
-            if (await O.Weather.Connect(S.Weather.WeatherID)) {
-                O.Refresh += O.Weather.Refresh;
-            } else
+            if (!await O.Weather.Connect(S.Weather.WeatherID))
                 MessageBox.Show($"Connecting to weather {S.Weather.WeatherID} failed.");
         }
 

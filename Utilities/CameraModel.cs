@@ -166,6 +166,11 @@ namespace heliomaster_wpf {
         public CameraModel() {
             O.Refresh += () => IsFlipped = O.Mount.IsFlipped;
         }
+        
+        public static async void TimelapseAction(object state) {
+            if (state is CameraModel m)
+                Console.WriteLine(await m.TakeImage());
+        }
 
         public async Task<CapturedImage> TakeImage() {
             var img  = await Cam.Capture();

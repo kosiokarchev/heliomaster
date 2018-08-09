@@ -50,10 +50,6 @@ namespace heliomaster_wpf {
 
         #endregion
 
-        public override void Initialize() {
-            OnConnected();
-        }
-
         #region MOTION
 
         public Task PulseMove(double offset) {
@@ -106,7 +102,7 @@ namespace heliomaster_wpf {
                 });
             }
 
-            Refresh();
+            RefreshRaise();
         }
 
         public async Task StopAllMotion() {
@@ -119,7 +115,7 @@ namespace heliomaster_wpf {
                 motionTask = null;
             }
 
-            Refresh();
+            RefreshRaise();
         }
 
         #endregion

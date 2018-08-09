@@ -197,14 +197,15 @@ namespace heliomaster_wpf {
             get => _i0;
             set {
                 _[_i0].Free = false;
-
-                _[_i0].PropertyChanged -= callback;
+                _[_i0].PropertyChanged -= Coerce;
+                
                 _i0 = value;
-                _[_i0].PropertyChanged += callback;
-                OnPropertyChanged();
-
+                
+                _[_i0].PropertyChanged += Coerce;
                 _[_i0].Free = true;
-
+                
+                OnPropertyChanged();
+                
                 Tied[_i0] = true;
                 OnPropertyChanged(nameof(Tied));
             }
@@ -231,23 +232,34 @@ namespace heliomaster_wpf {
             i0 = 0;
         }
 
-        private void callback(object o, PropertyChangedEventArgs args) {
+        private void Coerce(object o, PropertyChangedEventArgs args) {
+            Coerce();
+        }
+        public void Coerce() {
             for (var i=0; i<_.Length; ++i)
                 if (i!=i0 && Tied[i])
                     _[i].Take(_[i0]);
         }
 
         public void Start(Action<object> a, IEnumerable states) {
+            Coerce();
+            
             var i = 0;
             foreach (var state in states) {
                 if (Tied[i])
                     _[i].Start(a, state);
                 ++i;
             }
-        }public void Stop() {
+        }
+        public void Stop() {
             for (var i = 0; i < _.Length; ++i)
                 if (Tied[i])
                     _[i].Stop();
+        }
+
+        public void TieAll() {
+            for (var i = 0; i < Tied.Count; i++)
+                SetTied(i, true);
         }
 
         public Timelapse this[int i] => _[i];
@@ -258,5 +270,6 @@ namespace heliomaster_wpf {
                     return i;
             return -1;
         }
+        public Timelapse Main => _[i0];
     }
 }

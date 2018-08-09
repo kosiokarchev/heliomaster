@@ -166,19 +166,12 @@ namespace heliomaster_wpf {
         private readonly List<string> properties = new List<string> {nameof(Safe), nameof(Condition)};
         protected override IEnumerable<string> props => properties;
 
-        public override void Refresh() {
+        protected override void RefreshHandle() {
             Driver.Refresh();
-            base.Refresh();
+            base.RefreshHandle();
             foreach (var i in Items)
                 i.NotifyChanged();
         }
-
-//        protected override void sync(object state = null) {
-//            Driver.Refresh();
-//            base.sync(state);
-//            foreach (var i in Items)
-//                i.NotifyChanged();
-//        }
 
         public override void Initialize() {
             foreach (var p in propNames)
@@ -193,7 +186,7 @@ namespace heliomaster_wpf {
                     }
                 }
 
-            OnConnected();
+            base.Initialize();
         }
 
         public void SaveInSettings(WeatherSettings s) {

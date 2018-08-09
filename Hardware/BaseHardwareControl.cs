@@ -13,9 +13,6 @@ namespace heliomaster_wpf {
         [XmlIgnore] protected AscomDriver driver;
         protected abstract Type driverType { get; }
 
-        public event Action Connected;
-        protected void OnConnected() { Refresh(); Connected?.Invoke(); }
-
         protected async Task<bool> connect(bool state = true, bool init = true, bool setup = false) {
             if (setup) driver.SetupDialog();
             var ret = await Task.Run(() => {
@@ -40,18 +37,40 @@ namespace heliomaster_wpf {
             return await connect(state, init, setup);
         }
 
-        public abstract void Initialize();
+        public virtual void Initialize() {
+            ConnectedRaise();
+        }
 
-        public virtual bool Valid => driver != null && driver.Connected;
+        protected virtual bool valid => driver != null && driver.Connected;
+        [XmlIgnore] public bool Valid {
+            get {
+                try { return valid; }
+                catch { return false; }
+            }
+        }
 
         #region ISyncToDriver
 
+        public event Action Refresh;
+        public void RefreshRaise() => Refresh?.Invoke();
+        public event Action Connected;
+        public void ConnectedRaise() => Connected?.Invoke();
+        public event Action Disconnected;
+        public void DisconnectedRaise() => Disconnected?.Invoke();
+
+        protected BaseHardwareControl() {
+            Connected += RefreshHandle;
+            Refresh += RefreshHandle;
+        }
+
+
         protected virtual IEnumerable<string> props { get; } = new string[0];
-        public virtual void Refresh() {
+        protected virtual void RefreshHandle() {
             OnPropertyChanged(nameof(Valid));
             if (Valid)
                 foreach (var p in props)
                     OnPropertyChanged(p);
+            else DisconnectedRaise();
         }
 
         #endregion

@@ -85,7 +85,7 @@ namespace heliomaster_wpf {
 
             SliderMax = StepSize * (Driver.Absolute ? Driver.MaxStep : Driver.MaxIncrement);
 
-            OnConnected();
+            base.Initialize();
         }
 
         #region MOTION

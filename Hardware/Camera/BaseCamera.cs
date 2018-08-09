@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
@@ -10,6 +12,106 @@ namespace heliomaster_wpf {
     public enum CameraTypes {
         [Description("ASCOM")]ASCOM,
         [Description("QHYCCD")] QHYCCD
+    }
+    
+    public enum BitDepth {
+        depth8,
+        depth16,
+        depth32
+    }
+
+    public unsafe class CameraImage {
+        public enum ImageFileFormat {
+            __fromExtension,
+            png, jpeg, tiff,
+        }
+        private static readonly Dictionary<ImageFileFormat, Type> Encoders = new Dictionary<ImageFileFormat, Type> {
+            {ImageFileFormat.png, typeof(PngBitmapEncoder)},
+            {ImageFileFormat.jpeg, typeof(JpegBitmapEncoder)},
+            {ImageFileFormat.tiff, typeof(TiffBitmapEncoder)},
+        };
+
+        public readonly void* raw;
+
+        public readonly int Width;
+        public readonly int Height;
+        public readonly int Channels;
+        public readonly BitDepth Depth;
+        public int Length => Width * Height * Channels;
+        public int Size => Length * BaseCamera.DepthSizes[Depth];
+
+        protected CameraImage(int width, int height, int channels, BitDepth depth) {
+            Width    = width;
+            Height   = height;
+            Channels = channels;
+            Depth    = depth;
+            raw      = (void*) Marshal.AllocHGlobal(Size);
+        }
+
+        protected readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim();
+
+        public void PurgeCache() {
+            _bitmapCache = null;
+        }
+
+        public CameraImage Copy() {
+            var ret = new CameraImage(Width, Height, Channels, Depth);
+
+            rwlock.EnterReadLock();
+
+            ret.rwlock.EnterWriteLock();
+            for (var i = 0; i < Size; ++i)
+                ret.raw[i] = raw[i];
+            ret.rwlock.ExitWriteLock();
+
+            ret._bitmapCache = _bitmapCache;
+            rwlock.ExitReadLock();
+
+            return ret;
+        }
+
+        public BitmapSource GetBitmap() {
+            rwlock.EnterReadLock();
+            var img = BitmapSource.Create(
+                Width, Height, dpiX: 96, dpiY: 96,
+                pixelFormat: (Channels == 1) ?
+                    ((Depth == BitDepth.depth8)  ? PixelFormats.Gray8 :
+                     (Depth == BitDepth.depth16) ? PixelFormats.Gray16 :
+                                                   PixelFormats.Gray32Float)
+                    : ((Depth == BitDepth.depth8)  ? PixelFormats.Rgb24 :
+                       (Depth == BitDepth.depth16) ? PixelFormats.Rgb48 :
+                                                     PixelFormats.Rgb128Float),
+                palette: null, buffer: (IntPtr) raw, bufferSize: Size,
+                stride: Width * Channels * BaseCamera.DepthSizes[Depth]);
+            img.Freeze();
+            rwlock.ExitReadLock();
+            return img;
+        }
+
+        private BitmapSource _bitmapCache;
+        public BitmapSource BitmapSource => _bitmapCache ?? (_bitmapCache = GetBitmap());
+
+
+        public Task<bool> Save(string fname, ImageFileFormat? fmt=ImageFileFormat.__fromExtension) {
+            return Task<bool>.Factory.StartNew(() => {
+                if (fmt == ImageFileFormat.__fromExtension)
+                    fmt = Utilities.FormatFromExtension(fname);
+                if (fmt == null) return false;
+
+                var encoder = (BitmapEncoder) Activator.CreateInstance(Encoders[(ImageFileFormat) fmt]);
+                encoder.Frames.Add(BitmapFrame.Create(BitmapSource));
+                using (var fileStream = new FileStream(fname, FileMode.Create))
+                    encoder.Save(fileStream);
+                return true;
+            });
+        }
+
+        ~CameraImage() {
+            rwlock.EnterWriteLock();
+            Marshal.FreeHGlobal((IntPtr) raw);
+            rwlock.ExitWriteLock();
+            rwlock.Dispose();
+        }
     }
 
     public abstract class BaseCamera : BaseHardwareControl {
@@ -65,7 +167,7 @@ namespace heliomaster_wpf {
             }
         }
 
-        public CameraImage  image;
+        public CameraImage  image { get; protected set; }
         public BitmapSource View => image?.BitmapSource;
 
         public event EventHandler<CameraImage> Captured;
@@ -79,7 +181,9 @@ namespace heliomaster_wpf {
 
 
         protected BaseCamera(bool autoupdate=true) {
-            if (autoupdate) Captured += (s, res) => { OnPropertyChanged(nameof(View)); };
+            if (autoupdate) Captured += (s, res) => { 
+                image = res;
+                OnPropertyChanged(nameof(View)); };
         }
 
 
@@ -108,6 +212,44 @@ namespace heliomaster_wpf {
                     Captured?.Invoke(this, item.Result);
                 return item.Result;
             } else return null;
+        }
+
+        
+        private Task livePreviewTask;
+        private bool previewOn;
+        
+        public void StartLivePreview(double maxfps) {
+            if (livePreviewTask == null && !previewOn) {
+                livePreviewTask = Task.Run(() => {
+                    var dt = new TimeSpan((long) (TimeSpan.TicksPerSecond / maxfps));
+                    
+                    previewOn = true;
+                    while (previewOn) {
+                        var nextTime = DateTime.Now + dt;
+                        try {
+                            Capture().Wait();
+                        } catch {}
+
+                        var towait = nextTime - DateTime.Now;
+                        if (towait > TimeSpan.Zero)
+                            Task.Delay(towait).Wait();
+                    }
+                });
+            }
+        }
+
+        public async Task StopLivePreview() {
+            previewOn = false;
+            if (livePreviewTask != null) {
+                await livePreviewTask;
+                livePreviewTask.Dispose();
+                livePreviewTask = null;
+            }
+        }
+
+        public async Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>> Stop() {
+            await StopLivePreview();
+            return queue.Clear();
         }
 
 

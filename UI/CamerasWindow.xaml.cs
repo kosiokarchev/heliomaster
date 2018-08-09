@@ -24,8 +24,7 @@ namespace heliomaster_wpf
 
         public ObservableCollection<CameraModel> Models { get; } = new ObservableCollection<CameraModel>();
 
-        public CamerasWindow()
-        {
+        public CamerasWindow() {
             CreateCameras(true);
             InitializeComponent();
         }
@@ -40,14 +39,14 @@ namespace heliomaster_wpf
                     cam.Gain     = S.Cameras.Gains[model.Index];
                     cam.Exposure = S.Cameras.Exposures[model.Index];
 
-                    O.Refresh += cam.Refresh;
+                    O.Refresh += cam.RefreshRaise;
 
                     Models.Add(model);
 
                     if (await cam.Focuser.Connect(model.FocuserID)
                         && cam.Focuser.Absolute != null
                         && (bool) cam.Focuser.Absolute)
-                        O.Refresh += cam.Focuser.Refresh;
+                        O.Refresh += cam.Focuser.RefreshRaise;
                 } else
                     MessageBox.Show($"Connecting to camera {model.CameraID} failed.");
             }
@@ -64,10 +63,6 @@ namespace heliomaster_wpf
             }
         }
 
-        private static async void timelapseAction(object state) {
-            if (state is CameraModel m)
-                Console.WriteLine(await m.TakeImage());
-        }
 
         #region UI
 
@@ -94,9 +89,9 @@ namespace heliomaster_wpf
                 && (i = Timelapse.IndexOf(t)) > -1) {
                 if (!t.Running) {
                     if (Timelapse.Tied[i])
-                        Timelapse.Start(timelapseAction, Models);
+                        Timelapse.Start(CameraModel.TimelapseAction, Models);
                     else
-                        t.Start(timelapseAction, Models[i]);
+                        t.Start(CameraModel.TimelapseAction, Models[i]);
                 } else {
                     if (Timelapse.Tied[i])
                         Timelapse.Stop();
