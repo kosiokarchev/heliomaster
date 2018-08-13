@@ -535,6 +535,8 @@
 
             <Button Content="Netio GET" IsEnabled="False" HorizontalAlignment="Left" Margin="410,158,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_4"/>
             <Button Content="Netio POST" IsEnabled="False" HorizontalAlignment="Left" Margin="410,185,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_5"/>
+            <Button Content="Startup" HorizontalAlignment="Left" Margin="410,212,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_6"/>
+            <Button Content="Shutdown" HorizontalAlignment="Left" Margin="410,239,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_7"/>
         </Grid>
     </DockPanel>
 </local:HMWindow>

@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using ASCOM.DeviceInterface;
+using heliomaster_wpf.Properties;
 
 namespace heliomaster_wpf {
     public class Dome : BaseHardwareControl {
@@ -86,56 +87,120 @@ namespace heliomaster_wpf {
         #region MOTION
 
         private void slew(double az) {
-            if (Moveable)
-                Driver.SlewToAzimuth(Utilities.PositiveModulo(az, 360));
+            if (Moveable) {
+                var target = Utilities.PositiveModulo(az, 360);
+                Logger.debug($"Slewing: target={target}");
+                Driver.SlewToAzimuth(target);
+            } else throw new ASCOM.InvalidOperationException("Cannot slew dome.");
         }
 
-        public async Task<bool> Slew(double arg, bool absolute = false) {
-            try {
-                slew(absolute ? arg : Azimuth + arg);
-                await Task.Run(() => SpinWait.SpinUntil(() => !Slewing));
-                return true;
-            } catch { return false; }
-            finally { RefreshRaise(); }
+        public Task<bool> Slew(double arg, bool absolute = false) {
+            Logger.info($"Slewing to {(absolute ? "absolute" : "relative")} {arg}.");
+
+            return Task<bool>.Factory.StartNew(() => {
+                try {
+                    slew(absolute ? arg : Azimuth + arg);
+                    SpinWait.SpinUntil(() => !Slewing);
+                    Logger.info("Slewing complete.");
+                    return true;
+                } catch (Exception e) {
+                    Logger.error(e.Message);
+                    Logger.warning("Slewing failed.");
+                    return false;
+                }
+                finally { RefreshRaise(); }
+            });
         }
 
         public Task<bool> StopAllMotion() {
+            Logger.info("Stopping all motion.");
+
             return Task<bool>.Factory.StartNew(() => {
-                try { Driver.AbortSlew(); return true; }
-                catch { return false; }
+                try {
+                    Driver.AbortSlew();
+                    Logger.info("AbortSlew complete.");
+                    return true;
+                }
+                catch {
+                    Logger.warning("AbortSlew failed.");
+                    return false;
+                }
                 finally { RefreshRaise(); }
             });
         }
 
         public Task<bool> HomeOrPark(bool home) {
+            var action = home ? "Slewing to home" : "Parking";
+            Logger.info(action+".");
+
             return Task<bool>.Factory.StartNew(() => {
                 try {
-                    if (home) Driver.Park();
-                    else Driver.FindHome();
+                    if (home) Driver.FindHome();
+                    else Driver.Park();
+                    SpinWait.SpinUntil(() => !Slewing);
+                    Logger.info($"{action} complete.");
                     return home ? AtHome : AtPark;
                 } catch {
+                    Logger.debug($"Attempting software {(home ? "slew to home" : "park")}.");
                     var t = Slew(home ? HomePosition : ParkPosition);
                     t.Wait();
-                    return t.Exception != null && t.Result;
+                    if (t.Exception != null || !t.Result) {
+                        Logger.warning($"{action} failed.");
+                        return false;
+                    } else {
+                        Logger.info($"{action} complete.");
+                        return true;
+                    }
                 } finally { RefreshRaise(); }
             });
         }
 
         public Task<bool> Slave(bool state) {
+            var action = (state ? "Slaving " : "Unslaving") + " via hardware";
+            Logger.info($"{action}.");
+
             return Task<bool>.Factory.StartNew(() => {
-                try { Driver.Slaved = state; } catch {}
+                try {
+                    Driver.Slaved = state;
+                } catch (Exception e) {
+                    Logger.error(e.Message);
+                }
                 RefreshRaise();
-                return Driver.Slaved == state;
+
+                var ret = Driver.Slaved == state;
+                if (!ret) Logger.warning($"{action} failed.");
+                else      Logger.info($"{action} complete.");
+                return ret;
             });
         }
 
-        public void Shutter(bool open) {
-            if (Driver.CanSetShutter)
-                Task.Run(open ? (Action) Driver.OpenShutter : (Action) Driver.CloseShutter);
+        public Task<bool> Shutter(bool open) {
+            var action = (open ? "Opening" : "Closing") + " shutter";
+            Logger.info($"{action}.");
+
+            return Task<bool>.Factory.StartNew(() => {
+                var state = open ? ShutterState.shutterOpen : ShutterState.shutterClosed;
+                try {
+                    if (open) Driver.OpenShutter();
+                    else Driver.CloseShutter();
+                    SpinWait.SpinUntil(() => !Driver.Slewing && Driver.ShutterStatus == state, S.Dome.ShutterTimeout);
+                } catch (Exception e) {
+                    Logger.error(e.Message);
+                }
+                RefreshRaise();
+
+                var ret = Driver.ShutterStatus == state;
+                if (!ret) Logger.warning($"{action} failed.");
+                else      Logger.info($"{action} complete.");
+                return ret;
+            });
         }
 
-        public Task<bool> SmartShutter(bool open) {
-            throw new NotImplementedException();
+        public async Task<bool> SmartShutter(bool open) {
+            // TODO: Smarter shutter with RetryClose
+            if (HomeToOpen && !await HomeOrPark(home: true))
+                return false;
+            return await Shutter(open);
         }
 
         #endregion

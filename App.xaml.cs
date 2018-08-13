@@ -16,20 +16,20 @@ namespace heliomaster_wpf {
     public partial class App : Application {
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
         public App() {
+            SetupErrorHandling();
+
+            Python.Initialize();
+
             QHYCCDCamera.initResource();
-            foreach (var iD in QHYCCDCamera.CameraIDs) {
-                Console.WriteLine(iD);
-            }
 
             O.StartRefresh(S.Settings.Refresh);
 
-            if (S.Python.IsEnabled)
-                Python.Start();
-
             try {
                 O.Default.ConnectRemote();
-            } catch {} // TODO: Smarter way to initialize connection
+            } catch { } // TODO: Smarter way to initialize connection
+        }
 
+        private void SetupErrorHandling() {
             TaskScheduler.UnobservedTaskException += (sender, args) => {
                 MessageBox.Show($"Task exception: {args.Exception.InnerExceptions[0].Message}");
                 args.SetObserved();

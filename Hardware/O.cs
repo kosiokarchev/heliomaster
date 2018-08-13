@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Documents;
 using heliomaster_wpf.Annotations;
 using heliomaster_wpf.Properties;
 using Renci.SshNet;
@@ -20,8 +22,26 @@ namespace heliomaster_wpf {
         public SlavingWarning() { }
         public SlavingWarning(string message) : base(message) { }
     }
+    public class AutoOperationsException : ObservatoryException {
+        public AutoOperationsException() { }
+        public AutoOperationsException(string message) : base(message) { }
+    }
+
+
+    public static class Logger {
+        public static void put(string msg) {
+            Console.WriteLine(msg);
+        }
+
+        public static void debug(string msg) {put($"DEBUG: {msg}");}
+        public static void info(string msg) {put($"INFO: {msg}");}
+        public static void warning(string msg) {put($"WARNING: {msg}");}
+        public static void error(string msg) {put($"ERROR: {msg}");}
+        public static void critical(string msg) {put($"CRITICAL: {msg}");}
+    }
 
     public class Observatory : BaseNotify {
+
         public Telescope        Mount     { get; } = S.Mount.Telescope;
         public Dome             Dome      { get; } = S.Dome.Dome;
         public Weather          Weather   { get; } = new Weather();
@@ -32,7 +52,8 @@ namespace heliomaster_wpf {
 
 
         public Observatory() {
-            Closing += Close;
+            Starting += StartingHandle;
+            Shutting += ShuttingHandle;
         }
 
 
@@ -45,9 +66,13 @@ namespace heliomaster_wpf {
 
 
         public void Emit(ObservatoryException e) {
-            // TODO: Error handling, guh...
+            // TODO: Error handling, duh...
+            Console.WriteLine(e.Message);
+            MessageBox.Show(e.Message);
         }
 
+
+        #region SLAVING
 
         private bool _isSlaving;
         public bool IsSlaving {
@@ -73,26 +98,28 @@ namespace heliomaster_wpf {
 
         private async void slave() {
             var az = Mount.Azimuth;
-            if (double.IsNaN(az)) Emit(new SlavingWarning("Mount state is invalid."));
+            if (double.IsNaN(az)) {
+                Emit(new SlavingWarning("Mount state is invalid."));
+                return;
+            }
 
             var domaz = Dome.Azimuth;
-            if (double.IsNaN(domaz)) Emit(new SlavingWarning("Dome state is invalid."));
+            if (double.IsNaN(domaz)) {
+                Emit(new SlavingWarning("Dome state is invalid."));
+                return;
+            }
 
             if (Math.Abs(domaz - az) > S.Dome.SlaveTolerance) {
-                if (!await Dome.Slew(az, true))
-                    Emit(new SlavingWarning("Dome slew was unsuccessful."));
-
                 if (IsHardwareSlaving)
                     Emit(new SlavingWarning("Hardware slaving does not appear to be working correctly."));
+                if (!await Dome.Slew(az, true))
+                    Emit(new SlavingWarning("Dome slew was unsuccessful."));
             }
-            if (Math.Abs(domaz - az) > S.Dome.SlaveTolerance
-                && !(await Dome.Slew(az, true)))
-                Emit(new SlavingWarning("Dome slew was unsuccessful."));
         }
-        public async void SlaveDomeToMount(TimeSpan? interval = null, TimeSpan? checkup = null) {
+        public async Task SlaveDomeToMount(TimeSpan? interval = null, TimeSpan? checkup = null) {
             if (!IsSlaving) {
                 TimeSpan dt;
-                if (Dome.CanSlave) {
+                if (!S.Dome.AlwaysSoftSlave && Dome.CanSlave) {
                     await Dome.Slave(true);
                     dt = checkup ?? S.Dome.SlaveCheckup;
                     IsHardwareSlaving = true;
@@ -101,14 +128,15 @@ namespace heliomaster_wpf {
                     IsHardwareSlaving = false;
                 }
 
-                slavingTimer = new Timer(o => slave(), null, TimeSpan.Zero, dt);
+                slavingTimer = new Timer(o => slave(), null, dt, dt);
                 Mount.Slewed += slave;
 
                 IsSlaving = true;
+
+                await Task.Run((Action) slave);
             }
         }
-
-        public async void UnSlaveDomeFromMount() {
+        public async Task UnSlaveDomeFromMount() {
             await Dome.Slave(false);
             slavingTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             slavingTimer?.Dispose();
@@ -117,41 +145,90 @@ namespace heliomaster_wpf {
             IsSlaving = false;
         }
 
+        #endregion
 
-        private bool isOpen;
 
-        public event Action Opening;
-        private void OpeningRaise() => Opening?.Invoke();
-        public event Action OpenSuccess;
-        private void OpenSuccessRaise() => OpenSuccess?.Invoke();
-        public event Action OpenFailure;
-        private void OpenFailureRaise() => OpenFailure?.Invoke();
+        public async void ConnectCameras() {
+            foreach (var exmodel in CameraModels) {
+                O.Refresh -= exmodel.Cam.RefreshRaise;
+                await exmodel.Cam.Disconnect();
+            }
 
-        public event Action Closing;
-        private void ClosingRaise() => Closing?.Invoke();
-        public event Action CloseSuccess;
-        private void CloseSuccessRaise() => CloseSuccess?.Invoke();
-        public event Action CloseFailure;
-        private void CloseFailureRaise() => CloseFailure?.Invoke();
+            foreach (var model in S.Cameras.CameraModels) {
+                var cam = BaseCamera.Create(model.CameraType);
+                if (await cam.Connect(model.CameraID)) {
+                    model.Cam = cam;
 
-        public async void Open(bool autostart = false, DateTime? closeAt = null, TimeSpan? camMargin = null, TimeSpan? closeMargin = null) {
-            isOpen = true;
+                    O.Refresh += cam.RefreshRaise;
+
+                    CameraModels.Add(model);
+
+                    if (await cam.Focuser.Connect(model.FocuserID)
+                        && cam.Focuser.Absolute != null
+                        && (bool) cam.Focuser.Absolute)
+                        O.Refresh += cam.Focuser.RefreshRaise;
+                } else
+                    MessageBox.Show($"Connecting to camera {model.CameraID} failed.");
+            }
+
+            if (CameraModels.Count < 1) return;
+
+            CommonTimelapse = new CommonTimelapse(new Timelapse {
+                StopMethod = S.Settings.timelapseStopMethod,
+                Interval   = S.Settings.timelapseInterval,
+                Nshots     = S.Settings.timelapseNshots,
+            }, CameraModels.Count);
+            for (var i = 0; i < CameraModels.Count; ++i) {
+                CameraModels[i].Timelapse = CommonTimelapse[i];
+            }
+        }
+
+
+        #region AUTOMATION
+
+        public event Action Starting;
+        public void StartingRaise() => Starting?.Invoke();
+        private void StartingHandle() => Startup();
+
+        public event Action StartupSuccess;
+        public void StartupSuccessRaise() => StartupSuccess?.Invoke();
+
+        public event Action<ObservatoryException> StartupFailure;
+        public void StartupFailureRaise(ObservatoryException e) => StartupFailure?.Invoke(e);
+
+
+        public event Action Shutting;
+        public void ShuttingRaise() => Shutting?.Invoke();
+        private void ShuttingHandle() => Shutdown();
+
+        public event Action ShutdownSuccess;
+        public void ShutdownSuccessRaise() => ShutdownSuccess?.Invoke();
+
+        public event Action<ObservatoryException> ShutdownFailure;
+        public void ShutdownFailureRaise(ObservatoryException e) => ShutdownFailure?.Invoke(e);
+
+
+        private readonly CancellationTokenSource cancelwait = new CancellationTokenSource();
+
+        public async Task<bool> Startup(bool autostart = false, DateTime? closeAt = null, TimeSpan? camMargin = null, TimeSpan? closeMargin = null) {
             try {
-                // Point telescope:
-                //     Unpark; Go-to
+                if (!Mount.Valid && !await Mount.Connect(S.Mount.MountID))
+                    throw new AutoOperationsException($"Could not connect telescope {S.Mount.MountID}");
+                if (!Dome.Valid && !await Dome.Connect(S.Dome.DomeID))
+                    throw new AutoOperationsException($"Could not connect dome {S.Dome.DomeID}");
 
-                // Open dome
-                //     SmartShutter(true)
+                if (!(await Mount.Unpark() && await Mount.GoTo()))
+                    throw new AutoOperationsException("Could not operate telescope.");
 
-                // Rotate dome to telescope --> in next line
-                // Slave dome to telescope
-                SlaveDomeToMount();
+                if (!await Dome.SmartShutter(true))
+                    throw new AutoOperationsException("Could not open dome.");
 
-                // Turn on cameras
+                await SlaveDomeToMount();
+
+
                 foreach (var model in CameraModels)
                     model.Cam.StartLivePreview(30); // TODO: Unhardcode maxfps --> cam setting
 
-                // Sync timelapses and prepare
                 CommonTimelapse.TieAll();
                 if (closeAt != null) {
                     CommonTimelapse.Main.StopMethod = 2;
@@ -163,41 +240,77 @@ namespace heliomaster_wpf {
                     CommonTimelapse.Main.Nshots     = 1000;
                 }
 
-                // Start timelapse
                 // TODO: Assert object is in view
                 if (autostart)
                     CommonTimelapse.Start(CameraModel.TimelapseAction, CameraModels);
 
-                OpenSuccessRaise();
 
-                if (closeAt != null) {
-                    await Task.Delay((closeMargin == null
-                                          ? (DateTime) closeAt
-                                          : (DateTime) closeAt - (TimeSpan) closeMargin)
-                                     - DateTime.Now);
-                    ClosingRaise();
-                }
-            } catch {
-                isOpen = false;
-                OpenFailureRaise();
-                throw;
+                StartupSuccessRaise();
+
+
+                if (closeAt != null)
+                    Task.Run(() => {
+                        try {
+                            Task.Delay(
+                                (closeMargin == null
+                                    ? (DateTime) closeAt
+                                    : (DateTime) closeAt - (TimeSpan) closeMargin)
+                                - DateTime.Now, cancelwait.Token);
+                            ShuttingRaise();
+                        } catch (Exception e) {
+                            Console.WriteLine(e.GetType().Name);
+                            Console.WriteLine(e.Message);
+                        }
+                    });
+
+                return true;
+            } catch (ObservatoryException e) {
+                Emit(e);
+                StartupFailureRaise(e);
+                return false;
             }
         }
 
-        public async void Close() {
-            // Stop dome slaving
-            UnSlaveDomeFromMount();
+        public async Task<bool> Shutdown() {
+            try {
+                CommonTimelapse.Stop();
 
-            CommonTimelapse.Stop();
+                var camtasks = new List<Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>>>();
+                foreach (var model in CameraModels)
+                    camtasks.Add(model.Cam.Stop());
 
-            var camtasks = new List<Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>>>();
-            foreach (var model in CameraModels)
-                camtasks.Add(model.Cam.Stop());
+                await UnSlaveDomeFromMount();
 
-            var mounttask = Mount.Park();
+                var mounttask = Mount.Park();
+                var dometask  = Dome.SmartShutter(false);
 
-            var dometask = Dome.SmartShutter(false);
+                if (!await mounttask)
+                    Emit(new AutoOperationsException("Could not park mount"));
+
+                if (!await dometask)
+                    Emit(new AutoOperationsException("Could not close dome."));
+
+                foreach (var camtask in camtasks)
+                    camtask.Wait();
+
+                if (mounttask.Result && dometask.Result) {
+                    await Dome.HomeOrPark(home: false);
+
+                    ShutdownSuccessRaise();
+                    return true;
+                } else throw new AutoOperationsException("Observatory shutdown with errors.");
+            } catch (ObservatoryException e) {
+                Emit(e);
+                ShutdownFailureRaise(e);
+                return false;
+            }
         }
+
+        public void Interrupt() {
+            cancelwait.Cancel();
+        }
+
+        #endregion
     }
 
     public static class O {
@@ -209,6 +322,7 @@ namespace heliomaster_wpf {
         public static Remote           Remote    => Default.Remote;
 
         public static ObservableCollection<CameraModel> CamModels => Default.CameraModels;
+        public static CommonTimelapse Timelapse => Default.CommonTimelapse;
 
         public static event Action Refresh;
         public static void OnRefresh(object o) { Refresh?.Invoke(); }

@@ -361,7 +361,7 @@
         </DataTemplate>
     </local:HMWindow.Resources>
 
-    <ItemsControl ItemTemplate="{StaticResource CameraTemplate}" ItemsSource="{Binding Models, RelativeSource={RelativeSource AncestorType=local:CamerasWindow}}">
+    <ItemsControl ItemTemplate="{StaticResource CameraTemplate}" ItemsSource="{Binding Source={x:Static local:O.CamModels}}">
         <ItemsControl.ItemsPanel>
             <ItemsPanelTemplate>
                 <WrapPanel Orientation="Horizontal" Margin="0" />

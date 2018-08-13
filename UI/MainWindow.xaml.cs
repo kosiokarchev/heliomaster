@@ -180,5 +180,15 @@ namespace heliomaster_wpf {
             }.Command(new[] {1}, new[]{States.Off}, new[]{OutputActions.Toggle}, new[]{1600});
             var d = 4;
         }
+
+        private void Button_Click_6(object sender, RoutedEventArgs e) {
+            CamerasWindow.Show();
+            O.Default.StartingRaise();
+        }
+
+        private void Button_Click_7(object sender, RoutedEventArgs e) {
+            O.Default.Interrupt();
+            O.Default.ShuttingRaise();
+        }
     }
 }

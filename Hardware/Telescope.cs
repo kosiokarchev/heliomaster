@@ -171,15 +171,19 @@ namespace heliomaster_wpf {
             });
         }
 
-        public void GoTo(Pynder.Objects o = Pynder.Objects.Sun) {
+        public async Task<bool> GoTo(Pynder.Objects o = Pynder.Objects.Sun) {
             var coords = Pynder.find(o);
-            Slew(coords.ra, coords.dec);
-            Track(true);
+            return await Slew(coords.ra, coords.dec) && await Track(true);
         }
 
         public Task<bool> Park() {
             return Task<bool>.Factory.StartNew(() => {
-                try { if (CanPark) Driver.Park(); } catch {}
+                try {
+                    if (CanPark) {
+                        Track(false).Wait();
+                        Driver.Park();
+                    }
+                } catch {}
                 return Valid && AtPark;
             });
         }
@@ -266,26 +270,13 @@ namespace heliomaster_wpf {
         public  bool   Moveable       => Valid && !AtPark && !Slewing;
 
         public  double SiderealTime   => Valid ? Driver.SiderealTime : double.NaN;
-        public  double Altitude       => Valid ? Driver.Altitude : double.NaN;
-        public  double Azimuth        => Valid ? Driver.Azimuth : double.NaN;
-        public  double RightAscension => Valid ? Driver.RightAscension : double.NaN;
-        public  double Declination    => Valid ? Driver.Declination : double.NaN;
+        public  double Altitude       => Valid && !Driver.AtPark ? Driver.Altitude : double.NaN;
+        public  double Azimuth        => Valid && !Driver.AtPark ? Driver.Azimuth : double.NaN;
+        public  double RightAscension => Valid && !Driver.AtPark ? Driver.RightAscension : double.NaN;
+        public  double Declination    => Valid && !Driver.AtPark ? Driver.Declination : double.NaN;
         public  bool   AtPark         => Valid && Driver.AtPark;
         public  bool   Slewing        => Valid && Driver.Slewing;
         public  bool   Tracking       => Valid && Driver.Tracking;
-
-        public PierSide SideOfPier       => Valid ? Driver.SideOfPier : PierSide.pierUnknown;
-        private bool _nsflip;
-        public bool NSFlip {
-            get => _nsflip;
-            set {
-                if (value == _nsflip) return;
-                _nsflip = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(IsFlipped));
-            }
-        }
-        public bool IsFlipped => Valid && !(NSFlip ^ (SideOfPier != PierSide.pierWest));
 
         public bool   CanTrack   => Moveable && Driver.CanSetTracking;
         public bool   CanSlew    => Moveable && Driver.CanSlew;
@@ -294,14 +285,44 @@ namespace heliomaster_wpf {
         public string ParkAction => AtPark ? Resources.unpark : Resources.park;
 
 
+        public event Action FlippedChanged;
+        protected void FlippedChangedRaise() { FlippedChanged?.Invoke(); }
+        private PierSide _sideOfPier = PierSide.pierUnknown;
+        public PierSide SideOfPier => Valid ? Driver.SideOfPier : PierSide.pierUnknown;
+
+        private bool _nsflip;
+        public bool NSFlip {
+            get => _nsflip;
+            set {
+                if (value == _nsflip) return;
+                _nsflip = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsFlipped));
+                FlippedChangedRaise();
+            }
+        }
+        public bool IsFlipped => Valid && !(NSFlip ^ (SideOfPier != PierSide.pierWest));
+
+
         private static readonly string[] _props = {
             nameof(SiderealTime), nameof(Altitude), nameof(Azimuth), nameof(RightAscension), nameof(Declination),
-            nameof(SideOfPier), nameof(IsFlipped),
             nameof(AtPark), nameof(Slewing), nameof(Tracking),
             nameof(CanTrack), nameof(CanSlew), nameof(CanGoTo), nameof(CanPark),
             nameof(Moveable),
             nameof(ParkAction)
         };
+
+        protected override void RefreshHandle() {
+            var sop = SideOfPier;
+            if (!_sideOfPier.Equals(sop)) {
+                _sideOfPier = sop;
+                OnPropertyChanged(nameof(SideOfPier));
+                OnPropertyChanged(nameof(IsFlipped));
+                FlippedChangedRaise();
+            }
+
+            base.RefreshHandle();
+        }
 
         [XmlIgnore] protected override IEnumerable<string> props => _props;
 

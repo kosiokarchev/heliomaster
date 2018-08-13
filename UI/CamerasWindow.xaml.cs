@@ -24,52 +24,19 @@ namespace heliomaster_wpf
         }
 
         public CamerasWindow() {
-            CreateCameras(true);
             InitializeComponent();
+            O.Default.ConnectCameras();
         }
 
-        protected override void OnClosing(CancelEventArgs e) {
-            foreach (var model in Models) {
-                model.Cam.Disconnect();
+        protected override async void OnClosing(CancelEventArgs e) {
+            foreach (var model in O.CamModels) {
+                O.Timelapse.Stop();
+                await model.Cam.Stop();
                 model.Images.Clear();
             }
             O.CamModels.Clear();
             base.OnClosing(e);
         }
-
-        public ObservableCollection<CameraModel> Models { get; } = O.CamModels;
-
-        private async void CreateCameras(bool _) {
-            foreach (var model in S.Cameras.CameraModels) {
-                var cam = BaseCamera.Create(model.CameraType);
-                if (await cam.Connect(model.CameraID)) {
-//                    O.CamModels.Add(cam);
-                    model.Cam = cam;
-
-                    O.Refresh += cam.RefreshRaise;
-
-                    Models.Add(model);
-
-                    if (await cam.Focuser.Connect(model.FocuserID)
-                        && cam.Focuser.Absolute != null
-                        && (bool) cam.Focuser.Absolute)
-                        O.Refresh += cam.Focuser.RefreshRaise;
-                } else
-                    MessageBox.Show($"Connecting to camera {model.CameraID} failed.");
-            }
-
-            if (Models.Count < 1) return;
-
-            Timelapse = new CommonTimelapse(new Timelapse {
-                StopMethod = S.Settings.timelapseStopMethod,
-                Interval   = S.Settings.timelapseInterval,
-                Nshots     = S.Settings.timelapseNshots,
-            }, Models.Count);
-            for (var i = 0; i < Models.Count; ++i) {
-                Models[i].Timelapse = Timelapse[i];
-            }
-        }
-
 
         #region UI
 
@@ -96,9 +63,9 @@ namespace heliomaster_wpf
                 && (i = Timelapse.IndexOf(t)) > -1) {
                 if (!t.Running) {
                     if (Timelapse.Tied[i])
-                        Timelapse.Start(CameraModel.TimelapseAction, Models);
+                        Timelapse.Start(CameraModel.TimelapseAction, O.CamModels);
                     else
-                        t.Start(CameraModel.TimelapseAction, Models[i]);
+                        t.Start(CameraModel.TimelapseAction, O.CamModels[i]);
                 } else {
                     if (Timelapse.Tied[i])
                         Timelapse.Stop();
@@ -111,7 +78,7 @@ namespace heliomaster_wpf
         private void captureButton_Click(object sender, RoutedEventArgs e) {
             int i;
             if (((Button) sender).DataContext is Timelapse t && (i = Timelapse.IndexOf(t)) > -1)
-                Task.Factory.StartNew(CameraModel.TimelapseAction, Models[i]);
+                Task.Factory.StartNew(CameraModel.TimelapseAction, O.CamModels[i]);
         }
 
         private void focuserButton_Click(object sender, RoutedEventArgs e) {

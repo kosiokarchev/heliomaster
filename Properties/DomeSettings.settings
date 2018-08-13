@@ -6,7 +6,7 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="SlaveTolerance" Type="System.Double" Scope="User">
-      <Value Profile="(Default)">0</Value>
+      <Value Profile="(Default)">0.5</Value>
     </Setting>
     <Setting Name="SlaveInterval" Type="System.TimeSpan" Scope="User">
       <Value Profile="(Default)">00:05:00</Value>
@@ -15,10 +15,15 @@
       <Value Profile="(Default)">00:30:00</Value>
     </Setting>
     <Setting Name="AlwaysSoftSlave" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="Dome" Type="heliomaster_wpf.Dome" Scope="User">
-      <Value Profile="(Default)">&lt;Dome&gt;&lt;/Dome&gt;</Value>
+      <Value Profile="(Default)">&lt;Dome xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+    &lt;ShutterTimeout&gt;&lt;TimeSpan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;00:01:00&lt;/TimeSpan&gt;&lt;/ShutterTimeout&gt;
+&lt;/Dome&gt;</Value>
+    </Setting>
+    <Setting Name="ShutterTimeout" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:01:00</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -164,15 +164,6 @@ namespace heliomaster_wpf {
                 OnPropertyChanged(nameof(FinalTransform));
             }
         }
-
-//        private bool _isFlipped;
-//        public bool IsFlipped {
-//            set {
-//                if (_isFlipped == value) return;
-//                _isFlipped = value;
-//                OnPropertyChanged(nameof(FinalTransform));
-//            }
-//        }
         public Transform Transform => new TransformGroup {
             Children = new TransformCollection(new Transform[] {
                 new ScaleTransform(Flip ? -1 : 1, 1),
@@ -210,12 +201,11 @@ namespace heliomaster_wpf {
 
         [XmlIgnore] public ObservableCollection<CapturedImage> Images { get; } = new ObservableCollection<CapturedImage>();
 
-//        public CameraModel() {
-//            O.Refresh += () => {
-//                try { IsFlipped = O.Mount.IsFlipped; }
-//                catch { IsFlipped = false; }
-//            };
-//        }
+        public CameraModel() {
+            O.Mount.FlippedChanged += () => {
+                OnPropertyChanged(nameof(FinalTransform));
+            };
+        }
 
         public static async void TimelapseAction(object state) {
             if (state is CameraModel m)

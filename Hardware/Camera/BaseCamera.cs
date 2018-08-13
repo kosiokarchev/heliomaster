@@ -79,7 +79,6 @@ namespace heliomaster_wpf {
             if (autoupdate) Captured += (s, res) => {
                 image = res;
                 OnPropertyChanged(nameof(View));
-                Console.WriteLine("Updated...");
             };
         }
 
