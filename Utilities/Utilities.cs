@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Net;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using ASCOM.DeviceInterface;
 using ASCOM.Utilities;
 using heliomaster_wpf.Annotations;
@@ -39,6 +41,11 @@ namespace heliomaster_wpf {
                 : m;
         }
 
+        public static double PositiveModulo(double a, double b) {
+            var m = a % b;
+            return m >= 0 ? m : m + b;
+        }
+
         public static double deg2rad(double x) => (Math.PI / 180) * x;
         public static double rad2dec(double x) => (180 / Math.PI) * x;
 
@@ -58,7 +65,7 @@ namespace heliomaster_wpf {
             return Math.Log(Y / min) / Math.Log(max / min);
         }
 
-        public static string RateFormatter(double r, string fmt) {
+        public static string AngleFormatter(double r, string fmt) {
             double num;
             string unit;
             if (r >= 1) {                   num = r;           unit = "°";
@@ -69,6 +76,8 @@ namespace heliomaster_wpf {
             return string.Format(fmt, num) + " " + unit;
         }
 
+        public static Func<double, string> RateFormatter => r => AngleFormatter(r, "{0:0.#}") + "/s";
+
 
         public static readonly Util ASCOMUtil = new Util();
         public static readonly Dictionary<ShutterState, string> ShutterStateStrings = new Dictionary<ShutterState, string> {
@@ -78,5 +87,14 @@ namespace heliomaster_wpf {
             {ShutterState.shutterClosing, "closing"},
             {ShutterState.shutterError, "error"}
         };
+
+        public static Task InsecureSSL(Action a) {
+            return Task.Run(() => {
+                var back = ServicePointManager.ServerCertificateValidationCallback;
+                ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
+                a();
+                ServicePointManager.ServerCertificateValidationCallback = back;
+            });
+        }
     }
 }

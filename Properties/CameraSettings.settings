@@ -21,6 +21,7 @@
 &lt;ArrayOfCameraModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                         xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
                         &lt;CameraModel&gt;
+&lt;CameraType&gt;QHYCCD&lt;/CameraType&gt;
                             &lt;Index&gt;0&lt;/Index&gt;
                             &lt;Name&gt;Visible&lt;/Name&gt;
                             &lt;LocalPathFormat&gt;C:\\Users\\Kosio\\Desktop\\test_out\\visible\\{DateTime:yyyyMMddTHHmmss}.png&lt;/LocalPathFormat&gt;

@@ -117,6 +117,9 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="alt" xml:space="preserve">
+    <value>Alt</value>
+  </data>
   <data name="athome" xml:space="preserve">
     <value>At home</value>
   </data>
@@ -126,11 +129,17 @@
   <data name="auto" xml:space="preserve">
     <value>auto</value>
   </data>
+  <data name="az" xml:space="preserve">
+    <value>Az</value>
+  </data>
   <data name="capture" xml:space="preserve">
     <value>Capture</value>
   </data>
   <data name="close" xml:space="preserve">
     <value>Close</value>
+  </data>
+  <data name="dec" xml:space="preserve">
+    <value>Dec</value>
   </data>
   <data name="dome" xml:space="preserve">
     <value>Dome</value>
@@ -150,6 +159,9 @@
   <data name="gain" xml:space="preserve">
     <value>gain</value>
   </data>
+  <data name="goto_" xml:space="preserve">
+    <value>Go to</value>
+  </data>
   <data name="headerAcquisition" xml:space="preserve">
     <value>Acquisition</value>
   </data>
@@ -164,6 +176,9 @@
   </data>
   <data name="home" xml:space="preserve">
     <value>Home</value>
+  </data>
+  <data name="lst" xml:space="preserve">
+    <value>LST</value>
   </data>
   <data name="notavailable" xml:space="preserve">
     <value>N/A</value>
@@ -182,6 +197,12 @@
   </data>
   <data name="park" xml:space="preserve">
     <value>Park</value>
+  </data>
+  <data name="parked" xml:space="preserve">
+    <value>Parked</value>
+  </data>
+  <data name="ra" xml:space="preserve">
+    <value>RA</value>
   </data>
   <data name="slave" xml:space="preserve">
     <value>Slave</value>

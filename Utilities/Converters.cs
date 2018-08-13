@@ -184,6 +184,17 @@ namespace heliomaster_wpf {
         }
     }
 
+    public class RateFormatterConverter : BaseMarkupExtension, IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value != null) return Utilities.RateFormatter((double) value);
+            else return Binding.DoNothing;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
 //    public static class EnumPresenters {
 //        public static readonly Dictionary<object, string> P = new Dictionary<object, string> {
 //            {RemoteLoginMethods.UserPass, "Password"},

@@ -1,24 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace heliomaster_wpf {
-    public class QHYCCDImage : CameraImage {
-        public QHYCCDImage(int width, int height, int channels, BitDepth depth) : base(width, height, channels, depth) { }
-    }
-    
     public class QHYCCDCamera : BaseCamera {
+//        private readonly QHYCCDLocalizer libqhyccd = new QHYCCDLocalizer();
+
         protected override Type driverType { get; } = null;
 
-        private         uint     _width = 0;
+        private         uint     _width;
         public override uint     Width => _width;
-        private         uint     _height = 0;
+        private         uint     _height;
         public override uint     Height => _height;
         private         BitDepth _depth;
         public override BitDepth Depth => _depth;
-        private         double   _maxExposure = 1000;
-        public override double   MaxExposure => _maxExposure;
+        private         double _minExposure = Double.Epsilon;
+        public override double MinExposure => _minExposure;
+        private         double _maxExposure = 1000;
+        public override double MaxExposure => _maxExposure;
         private         double   _minGain = 0;
         public override double   MinGain => _minGain;
         private         double   _maxGain = 100;
@@ -29,9 +32,10 @@ namespace heliomaster_wpf {
             set => libqhyccd.SetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.CONTROL_GAIN, value);
         }
 
+        // QHYCCD EXPOSURE IS IN MICROSECONDS!!!
         protected override double exposure {
-            get => libqhyccd.GetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.CONTROL_EXPOSURE);
-            set => libqhyccd.SetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.CONTROL_EXPOSURE, value);
+            get => libqhyccd.GetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.CONTROL_EXPOSURE) / 1000;
+            set => libqhyccd.SetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.CONTROL_EXPOSURE, 1000 * value);
         }
         public bool IsConnected;
         protected override bool valid => IsConnected;
@@ -45,17 +49,37 @@ namespace heliomaster_wpf {
         private UInt32 ret;
         private uint bpp;
 
-        static uint initResource() {
+        public static void initResource() {
+//            var libqhyccd = new QHYCCDLocalizer();
             libqhyccd.InitQHYCCDResource();
-            return libqhyccd.ScanQHYCCD();
+            var ncams = libqhyccd.ScanQHYCCD();
+            CameraIDs.Clear();
+            for (uint i = 0; i < ncams; i++) {
+                var s = new StringBuilder(32);
+                libqhyccd.GetQHYCCDId(i, s);
+                CameraIDs.Add(s.ToString());
+            }
         }
-        public static uint ncams = initResource();
+        public static readonly ObservableCollection<string> CameraIDs = new ObservableCollection<string>();
+
+        public override void Initialize() {
+            double step = 0;
+            libqhyccd.GetQHYCCDParamMinMaxStep(camhandle, libqhyccd.CONTROL_ID.CONTROL_GAIN, ref _minGain, ref _maxGain, ref step);
+            libqhyccd.GetQHYCCDParamMinMaxStep(camhandle, libqhyccd.CONTROL_ID.CONTROL_EXPOSURE, ref _minExposure, ref _maxExposure, ref step);
+            _minExposure /= 1000;
+            _maxExposure /= 1000;
+
+            base.Initialize();
+        }
+
+        private StringBuilder id;
 
         public override Task<bool> Connect(string progID, bool state = true, bool init = true, bool setup = false) {
             return Task<bool>.Factory.StartNew(() => {
-                camhandle = libqhyccd.OpenQHYCCD(new StringBuilder(progID));
+                id = new StringBuilder(progID, 32);
+                camhandle = libqhyccd.OpenQHYCCD(id);
 
-                Console.WriteLine(libqhyccd.SetQHYCCDStreamMode(camhandle, 1));
+                Console.WriteLine(libqhyccd.SetQHYCCDStreamMode(camhandle, 0));
                 Console.WriteLine(libqhyccd.InitQHYCCD(camhandle));
 
                 double chipw = 0, chiph = 0, pixelw = 0, pixelh = 0;
@@ -67,32 +91,48 @@ namespace heliomaster_wpf {
                 _depth = bpp > 16 ? BitDepth.depth32 : bpp > 8 ? BitDepth.depth16 : BitDepth.depth8;
 
                 ret = libqhyccd.SetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.QHYCCD_3A_AUTOEXPOSURE, 0);
+                ret = libqhyccd.SetQHYCCDParam(camhandle, libqhyccd.CONTROL_ID.CONTROL_TRANSFERBIT, bpp);
                 ret = libqhyccd.SetQHYCCDBinMode(camhandle, 1, 1);
                 ret = libqhyccd.SetQHYCCDResolution(camhandle, 0, 0, Width, Height);
                 ret = libqhyccd.BeginQHYCCDLive(camhandle);
 
                 IsConnected = true;
+
+                Initialize();
                 return true;
             });
         }
 
-        protected override unsafe CameraImage capture() {
-            if (Valid) {
-                if (image == null) image = new QHYCCDImage((int) Width, (int) Height, Channels, Depth);
-                else image.PurgeCache();
-
-                uint _channels = 0;
-                libqhyccd.GetQHYCCDLiveFrame(camhandle, ref _width, ref _height, ref bpp, ref _channels, (byte*) image.raw);
-                OnPropertyChanged(nameof(View));
-                return image;
-            } else return null;
+        protected override Task disconnect() {
+            return Task.Run(() => { libqhyccd.CloseQHYCCD(camhandle); });
         }
 
-        ~QHYCCDCamera() {
-            if (IsConnected) {
-                libqhyccd.CloseQHYCCD(camhandle);
-//                libqhyccd.ReleaseQHYCCDResource();
-            }
+        protected override CameraImage capture() {
+            if (Valid) {
+                if (image == null) image = new QHYCCDImage((int) Width, (int) Height, Channels, Depth);
+
+                var t = DateTime.Now;
+
+                Console.WriteLine(libqhyccd.ExpQHYCCDSingleFrame(camhandle));
+                ret = 1;
+                image.rwlock.EnterWriteLock();
+
+                uint _channels = 0;
+                unsafe {
+                    while (ret != 0)
+                        ret = libqhyccd.GetQHYCCDSingleFrame(camhandle, ref _width, ref _height, ref bpp,
+                                                             ref _channels, (byte*) image.raw);
+                    //                libqhyccd.GetQHYCCDLiveFrame(camhandle, ref _width, ref _height, ref bpp, ref _channels, (byte*) image.raw);
+                }
+
+                image.rwlock.ExitWriteLock();
+
+                image.BufferUpdated();
+
+                Console.WriteLine($"fps: {1 / (DateTime.Now - t).TotalSeconds}");
+
+                return image;
+            } else return null;
         }
     }
 }

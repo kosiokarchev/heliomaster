@@ -6,8 +6,10 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Telescope" Type="heliomaster_wpf.Telescope" Scope="User">
-      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;Telescope&gt;&lt;/Telescope&gt;</Value>
+      <Value Profile="(Default)">
+                    &lt;Telescope&gt;
+                    &lt;/Telescope&gt;
+                </Value>
     </Setting>
   </Settings>
 </SettingsFile>

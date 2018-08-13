@@ -37,6 +37,17 @@ namespace heliomaster_wpf {
             return await connect(state, init, setup);
         }
 
+        protected virtual Task disconnect() {
+            return Task.Run(() => {
+                if (Valid)
+                    driver.Connected = false;
+            });
+        }
+        public virtual async Task Disconnect() {
+            await disconnect();
+            DisconnectedRaise();
+        }
+
         public virtual void Initialize() {
             ConnectedRaise();
         }
@@ -47,6 +58,10 @@ namespace heliomaster_wpf {
                 try { return valid; }
                 catch { return false; }
             }
+        }
+
+        ~BaseHardwareControl() {
+            Disconnect().Wait();
         }
 
         #region ISyncToDriver

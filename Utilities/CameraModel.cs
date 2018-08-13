@@ -88,6 +88,49 @@ namespace heliomaster_wpf {
             }
         }
 
+        private double _gain;
+        private void coerceGain(double val) {
+            if (Cam != null) {
+                Cam.Gain = val;
+                _gain    = Cam.Gain;
+            } else _gain = val;
+        }
+        public double Gain {
+            get => _gain;
+            set {
+                if (value.Equals(_gain)) return;
+                coerceGain(value);
+                OnPropertyChanged();
+            }
+        }
+
+        private double _exposure;
+        private void coerceEsposure(double val) {
+            if (Cam != null) {
+                Cam.Exposure = val;
+                _exposure    = Cam.Exposure;
+            } else _exposure = val;
+        }
+        public double Exposure {
+            get => _exposure;
+            set {
+                if (value.Equals(_exposure)) return;
+                coerceEsposure(value);
+                OnPropertyChanged();
+            }
+        }
+
+        private bool _autoExpose;
+        public bool AutoExpose {
+            get => _autoExpose;
+            set {
+                if (value == _autoExpose) return;
+                _autoExpose = value;
+                OnPropertyChanged();
+            }
+        }
+
+
         private string _focuserID;
         public string FocuserID {
             get => _focuserID;
@@ -106,6 +149,7 @@ namespace heliomaster_wpf {
                 _flip = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Transform));
+                OnPropertyChanged(nameof(FinalTransform));
             }
         }
 
@@ -121,21 +165,22 @@ namespace heliomaster_wpf {
             }
         }
 
-        private bool _isFlipped;
-        public bool IsFlipped {
-            set {
-                if (_isFlipped == value) return;
-                _isFlipped = value;
-                OnPropertyChanged(nameof(FinalTransform));
-            }
-        }
+//        private bool _isFlipped;
+//        public bool IsFlipped {
+//            set {
+//                if (_isFlipped == value) return;
+//                _isFlipped = value;
+//                OnPropertyChanged(nameof(FinalTransform));
+//            }
+//        }
         public Transform Transform => new TransformGroup {
             Children = new TransformCollection(new Transform[] {
                 new ScaleTransform(Flip ? -1 : 1, 1),
                 new RotateTransform(-Rotate * 90)
             })
         };
-        public Transform FinalTransform => O.Mount.IsFlipped
+        public Transform FinalTransform =>
+            O.Mount.IsFlipped
             ? new TransformGroup {Children = new TransformCollection(new[] {
                 Transform,
                 new ScaleTransform(-1, -1)})}
@@ -147,6 +192,8 @@ namespace heliomaster_wpf {
             set {
                 if (Equals(value, _cam)) return;
                 _cam = value;
+                coerceEsposure(_exposure);
+                coerceGain(_gain);
                 OnPropertyChanged();
             }
         }
@@ -163,23 +210,29 @@ namespace heliomaster_wpf {
 
         [XmlIgnore] public ObservableCollection<CapturedImage> Images { get; } = new ObservableCollection<CapturedImage>();
 
-        public CameraModel() {
-            O.Refresh += () => IsFlipped = O.Mount.IsFlipped;
-        }
-        
+//        public CameraModel() {
+//            O.Refresh += () => {
+//                try { IsFlipped = O.Mount.IsFlipped; }
+//                catch { IsFlipped = false; }
+//            };
+//        }
+
         public static async void TimelapseAction(object state) {
             if (state is CameraModel m)
                 Console.WriteLine(await m.TakeImage());
         }
 
         public async Task<CapturedImage> TakeImage() {
-            var img  = await Cam.Capture();
+            var img  = await Cam.Capture(copy: true);
+            var t = FinalTransform.Clone();
+            t.Freeze();
             var cimg = new CapturedImage {
                 Image = img,
                 LocalPath = Smart.Format(LocalPathFormat, new {
                     Cam = Name,
                     DateTime = DateTime.UtcNow,
-                })
+                }),
+                Transform = t
             };
 
             cimg.Saved += c => {

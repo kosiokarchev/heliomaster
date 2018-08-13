@@ -21,8 +21,8 @@ namespace heliomaster_wpf {
     [SettingsSerializeAs(SettingsSerializeAs.Xml)]
     public class Telescope : BaseHardwareControl {
         public static readonly Dictionary<string, GuideDirections> dirs = new Dictionary<string, GuideDirections> {
-            {"mountUp", GuideDirections.guideNorth},
-            {"mountDown", GuideDirections.guideSouth},
+            {"up", GuideDirections.guideNorth},
+            {"down", GuideDirections.guideSouth},
             {"mountLeft", GuideDirections.guideEast},
             {"mountRight", GuideDirections.guideWest},
         };
@@ -78,10 +78,26 @@ namespace heliomaster_wpf {
         [XmlIgnore] private guidingMode                 gMode = guidingMode.incapable;
         [XmlIgnore] public  ObservableCollection<IRate> PrimaryAxisRates      { get; } = new ObservableCollection<IRate>();
         [XmlIgnore] public  ObservableCollection<IRate> SecondaryAxisRates    { get; } = new ObservableCollection<IRate>();
-        [XmlIgnore] public  IRate                       SelectedPrimaryRate   { get; set; }
-        [XmlIgnore] public  IRate                       SelectedSecondaryRate { get; set; }
-        public int SelectedPrimaryRateIndex { get; set; }
-        public int SelectedSecondaryRateIndex { get; set; }
+
+        private int _selectedPrimaryRateIndex;
+        public int SelectedPrimaryRateIndex {
+            get => _selectedPrimaryRateIndex;
+            set {
+                if (value == _selectedPrimaryRateIndex) return;
+                _selectedPrimaryRateIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _selectedSecondaryRateIndex;
+        public int SelectedSecondaryRateIndex {
+            get => _selectedSecondaryRateIndex;
+            set {
+                if (value == _selectedSecondaryRateIndex) return;
+                _selectedSecondaryRateIndex = value;
+                OnPropertyChanged();
+            }
+        }
 
         public override void Initialize() {
             CanMoveAxes = Driver.CanMoveAxis(TelescopeAxes.axisPrimary) &&
@@ -93,13 +109,13 @@ namespace heliomaster_wpf {
             if (CanMoveAxes) {
                 foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisPrimary))
                     PrimaryAxisRates.Add(rate);
-                SelectedPrimaryRate = PrimaryAxisRates[SelectedPrimaryRateIndex < PrimaryAxisRates.Count ? SelectedPrimaryRateIndex : 0];
-                OnPropertyChanged(nameof(SelectedPrimaryRate));
+//                SelectedPrimaryRate = PrimaryAxisRates[SelectedPrimaryRateIndex < PrimaryAxisRates.Count ? SelectedPrimaryRateIndex : 0];
+//                OnPropertyChanged(nameof(SelectedPrimaryRate));
 
                 foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisSecondary))
                     SecondaryAxisRates.Add(rate);
-                SelectedSecondaryRate = SecondaryAxisRates[SelectedSecondaryRateIndex < SecondaryAxisRates.Count ? SelectedSecondaryRateIndex : 0];
-                OnPropertyChanged(nameof(SelectedSecondaryRate));
+//                SelectedSecondaryRate = SecondaryAxisRates[SelectedSecondaryRateIndex < SecondaryAxisRates.Count ? SelectedSecondaryRateIndex : 0];
+//                OnPropertyChanged(nameof(SelectedSecondaryRate));
 
                 gMode = guidingMode.moveAxis;
             }
@@ -108,35 +124,51 @@ namespace heliomaster_wpf {
         }
 
 
+        #region MOTION
+
+        public event Action Slewed;
+        public void SlewedRaise() => Slewed?.Invoke();
+
         public void ControlMotion(GuideDirections dir, bool move=true) {
             if (move) {
                 if (Moveable && gMode == guidingMode.moveAxis)
                     Driver.MoveAxis(ax(dir), mult(dir) * Rate(dir));
             } else {
-                if (gMode == guidingMode.moveAxis && CanMoveAxes)
+                if (gMode == guidingMode.moveAxis)
                     Driver.MoveAxis(ax(dir), 0);
+                SlewedRaise();
             }
         }
 
         public void StopAllMotion(bool stopTracking = false) {
-            if (CanMoveAxes) {
-                Driver.MoveAxis(TelescopeAxes.axisPrimary,   0);
-                Driver.MoveAxis(TelescopeAxes.axisSecondary, 0);
+            if (Valid) {
+                if (CanMoveAxes) {
+                    Driver.MoveAxis(TelescopeAxes.axisPrimary,   0);
+                    Driver.MoveAxis(TelescopeAxes.axisSecondary, 0);
+                }
+                Driver.AbortSlew();
+                if (stopTracking) Driver.Tracking = false;
+
+                SlewedRaise();
             }
-            Driver.AbortSlew();
-            if (stopTracking) Driver.Tracking = false;
         }
 
 
-        public async void Slew(double ra, double dec) {
-            if (CanSlew) {
-                await Task.Run(() => {
-                    var trackingState = Tracking;
-                    Driver.Tracking = true;
-                    Driver.SlewToCoordinates(ra, dec);
-                    Driver.Tracking = trackingState;
-                });
-            }
+        public Task<bool> Slew(double ra, double dec) {
+            return Task<bool>.Factory.StartNew(() => {
+                if (CanSlew) {
+                    try {
+                        var trackingState = Tracking;
+                        Driver.Tracking = true;
+                        Driver.SlewToCoordinates(ra, dec);
+                        Driver.Tracking = trackingState;
+
+                        SlewedRaise();
+                        return true;
+                    } catch {}
+                }
+                return false;
+            });
         }
 
         public void GoTo(Pynder.Objects o = Pynder.Objects.Sun) {
@@ -145,37 +177,31 @@ namespace heliomaster_wpf {
             Track(true);
         }
 
-//        public void Unpark() {
-//            if (CanPark) Task.Run(Driver.Unpark);
-//        }
-//
-//        public void Park() {
-//            if (CanPark) Task.Run((Action) Driver.Park);
-////            if (CanPark) {
-////                Driver.Park();
-////                var stop = DateTime.Now + S.Mount.ParkTimeout;
-////                while (DateTime.Now < stop && !AtPark)
-////                    await Task.Delay(S.Settings.Refresh);
-////                return AtPark;
-////            } else return false;
-//        }
-
-        public Task HandlePark() {
-            return Task.Run(() => {
-                if (CanPark) {
-                    if (Driver.AtPark)
-                        Driver.Unpark();
-                    else
-                        Driver.Park();
-                }
+        public Task<bool> Park() {
+            return Task<bool>.Factory.StartNew(() => {
+                try { if (CanPark) Driver.Park(); } catch {}
+                return Valid && AtPark;
             });
-            
+        }
+        public Task<bool> Unpark() {
+            return Task<bool>.Factory.StartNew(() => {
+                try { if (CanPark) Driver.Unpark(); } catch {}
+                return Valid && !AtPark;
+            });
         }
 
-        public void Track(bool state) {
-            if (CanTrack) Driver.Tracking = state;
+        #endregion
+
+
+        public Task<bool> Track(bool state) {
+            return Task<bool>.Factory.StartNew(() => {
+                try { if (CanTrack) Driver.Tracking = state; } catch {}
+                return Tracking == state;
+            });
         }
 
+
+        #region ADJUST
 
         public double AdjustDuration          { get; set; }
         public int    AdjustNTrials           { get; set; }
@@ -232,10 +258,12 @@ namespace heliomaster_wpf {
             });
         }
 
+        #endregion
+
 
         #region properties
 
-        private bool   Moveable       => Valid && !AtPark && !Slewing;
+        public  bool   Moveable       => Valid && !AtPark && !Slewing;
 
         public  double SiderealTime   => Valid ? Driver.SiderealTime : double.NaN;
         public  double Altitude       => Valid ? Driver.Altitude : double.NaN;
@@ -257,7 +285,7 @@ namespace heliomaster_wpf {
                 OnPropertyChanged(nameof(IsFlipped));
             }
         }
-        public bool     IsFlipped        => !(NSFlip ^ (SideOfPier != PierSide.pierWest));
+        public bool IsFlipped => Valid && !(NSFlip ^ (SideOfPier != PierSide.pierWest));
 
         public bool   CanTrack   => Moveable && Driver.CanSetTracking;
         public bool   CanSlew    => Moveable && Driver.CanSlew;
@@ -271,43 +299,11 @@ namespace heliomaster_wpf {
             nameof(SideOfPier), nameof(IsFlipped),
             nameof(AtPark), nameof(Slewing), nameof(Tracking),
             nameof(CanTrack), nameof(CanSlew), nameof(CanGoTo), nameof(CanPark),
+            nameof(Moveable),
             nameof(ParkAction)
         };
 
         [XmlIgnore] protected override IEnumerable<string> props => _props;
-
-        #endregion
-
-        #region utilities
-
-//        [XmlIgnore]
-//        public Dictionary<string, Dictionary<string, Func<double, double>>> Scalers { get; } = new Dictionary<string, Dictionary<string, Func<double, double>>> {
-//            {"primary", new Dictionary<string, Func<double, double>> {
-//                {"slide2rate", null},
-//                {"rate2slide", null}}},
-//            {"secondary", new Dictionary<string, Func<double, double>> {
-//                {"slide2rate", null},
-//                {"rate2slide", null}}}
-//        };
-//
-//        private void InitializeScalers() {
-//            Scalers["primary"]["slider2rate"] = x => SliderToRate(x, SelectedPrimaryRate);
-//            Scalers["primary"]["rate2slider"] = x => RateToSlider(x, SelectedPrimaryRate);
-//            Scalers["secondary"]["slider2rate"] = x => SliderToRate(x, SelectedSecondaryRate);
-//            Scalers["secondary"]["rate2slider"] = x => RateToSlider(x, SelectedSecondaryRate);
-//        }
-//
-//
-        public static Func<double, string> RateFormatter => r => Utilities.RateFormatter(r, "{0:0.#}") + "/s";
-//
-//        private static double SliderToRate(double x, IRate rate) {
-//            if (rate == null) return double.NaN;
-//            else return Utilities.ScaleLinToLog(x, Utilities.NonZero(rate.Minimum), Utilities.NonZero(rate.Maximum));
-//        }
-//        private static double RateToSlider(double Y, IRate rate) {
-//            if (rate == null) return double.NaN;
-//            else return Utilities.ScaleLogToLin(Y, Utilities.NonZero(rate.Minimum), Utilities.NonZero(rate.Maximum));
-//        }
 
         #endregion
 

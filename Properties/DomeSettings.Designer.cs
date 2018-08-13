@@ -34,5 +34,65 @@ namespace heliomaster_wpf.Properties {
                 this["DomeID"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double SlaveTolerance {
+            get {
+                return ((double)(this["SlaveTolerance"]));
+            }
+            set {
+                this["SlaveTolerance"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00:05:00")]
+        public global::System.TimeSpan SlaveInterval {
+            get {
+                return ((global::System.TimeSpan)(this["SlaveInterval"]));
+            }
+            set {
+                this["SlaveInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("00:30:00")]
+        public global::System.TimeSpan SlaveCheckup {
+            get {
+                return ((global::System.TimeSpan)(this["SlaveCheckup"]));
+            }
+            set {
+                this["SlaveCheckup"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool AlwaysSoftSlave {
+            get {
+                return ((bool)(this["AlwaysSoftSlave"]));
+            }
+            set {
+                this["AlwaysSoftSlave"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("<Dome></Dome>")]
+        public global::heliomaster_wpf.Dome Dome {
+            get {
+                return ((global::heliomaster_wpf.Dome)(this["Dome"]));
+            }
+            set {
+                this["Dome"] = value;
+            }
+        }
     }
 }

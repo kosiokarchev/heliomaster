@@ -5,5 +5,20 @@
     <Setting Name="DomeID" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="SlaveTolerance" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="SlaveInterval" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:05:00</Value>
+    </Setting>
+    <Setting Name="SlaveCheckup" Type="System.TimeSpan" Scope="User">
+      <Value Profile="(Default)">00:30:00</Value>
+    </Setting>
+    <Setting Name="AlwaysSoftSlave" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="Dome" Type="heliomaster_wpf.Dome" Scope="User">
+      <Value Profile="(Default)">&lt;Dome&gt;&lt;/Dome&gt;</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

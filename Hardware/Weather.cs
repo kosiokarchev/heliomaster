@@ -136,8 +136,7 @@ namespace heliomaster_wpf {
         protected override Type driverType =>
             typeof(ObservingConditions);
 
-        public ObservingConditions Driver =>
-            (ObservingConditions) driver;
+        public ObservingConditions Driver => (ObservingConditions) driver;
 
         public WeatherItem CloudCover     { get; [UsedImplicitly] private set; }
         public WeatherItem DewPoint       { get; [UsedImplicitly] private set; }
@@ -167,7 +166,7 @@ namespace heliomaster_wpf {
         protected override IEnumerable<string> props => properties;
 
         protected override void RefreshHandle() {
-            Driver.Refresh();
+            if (Valid) Driver.Refresh();
             base.RefreshHandle();
             foreach (var i in Items)
                 i.NotifyChanged();

@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Security;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ASCOM.DeviceInterface;
+using heliomaster_wpf.Netio;
 using Drivers = ASCOM.DriverAccess;
 using heliomaster_wpf.Properties;
 using Microsoft.Win32;
@@ -44,21 +47,17 @@ namespace heliomaster_wpf {
         }
 
         private void mountNav_Interact(object sender, MouseButtonEventArgs e) {
-            var dir = Telescope.dirs[(sender as FrameworkElement)?.Name];
-
-            if (e.LeftButton == MouseButtonState.Pressed)
-                O.Mount.ControlMotion(dir);
-            else
-                O.Mount.ControlMotion(dir, false);
+            if ((sender as FrameworkElement)?.Tag is GuideDirections dir)
+                O.Mount.ControlMotion(dir, e.LeftButton == MouseButtonState.Pressed);
         }
 
-        private void Button_Click_4(object sender, RoutedEventArgs e) {
-            O.Mount?.GoTo();
+        private void MountGoTo(object sender, RoutedEventArgs e) {
+            TryCommand(() => { O.Mount?.GoTo(); });
         }
 
-        private void mountPark_Click(object sender, RoutedEventArgs e)
-        {
-            TryCommand(() => { O.Mount?.HandlePark(); });
+        private void MountParkButton_Click(object sender, RoutedEventArgs e) {
+            if (O.Mount.AtPark) O.Mount.Unpark();
+            else O.Mount.Park();
         }
 
         private void mountTracking_Checked(object sender, RoutedEventArgs e) {
@@ -80,12 +79,12 @@ namespace heliomaster_wpf {
         }
 
         private async void domeSlewButton_Click(object sender, RoutedEventArgs e) {
-            if (sender.Equals(DomePlusButton))
-                await O.Dome.PulseMove(DomePulseSlider.CustomValue);
-            else if (sender.Equals(DomeMinusButton))
-                await O.Dome.PulseMove(-DomePulseSlider.CustomValue);
-            else if (sender.Equals(DomeStopButton))
-                O.Dome.StopAllMotion();
+            if ((sender as Button)?.Tag is GuideDirections d) {
+                await O.Dome.Slew((d == GuideDirections.guideEast ? -1 : 1) * DomePulseSlider.CustomValue);
+            } else {
+                O.Default.UnSlaveDomeFromMount();
+                await O.Dome.StopAllMotion();
+            }
         }
 
         private void domeControlButton_Click(object sender, RoutedEventArgs e) {
@@ -95,69 +94,21 @@ namespace heliomaster_wpf {
                 else if (sender.Equals(DomeCloseButton))
                     O.Dome.Shutter(false);
                 else if (sender.Equals(DomeSlaveButton))
-                    O.Dome.Slave(!O.Dome.Slaved);
+                    O.Slave();
                 else if (sender.Equals(DomeParkButton))
-                    O.Dome.Park();
+                    O.Dome.HomeOrPark(home: false);
                 else if (sender.Equals(DomeHomeButton))
-                    O.Dome.Home();
+                    O.Dome.HomeOrPark(home: true);
             });
         }
-
-//        private void domeButton_Click(object sender, RoutedEventArgs e) {
-//            O.Dome?.StopAllMotion();
-//        }
-//
-//        private bool domeButton_MouseIsGoingDown;
-//        private bool domeButton_MouseIsDown;
-//        private void domeButton_MouseDown(object sender, MouseButtonEventArgs e) {
-//            domeButton_MouseIsGoingDown = true;
-//            Task.Run(async () => {
-//                await Task.Delay(500);
-//                if (domeButton_MouseIsGoingDown) {
-//                    domeButton_MouseIsGoingDown = false;
-//                    domeButton_MouseIsDown = true;
-//                    O.Dome?.SetInMotion(sender.Equals(domeRight) ? Dome.MotionState.MovingRight : Dome.MotionState.Movingleft);
-//                }
-//            });
-//        }
-//
-//        private void domeButton_MouseUp(object sender, MouseButtonEventArgs e) {
-//            if (domeButton_MouseIsDown)
-//                O.Dome?.StopAllMotion();
-//            else if (domeButton_MouseIsGoingDown)
-//                O.Dome?.SetInMotion(sender.Equals(domeRight) ? Dome.MotionState.MovingRight : Dome.MotionState.Movingleft);
-//            domeButton_MouseIsDown = false;
-//            domeButton_MouseIsGoingDown = false;
-//        }
-//
-//        private void domePark_Click(object sender, RoutedEventArgs e) {
-//            TryCommand(() => { O.Dome?.Park(); });
-//        }
-//
-//        private void domeHome_Click(object sender, RoutedEventArgs e) {
-//            TryCommand(() => { O.Dome?.Home(); });
-//        }
-//
-//        private void domeSlave_Click(object sender, RoutedEventArgs e) {
-//            TryCommand(() => { O.Dome?.Slave(!O.Dome.Slaved); });
-//        }
-//
-//        private void domeShutter_Click(object sender, RoutedEventArgs e) {
-//            TryCommand(() => { O.Dome?.Shutter(sender.Equals(DomeOpenButton)); });
-//        }
 
         #endregion
 
         #region CAMERAS
 
         private void Button_Click_1(object sender, RoutedEventArgs e) {
-            foreach (var c in O.Cams) {
-                Task.Factory.StartNew(async (cam) => {
-                    while (true) {
-                        if ((cam as BaseCamera)?.Capture(BaseCamera.Priority.LiveView) is Task<CameraImage> t)
-                            await t;
-                    }
-                }, c);
+            foreach (var m in O.CamModels) {
+                m.Cam.StartLivePreview(5);
             }
         }
 
@@ -172,6 +123,19 @@ namespace heliomaster_wpf {
         }
 
         #endregion
+
+
+        private void SettingsMenu_Click(object sender, RoutedEventArgs e) {
+            SettingsWindow.Show();
+        }
+        private void CamerasMenu_Click(object sender, RoutedEventArgs e) {
+            CamerasWindow.Show();
+            CamerasWindow.Closed += (o, args) => {
+                _camerasWindow = null;
+                Console.WriteLine();
+            };
+        }
+
 
 //        private async void Button_Click_5(object sender, RoutedEventArgs e) {
 ////            var fdialog = new OpenFileDialog();
@@ -191,11 +155,30 @@ namespace heliomaster_wpf {
 ////            Console.Write(cmd.cmd.ExitStatus);
 //        }
 
-        private void SettingsMenu_Click(object sender, RoutedEventArgs e) {
-            SettingsWindow.Show();
+
+
+        private async void Button_Click_4(object sender, RoutedEventArgs e) {
+            var n = new Netio.Power {
+                UseHttps = true,
+                Host = "10.66.180.60"
+            };
+
+            var a = await n.Get();
+            var b = 1;
         }
-        private void CamerasMenu_Click(object sender, RoutedEventArgs e) {
-            CamerasWindow.Show();
+
+        private async void Button_Click_5(object sender, RoutedEventArgs e) {
+            var pass = new SecureString();
+            foreach (var c in "ESACvilspa01")
+                pass.AppendChar(c);
+
+            var ret = await new Netio.Power() {
+                UseHttps = true,
+                Host     = "10.66.180.60",
+                User = "ceso",
+                Pass = pass
+            }.Command(new[] {1}, new[]{States.Off}, new[]{OutputActions.Toggle}, new[]{1600});
+            var d = 4;
         }
     }
 }

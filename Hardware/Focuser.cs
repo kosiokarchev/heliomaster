@@ -12,6 +12,8 @@ namespace heliomaster_wpf {
         public bool Positionable => Valid && Absolute != null && (bool) Absolute;
         public bool Moveable => Valid && !moving && !Driver.IsMoving;
 
+        public double Position => Positionable ? StepSize * Driver.Position : Speed;
+
 
         private bool? _absolute;
         public bool? Absolute {
@@ -23,12 +25,12 @@ namespace heliomaster_wpf {
             }
         }
 
-        private double _sliderMax;
-        public double SliderMax {
-            get => _sliderMax;
+        private double _maxSpeed;
+        public double MaxSpeed {
+            get => _maxSpeed;
             private set {
-                if (value.Equals(_sliderMax)) return;
-                _sliderMax = value;
+                if (value.Equals(_maxSpeed)) return;
+                _maxSpeed = value;
                 OnPropertyChanged();
             }
         }
@@ -43,20 +45,13 @@ namespace heliomaster_wpf {
             }
         }
 
-        private double speed;
-        public double LargeChange => SliderMax / 10;
-
-        public double SliderValue {
-            get => Positionable ? StepSize * Driver.Position : speed;
+        private double _speed;
+        public double Speed {
+            get => _speed;
             set {
-                if (Positionable) {
-                    Driver.Move((int) Math.Max(Math.Min(value / StepSize, Driver.MaxIncrement), -Driver.MaxIncrement));
-                    WaitStop();
-                    OnPropertyChanged();
-                } else if (!value.Equals(speed)) {
-                    speed = value;
-                    OnPropertyChanged();
-                }
+                if (value.Equals(_speed)) return;
+                _speed = value;
+                OnPropertyChanged();
             }
         }
 
@@ -78,12 +73,10 @@ namespace heliomaster_wpf {
                 SliderValueFormat = "{0:F0} μm";
             } catch (ASCOM.PropertyNotImplementedException) {}
 
-            speed = StepSize;
+            Speed = StepSize;
+            SliderValueFormat += "/nudge";
 
-            if (!Driver.Absolute)
-                SliderValueFormat += "/nudge";
-
-            SliderMax = StepSize * (Driver.Absolute ? Driver.MaxStep : Driver.MaxIncrement);
+            MaxSpeed = StepSize * Driver.MaxIncrement;
 
             base.Initialize();
         }
@@ -107,50 +100,65 @@ namespace heliomaster_wpf {
 
         private async Task AwaitMove(int param) {
             Driver.Move(param);
+            RefreshRaise();
             await Task.Run((Action) WaitStop);
         }
 
-        private async void DoRelativeMove(int delta) {
-            if (moving) return;
+//        private async void DoRelativeMove(int delta) {
+//            if (moving) return;
+//
+//            moving = true;
+//            while (moving && delta != 0) {
+//                var tomove = Math.Max(Math.Min(delta, Driver.MaxIncrement), -Driver.MaxIncrement);
+//                await AwaitMove(tomove);
+//                delta -= tomove;
+//            }
+//            moving = false;
+//        }
 
-            moving = true;
-            while (moving && delta != 0) {
-                var tomove = Math.Max(Math.Min(delta, Driver.MaxIncrement), -Driver.MaxIncrement);
-                Console.WriteLine(tomove);
-                await AwaitMove(tomove);
-                delta -= tomove;
-            }
-            moving = false;
-            Console.WriteLine(moving);
-            Console.WriteLine(Driver.IsMoving);
-            Console.WriteLine(Moveable);
-        }
-
-        public async void Move(int delta) {
-            if (Moveable && Absolute != null) {
-                if ((bool) Absolute)
-                    await AwaitMove(Math.Max(Math.Min(Driver.Position + delta, Driver.MaxStep), 0));
-                else
-                    DoRelativeMove(delta);
-            }
-        }
+//        public async void Move(int delta) {
+//            if (Moveable && Absolute != null) {
+//                if ((bool) Absolute)
+//                    await AwaitMove(Math.Max(Math.Min(Driver.Position + delta, Driver.MaxStep), 0));
+//                else
+//                    DoRelativeMove(delta);
+//            }
+//        }
 
         public void Stop() {
             moving = false;
             Driver.Halt();
         }
 
-        public void Nudge(bool forward) {
-            var delta = (int) ((forward ? 1 : -1) * (Positionable ? LargeChange / 10 / StepSize : speed / Driver.StepSize));
-            Move(delta);
+        public async void Nudge(bool forward) {
+            Console.WriteLine(Speed);
+            if (Moveable && Absolute != null) {
+                var delta = (forward ? 1 : -1) * (int) (Speed / StepSize);
+                if ((bool) Absolute)
+                    await AwaitMove(Math.Max(Math.Min(Driver.Position + delta, Driver.MaxStep), 0));
+                else {
+                    moving = true;
+                    while (moving && delta != 0) {
+                        var tomove = Math.Max(Math.Min(delta, Driver.MaxIncrement), -Driver.MaxIncrement);
+                        await AwaitMove(tomove);
+                        delta -= tomove;
+                    }
+                    moving = false;
+                }
+            }
         }
+
+//        public void Nudge(bool forward) {
+//            var delta = (int) ((forward ? 1 : -1) * (Positionable ? LargeChange / 10 / StepSize : speed / Driver.StepSize));
+//            Move(delta);
+//        }
 
         #endregion
 
         #region ISyncToDriver
 
         private readonly string[] _props = {
-            nameof(SliderValue), nameof(Moveable)
+            nameof(Position), nameof(Moveable)
         };
         protected override IEnumerable<string> props => _props;
 
@@ -158,13 +166,6 @@ namespace heliomaster_wpf {
 //            if (Absolute != null && (bool) Absolute)
 //                base.SyncToDriver(period);
 //        }
-
-        #endregion
-
-        #region utilities
-
-        public Func<double, double> SliderToSpeed => x => Utilities.ScaleLinToLog(x, StepSize, SliderMax);
-        public Func<double, double> SpeedToSlider => Y => Utilities.ScaleLogToLin(Y, StepSize, SliderMax);
 
         #endregion
     }

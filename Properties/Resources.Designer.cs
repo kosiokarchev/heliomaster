@@ -61,6 +61,15 @@ namespace heliomaster_wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alt.
+        /// </summary>
+        public static string alt {
+            get {
+                return ResourceManager.GetString("alt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to At home.
         /// </summary>
         public static string athome {
@@ -88,6 +97,15 @@ namespace heliomaster_wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Az.
+        /// </summary>
+        public static string az {
+            get {
+                return ResourceManager.GetString("az", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Capture.
         /// </summary>
         public static string capture {
@@ -102,6 +120,15 @@ namespace heliomaster_wpf.Properties {
         public static string close {
             get {
                 return ResourceManager.GetString("close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Dec.
+        /// </summary>
+        public static string dec {
+            get {
+                return ResourceManager.GetString("dec", resourceCulture);
             }
         }
         
@@ -160,6 +187,15 @@ namespace heliomaster_wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Go to.
+        /// </summary>
+        public static string goto_ {
+            get {
+                return ResourceManager.GetString("goto_", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Acquisition.
         /// </summary>
         public static string headerAcquisition {
@@ -201,6 +237,15 @@ namespace heliomaster_wpf.Properties {
         public static string home {
             get {
                 return ResourceManager.GetString("home", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to LST.
+        /// </summary>
+        public static string lst {
+            get {
+                return ResourceManager.GetString("lst", resourceCulture);
             }
         }
         
@@ -255,6 +300,24 @@ namespace heliomaster_wpf.Properties {
         public static string park {
             get {
                 return ResourceManager.GetString("park", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Parked.
+        /// </summary>
+        public static string parked {
+            get {
+                return ResourceManager.GetString("parked", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to RA.
+        /// </summary>
+        public static string ra {
+            get {
+                return ResourceManager.GetString("ra", resourceCulture);
             }
         }
         

@@ -8,9 +8,10 @@ namespace heliomaster_wpf.Properties {
         public static readonly WeatherSettings Weather  = WeatherSettings.Default;
         public static readonly CameraSettings  Cameras  = CameraSettings.Default;
         public static readonly RemoteSettings  Remote   = RemoteSettings.Default;
+        public static readonly PythonSettings  Python   = PythonSettings.Default;
 
         private static ApplicationSettingsBase[] settings = {
-            Settings, Dome, Mount, Weather, Cameras, Remote
+            Settings, Dome, Mount, Weather, Cameras, Remote, Python
         };
 
         public static void Save() {

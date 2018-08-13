@@ -37,7 +37,8 @@ namespace heliomaster_wpf.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<Telescope></Telescope>")]
+        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <Telescope>\r\n                    </Telescope>\r\n            " +
+            "    ")]
         public global::heliomaster_wpf.Telescope Telescope {
             get {
                 return ((global::heliomaster_wpf.Telescope)(this["Telescope"]));

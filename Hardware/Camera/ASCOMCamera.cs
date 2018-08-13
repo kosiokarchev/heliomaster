@@ -1,53 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace heliomaster_wpf {
-    public sealed class ASCOMImage : CameraImage {
-        public ASCOMImage(Array data, int channels, BitDepth depth) : base(
-            data.GetLength(0), data.GetLength(1), channels, depth) {
-            Put(data);
-        }
-
-        public void Put(Array data) {
-            rwlock.EnterWriteLock();
-
-            var gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            unsafe {
-                Int32 * d = (Int32*) gch.AddrOfPinnedObject();
-                int     r = -1;
-
-                switch (Depth) {
-                    case BitDepth.depth32:
-                        for (var i = 0; i < Height; ++i)
-                            for (var j = 0; j < Width; ++j)
-                                for (var k=0; k<Channels; ++k)
-                                    ((UInt32*) raw)[++r] = (UInt32) d[j*Height*Channels + i*Channels + k];
-                        break;
-                    case BitDepth.depth16:
-                        for (var i = 0; i < Height; ++i)
-                            for (var j = 0; j < Width; ++j)
-                                for (var k=0; k<Channels; ++k)
-                                    ((UInt16*) raw)[++r] = (UInt16) d[j*Height*Channels + i*Channels + k];
-                        break;
-                    case BitDepth.depth8:
-                        for (var i = 0; i < Height; ++i)
-                            for (var j = 0; j < Width; ++j)
-                                for (var k=0; k<Channels; ++k)
-                                    ((byte*) raw)[++r] = (byte) d[j*Height*Channels + i*Channels + k];
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-            }
-            gch.Free();
-
-            rwlock.ExitWriteLock();
-        }
-    }
-    
     public class ASCOMCamera : BaseCamera {
         protected override Type driverType => typeof(ASCOM.DriverAccess.Camera);
         public ASCOM.DriverAccess.Camera Driver => (ASCOM.DriverAccess.Camera) driver;
@@ -115,9 +71,9 @@ namespace heliomaster_wpf {
                 if (image == null || image.Channels != Channels)
                     image = new ASCOMImage((Array) Driver.ImageArray, Channels, Depth);
                 else
-                    ((ASCOMImage) image).Put((Array) Driver.ImageArray);
+                    image.Put((Array) Driver.ImageArray);
 
-                return image.Copy();
+                return image;
             } else return null;
         }
     }

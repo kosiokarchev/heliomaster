@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:heliomaster_wpf"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
-        xmlns:ASCOMDeviceInterface="clr-namespace:ASCOM.DeviceInterface;assembly=ASCOM.DeviceInterfaces"
         xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="CamerasWindow" SizeToContent="WidthAndHeight" Height="670" Width="401"
@@ -86,15 +85,20 @@
             <Grid Margin="0">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
                     <RowDefinition Height="*"    />
                     <RowDefinition Height="Auto" />
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
-                <Button Grid.Row="0" Content="^" Click="focuserButton_Click" IsEnabled="{Binding Moveable}" Name="focuserUpButton" />
-                <Button Grid.Row="2" Content="v" Click="focuserButton_Click" IsEnabled="{Binding Moveable}" Name="focuserDownButton" />
 
-                <local:ScaledSlider
-                    Grid.Row="1" HorizontalAlignment="Center" Margin="3,3,3,2" Orientation="Vertical"
+                <Label Grid.Row="0" Content="{Binding Position}" Visibility="{Binding Absolute, Converter={local:VisibilityConverter}}" />
+
+                <Button Grid.Row="1" Content="^" Click="focuserButton_Click" IsEnabled="{Binding Moveable}" Name="FocuserUpButton" />
+                <Button Grid.Row="3" Content="v" Click="focuserButton_Click" IsEnabled="{Binding Moveable}" Name="FocuserDownButton" />
+
+                <!--<local:ScaledSlider
+                    Name="FocusSlider"
+                    Grid.Row="2" HorizontalAlignment="Center" Margin="3,3,3,2" Orientation="Vertical"
                     Minimum="0" TickFrequency="{Binding LargeChange, RelativeSource={RelativeSource Self}}" TickPlacement="Both"
                     CustomValue="{Binding SliderValue, Mode=TwoWay}"
                     AutoToolTipPlacement="BottomRight"
@@ -117,11 +121,24 @@
                         </Style>
                     </local:ScaledSlider.Style>
                     <local:ScaledSlider.ToolTip>
+                        <ToolTip Content="{Binding PlacementTarget.(local:ScaledSlider.ToolTipContent), RelativeSource={RelativeSource Self}}" />
+                    </local:ScaledSlider.ToolTip>
+                </local:ScaledSlider>-->
+                <local:ScaledSlider
+                    x:Name="FocusSlider"
+                    Grid.Row="2" HorizontalAlignment="Center" Margin="3,3,3,2" Orientation="Vertical"
+                    Minimum="0" Maximum="1" LargeChange="0.1"
+                    CustomMinimum="{Binding StepSize}" CustomMaximum="{Binding MaxSpeed}"
+                    ValueToCustom="{Binding LogValueToCustom, RelativeSource={RelativeSource Self}}"
+                    CustomToValue="{Binding LogCustomToValue, RelativeSource={RelativeSource Self}}"
+                    AutoToolTipPlacement="TopLeft" ToolTipFormat="{Binding SliderValueFormat}"
+                    CustomValue="{Binding Speed, Mode=TwoWay}">
+                    <local:ScaledSlider.ToolTip>
                         <ToolTip Content="{Binding PlacementTarget.ToolTipContent, RelativeSource={RelativeSource Self}}" />
                     </local:ScaledSlider.ToolTip>
                 </local:ScaledSlider>
 
-                <CheckBox Grid.Row="3" HorizontalAlignment="Center" Margin="0"  VerticalAlignment="Center"
+                <CheckBox Grid.Row="4" HorizontalAlignment="Center" Margin="0"  VerticalAlignment="Center"
                           Content="auto" />
             </Grid>
         </DataTemplate>
@@ -139,28 +156,8 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <Border BorderBrush="Black" BorderThickness="1" Margin="3" LayoutTransform="{Binding FinalTransform}">
-                        <!-- <Border.Style> -->
-                        <!--     <Style> -->
-                        <!--         <Setter Property="Image.LayoutTransform" Value="{Binding Transform}" /> -->
-                        <!--         <Style.Triggers> -->
-                        <!--             <DataTrigger Binding="{Binding IsFlipped, Source={x:Static local:O.Mount}}" Value="true"> -->
-                        <!--                 <Setter Property="Image.LayoutTransform"> -->
-                        <!--                     <Setter.Value> -->
-                        <!--                         <TransformGroup> -->
-                        <!--                             <MatrixTransform Matrix="{Binding Transform.Value}" /> -->
-                        <!--                             <ScaleTransform ScaleX="-1" ScaleY="-1" /> -->
-                        <!--                         </TransformGroup> -->
-                        <!--                     </Setter.Value> -->
-                        <!--                 </Setter> -->
-                        <!-- -->
-                        <!--                 <Setter Property="Border.BorderBrush" Value="Red" /> -->
-                        <!--             </DataTrigger> -->
-                        <!--         </Style.Triggers> -->
-                        <!--     </Style> -->
-                        <!-- </Border.Style> -->
                         <Image MinHeight="150" MaxHeight="480" StretchDirection="DownOnly"
-                               Source="/heliomaster-wpf;component/Resources/compass.png" />
-                               <!-- Source="{Binding Cam.View, Mode=OneWay}" /> -->
+                               Source="{Binding Cam.View, Mode=OneWay}" />
                     </Border>
                     <GroupBox Grid.Column="1" Header="{x:Static properties:Resources.headerFocus}" Margin="3" Content="{Binding Cam.Focuser}" ContentTemplate="{StaticResource FocuserTemplate}"
                               Visibility="{Binding Cam.Focuser.Valid, Converter={local:VisibilityConverter}, FallbackValue=Collapsed}" />
@@ -178,20 +175,17 @@
                     <Label Grid.Column="0"
                            Margin="3" HorizontalAlignment="Right"  VerticalAlignment="Center"
                            Content="{x:Static properties:Resources.gain}"/>
-                    <xctk:IntegerUpDown Grid.Column="1"
-                                        Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
-                                        Value="{Binding Cam.Gain}"/>
+                    <xctk:IntegerUpDown Grid.Column="1" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left" Value="{Binding Gain}"/>
 
                     <Label Grid.Column="2"
                            Margin="3" HorizontalAlignment="Right" VerticalAlignment="Center"
                            Content="{x:Static properties:Resources.exposure}" />
-                    <xctk:IntegerUpDown Grid.Column="3"
-                                        Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
-                                        Value="{Binding Cam.Exposure}"/>
+                    <xctk:IntegerUpDown Grid.Column="3" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left" Value="{Binding Exposure}"/>
 
                     <CheckBox Grid.Column="4"
                               Margin="3" VerticalAlignment="Center" HorizontalAlignment="Center"
-                              Content="{x:Static properties:Resources.auto}" />
+                              Content="{x:Static properties:Resources.auto}"
+                              IsChecked="{Binding AutoExpose}" />
                 </Grid>
 
                 <GroupBox Margin="0" Grid.Row="2">

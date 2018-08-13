@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,22 +23,28 @@ namespace heliomaster_wpf
             }
         }
 
-        public ObservableCollection<CameraModel> Models { get; } = new ObservableCollection<CameraModel>();
-
         public CamerasWindow() {
             CreateCameras(true);
             InitializeComponent();
         }
 
+        protected override void OnClosing(CancelEventArgs e) {
+            foreach (var model in Models) {
+                model.Cam.Disconnect();
+                model.Images.Clear();
+            }
+            O.CamModels.Clear();
+            base.OnClosing(e);
+        }
+
+        public ObservableCollection<CameraModel> Models { get; } = O.CamModels;
 
         private async void CreateCameras(bool _) {
             foreach (var model in S.Cameras.CameraModels) {
                 var cam = BaseCamera.Create(model.CameraType);
                 if (await cam.Connect(model.CameraID)) {
-                    O.Cams.Add(cam);
+//                    O.CamModels.Add(cam);
                     model.Cam = cam;
-                    cam.Gain     = S.Cameras.Gains[model.Index];
-                    cam.Exposure = S.Cameras.Exposures[model.Index];
 
                     O.Refresh += cam.RefreshRaise;
 
@@ -102,16 +109,14 @@ namespace heliomaster_wpf
         }
 
         private void captureButton_Click(object sender, RoutedEventArgs e) {
-
-
             int i;
             if (((Button) sender).DataContext is Timelapse t && (i = Timelapse.IndexOf(t)) > -1)
-                Task.Factory.StartNew(timelapseAction, Models[i]);
+                Task.Factory.StartNew(CameraModel.TimelapseAction, Models[i]);
         }
 
         private void focuserButton_Click(object sender, RoutedEventArgs e) {
             var foc = (Focuser) ((Button) sender).DataContext;
-            foc.Nudge(((Button) sender).Name == "focuserUpButton");
+            foc.Nudge(((Button) sender).Name == "FocuserUpButton");
         }
 
         #endregion

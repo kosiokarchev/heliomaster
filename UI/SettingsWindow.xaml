@@ -7,7 +7,7 @@
         xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
-        Title="SettingsWindow" SizeToContent="WidthAndHeight" Height="389" Width="567">
+        Title="SettingsWindow" SizeToContent="WidthAndHeight">
     <Window.Resources>
         <Style x:Key="HideWhenRemoteLoginMethodIsPasswordStyle">
             <Style.Triggers>
@@ -113,13 +113,46 @@
                                                   SelectedIndex="{Binding CameraType, Converter={local:EnumToIntConverter}}" />
 
                                         <Label Content="ID:" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" />
+
                                         <Grid Grid.Row="1" Grid.Column="1">
+                                            <Grid.Style>
+                                                <Style>
+                                                    <Setter Property="Grid.Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CameraType}" Value="{x:Static local:CameraTypes.ASCOM}">
+                                                            <Setter Property="Grid.Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <TextBox IsEnabled="False" Grid.Column="0" DataContext="{Binding CameraID}" Style="{StaticResource NotChosenStyle}" VerticalAlignment="Center" Margin="0,0,5,0" />
                                             <Button Grid.Column="1" Content="Choose" Click="ChooseButton_Click" VerticalAlignment="Center" />
+                                        </Grid>
+
+                                        <Grid Grid.Row="1" Grid.Column="1">
+                                            <Grid.Style>
+                                                <Style>
+                                                    <Setter Property="Grid.Visibility" Value="Collapsed" />
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding CameraType}" Value="{x:Static local:CameraTypes.QHYCCD}">
+                                                            <Setter Property="Grid.Visibility" Value="Visible" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <ComboBox VerticalAlignment="Center"
+                                                      ItemsSource="{x:Static local:QHYCCDCamera.CameraIDs}"
+                                                      SelectedItem="{Binding CameraID}" />
+                                            <Button Grid.Column="1" Content="Refresh list" />
                                         </Grid>
 
                                         <Label Content="Focuser DriverID" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="7" Grid.Column="0" />
@@ -334,7 +367,18 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
+            <TabItem Header="Python">
+                <Grid Background="#FFE5E5E5" DataContext="{x:Static properties:S.Python}">
+                    <StackPanel Orientation="Vertical">
+                        <CheckBox IsChecked="{Binding IsEnabled}" Content="Enable Python. This is necessary for a number of functions:" />
+                        <StackPanel Margin="40,0,0,0">
+                            <TextBlock Text="Go to object" />
+                            <TextBlock Text="Image tracking" />
+                            <TextBlock Text="Saving to FITS files" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
         </TabControl>
-
     </Grid>
 </Window>

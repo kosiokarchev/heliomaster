@@ -49,9 +49,10 @@ namespace heliomaster_wpf {
                 curitem.Invoke();
         }
 
-        public void Enqueue(QueueItem<Tin, Tout> item, int i=0) {
+        public QueueItem<Tin, Tout> Enqueue(QueueItem<Tin, Tout> item, int i=0) {
             queues[i].Enqueue(item);
             Run();
+            return item;
         }
         public void Enqueue(Func<Tin, Tout> action, Tin state, int i = 0) {
             Enqueue(new QueueItem<Tin, Tout> {Func = action, Param = state}, i);
@@ -67,6 +68,12 @@ namespace heliomaster_wpf {
         public List<List<QueueItem<Tin, Tout>>> Clear() {
             var ret = new List<List<QueueItem<Tin, Tout>>>();
             for (var i = 0; i < queues.Length; ++i) ret.Add(Clear(i));
+            return ret;
+        }
+
+        public async Task<List<List<QueueItem<Tin, Tout>>>> ClearTask() {
+            var ret = Clear();
+            await consumer;
             return ret;
         }
     }

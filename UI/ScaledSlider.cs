@@ -9,7 +9,7 @@ using ASCOM.Utilities;
 using heliomaster_wpf.Annotations;
 
 namespace heliomaster_wpf {
-    public class CustomToolTipSlider : Slider {
+    public class CustomToolTipSlider : Slider, INotifyPropertyChanged {
         public static readonly DependencyProperty ToolTipFormatProperty = DependencyProperty.Register(nameof(ToolTipFormat), typeof(string), typeof(CustomToolTipSlider), new PropertyMetadata(defaultValue:"{0}"));
         public string ToolTipFormat {
             get => GetValue(ToolTipFormatProperty) as string;
@@ -33,9 +33,10 @@ namespace heliomaster_wpf {
         public object ToolTipContent => ReadLocalValue(ToolTipFormatterProperty) != DependencyProperty.UnsetValue
             ? ToolTipFormatter(ToolTipValue)
             : String.Format(ToolTipFormat, ToolTipValue);
-        private void ModifyToolTip() {
+        protected void ModifyToolTip() {
             if (AutoToolTip != null)
                 AutoToolTip.Content = ToolTipContent;
+            OnPropertyChanged(nameof(ToolTipContent));
         }
 
         protected override void OnThumbDragStarted(DragStartedEventArgs e) {
@@ -47,6 +48,12 @@ namespace heliomaster_wpf {
             base.OnThumbDragDelta(e);
             ModifyToolTip();
         }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        [NotifyPropertyChangedInvocator]
+        protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null) {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 
     public class ScaledSlider : CustomToolTipSlider {
@@ -55,7 +62,6 @@ namespace heliomaster_wpf {
                 typeof(ScaledSlider),
                 new FrameworkPropertyMetadata(propertyChangedCallback:(d, e) => {
                     if (e.OldValue.Equals(e.NewValue)) return;
-//                    Console.WriteLine(e.NewValue);
                     (d as ScaledSlider)?.SetValue(
                         CustomValueProperty,
                         ((ScaledSlider) d).ValueToCustom((double) e.NewValue));
@@ -63,9 +69,8 @@ namespace heliomaster_wpf {
         }
 
         public static void SetCustomValue(ScaledSlider d, double val) {
-            d.Value = Utilities.Clamp(
-                d.CustomToValue(val),
-                d.Minimum, d.Maximum);
+            d.Value = Utilities.Clamp(d.CustomToValue(val), d.Minimum, d.Maximum);
+            d.ModifyToolTip();
         }
 
         public static readonly DependencyProperty CustomMinimumProperty = DependencyProperty.Register(
