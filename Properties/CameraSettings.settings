@@ -41,5 +41,8 @@
                             &lt;Rotate&gt;0&lt;/Rotate&gt;
                         &lt;/CameraModel&gt;                    &lt;/ArrayOfCameraModel&gt;</Value>
     </Setting>
+    <Setting Name="SaveTransformed" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

@@ -81,5 +81,17 @@ namespace heliomaster_wpf.Properties {
                 this["CameraModels"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SaveTransformed {
+            get {
+                return ((bool)(this["SaveTransformed"]));
+            }
+            set {
+                this["SaveTransformed"] = value;
+            }
+        }
     }
 }

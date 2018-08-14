@@ -91,6 +91,7 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -138,6 +139,11 @@
     <Compile Include="Hardware\Camera\QHYCCDCamera.cs" />
     <Compile Include="Hardware\Camera\QHYCCDImage.cs" />
     <Compile Include="Hardware\Power.cs" />
+    <Compile Include="PowerSettings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>PowerSettings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Properties\DomeSettings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -219,6 +225,10 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="PowerSettings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>PowerSettings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Properties\DomeSettings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>DomeSettings.Designer.cs</LastGenOutput>

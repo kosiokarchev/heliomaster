@@ -191,21 +191,21 @@ namespace heliomaster_wpf {
     }
 
     public class CommonTimelapse : BaseNotify {
-        private readonly Timelapse[] _;
+        private Timelapse[] _;
         private int _i0;
         public int i0 {
             get => _i0;
             set {
                 _[_i0].Free = false;
                 _[_i0].PropertyChanged -= Coerce;
-                
+
                 _i0 = value;
-                
+
                 _[_i0].PropertyChanged += Coerce;
                 _[_i0].Free = true;
-                
+
                 OnPropertyChanged();
-                
+
                 Tied[_i0] = true;
                 OnPropertyChanged(nameof(Tied));
             }
@@ -219,7 +219,7 @@ namespace heliomaster_wpf {
             }
         }
 
-        public CommonTimelapse(Timelapse t, int n, bool tied=true) {
+        public void Make(Timelapse t, int n, bool tied=true) {
             if (n < 1)
                 throw new ArgumentOutOfRangeException($"{nameof(n)} must be at least 1");
             _ = new Timelapse[n];
@@ -243,7 +243,7 @@ namespace heliomaster_wpf {
 
         public void Start(Action<object> a, IEnumerable states) {
             Coerce();
-            
+
             var i = 0;
             foreach (var state in states) {
                 if (Tied[i])

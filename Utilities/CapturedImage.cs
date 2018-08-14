@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media;
+using heliomaster_wpf.Properties;
 
 namespace heliomaster_wpf {
     public class CapturedImage : BaseNotify {
@@ -16,7 +17,8 @@ namespace heliomaster_wpf {
             private set {
                 if (value == _isSaved) return;
                 _isSaved = value;
-                if (value == true) Saved?.Invoke(this);
+                if (value == true && Saved != null)
+                    Task.Factory.FromAsync((ac, o) => Saved.BeginInvoke(this, ac, o), Saved.EndInvoke, null);
                 OnPropertyChanged();
             }
         }
@@ -28,7 +30,8 @@ namespace heliomaster_wpf {
             private set {
                 if (value == _isTransferred) return;
                 _isTransferred = value;
-                if (value == true) Transferred?.Invoke(this);
+                if (value == true && Transferred != null)
+                    Task.Factory.FromAsync((ac, o) => Transferred.BeginInvoke(this, ac, o), Transferred.EndInvoke, null);
                 OnPropertyChanged();
             }
         }
@@ -40,7 +43,8 @@ namespace heliomaster_wpf {
             private set {
                 if (value == _isProcessed) return;
                 _isProcessed = value;
-                if (value == true) Processed?.Invoke(this);
+                if (value == true && Processed != null)
+                    Task.Factory.FromAsync((ac, o) => Processed.BeginInvoke(this, ac, o), Processed.EndInvoke, null);
                 OnPropertyChanged();
             }
         }
@@ -61,7 +65,7 @@ namespace heliomaster_wpf {
             if (IsSaved != true && Path.GetDirectoryName(LocalPath) is string dirname)
                 try {
                     Directory.CreateDirectory(dirname);
-                    IsSaved = await Image.Save(LocalPath, t:Transform);
+                    IsSaved = await Image.Save(LocalPath, t:S.Cameras.SaveTransformed ? Transform : null);
                 } catch (Exception e) {
                     if (!(e is IOException || e is UnauthorizedAccessException || e is ArgumentException || e is NotSupportedException)) throw;
                 }
@@ -81,7 +85,6 @@ namespace heliomaster_wpf {
         }
 
         public async void Process(Remote remote, string cmd) {
-            await Task.Delay(1000);
             var command = await remote.Execute(cmd);
             IsProcessed = command.ExitCode != null && (int) command.ExitCode == 0;
         }

@@ -17,7 +17,7 @@
     <Setting Name="PrivateKeyFilename" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="BaseDir" Type="System.String" Scope="User">
+    <Setting Name="InitCommand" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="DoTransfer" Type="System.Boolean" Scope="User">
@@ -27,13 +27,16 @@
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="DoCommand" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="CommandFormat" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="LoginMethod" Type="heliomaster_wpf.RemoteLoginMethods" Scope="User">
       <Value Profile="(Default)">UserPass</Value>
+    </Setting>
+    <Setting Name="DoInitCommand" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

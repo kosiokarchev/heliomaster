@@ -85,20 +85,6 @@ namespace heliomaster_wpf.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"<Dome xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-    <ShutterTimeout><TimeSpan xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">00:01:00</TimeSpan></ShutterTimeout>
-</Dome>")]
-        public global::heliomaster_wpf.Dome Dome {
-            get {
-                return ((global::heliomaster_wpf.Dome)(this["Dome"]));
-            }
-            set {
-                this["Dome"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00:01:00")]
         public global::System.TimeSpan ShutterTimeout {
             get {
@@ -106,6 +92,24 @@ namespace heliomaster_wpf.Properties {
             }
             set {
                 this["ShutterTimeout"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"
+                    <Dome xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+                        <ShutterTimeout>
+                            <TimeSpan>00:01:00</TimeSpan>
+                        </ShutterTimeout>
+                    </Dome>
+                ")]
+        public global::heliomaster_wpf.Dome Dome {
+            get {
+                return ((global::heliomaster_wpf.Dome)(this["Dome"]));
+            }
+            set {
+                this["Dome"] = value;
             }
         }
     }

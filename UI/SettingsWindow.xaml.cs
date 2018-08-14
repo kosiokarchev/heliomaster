@@ -18,6 +18,7 @@ namespace heliomaster_wpf
             InitializeComponent();
 
             RemotePasswordBox.Password = S.Remote.Pass;
+            NetioPasswordBox.Password = S.Power.Netio.PassString;
 
             O.Dome.Connected += () => { fillCans(O.Dome.Driver, DomeCansPanel.Children); };
             O.Mount.Connected += () => { fillCans(O.Mount.Driver, MountCansPanel.Children); };
@@ -36,7 +37,10 @@ namespace heliomaster_wpf
         }
 
         private void RemotePasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
-            S.Remote.Pass = RemotePasswordBox.Password;
+            S.Remote.Pass = RemotePasswordBox.Password; // TODO: Secure remote password
+        }
+        private void NetioPasswordBox_PasswordChanged(object sender, RoutedEventArgs e) {
+            S.Power.Netio.Pass = NetioPasswordBox.SecurePassword;
         }
 
         private void BrowsePrivatekeyButton_Click(object sender, RoutedEventArgs e) {
@@ -50,17 +54,29 @@ namespace heliomaster_wpf
         }
 
         private async void RemoteTestConnectionButton_Click(object sender, RoutedEventArgs e) {
-            RemoteTestConnectionButton.Click -= RemoteTestConnectionButton_Click;
             RemoteTestConnectionButton.Content = "Connecting...";
             RemoteTestConnectionButton.IsEnabled = false;
 
-            var res = await Task<bool>.Factory.StartNew(() => O.Default.ConnectRemote());
+            MessageBox.Show(
+                await Task<bool>.Factory.StartNew(() => O.Default.ConnectRemote())
+                    ? "Connection successful!"
+                    : $"Connection failed:{Environment.NewLine}SSH: {O.Remote.SSHError?.Message}{Environment.NewLine}SFTP: {O.Remote.SFTPError?.Message}");
 
-            RemoteTestConnectionButton.Click   += RemoteTestConnectionButton_Click;
             RemoteTestConnectionButton.Content =  "Test connection";
             RemoteTestConnectionButton.IsEnabled = true;
 
-            MessageBox.Show(res ? "Connection successful!" : $"Connection failed:{Environment.NewLine}SSH: {O.Remote.SSHError?.Message}{Environment.NewLine}SFTP: {O.Remote.SFTPError?.Message}");
+
+        }
+
+        private void NetioTestConnectionButton_Click(object sender, RoutedEventArgs e) {
+            NetioTestConnectionButton.Content   =  "Connecting...";
+            NetioTestConnectionButton.IsEnabled =  false;
+
+            MessageBox.Show(O.Power.Available ? "Connection successful" : "Connection failed.");
+
+            NetioTestConnectionButton.Content   =  "Test connection";
+            NetioTestConnectionButton.IsEnabled =  true;
+
         }
 
         private void ChooseButton_Click(object sender, RoutedEventArgs e) {

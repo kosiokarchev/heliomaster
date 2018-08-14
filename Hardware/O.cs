@@ -48,10 +48,29 @@ namespace heliomaster_wpf {
         public Remote           Remote    { get; } = new Remote();
 
         public ObservableCollection<CameraModel> CameraModels { get; } = new ObservableCollection<CameraModel>();
-        public CommonTimelapse CommonTimelapse { get; set; }
+        public CommonTimelapse CommonTimelapse { get; } = new CommonTimelapse();
+
+        private BasePower _power;
+        public BasePower Power {
+            get => _power;
+            set {
+                var newval = value ?? (S.Power.PowerType == PowerTypes.Netio ? S.Power.Netio : null);
+                if (Equals(newval, _power)) return;
+                _power = newval;
+                OnPropertyChanged();
+            }
+        }
 
 
         public Observatory() {
+            Power = null;
+            S.Power.PropertyChanged += (sender, args) => {
+                if (args.PropertyName == nameof(S.Power.PowerType))
+                    Power = null;
+            };
+            Console.WriteLine(S.Power.MountName);
+            Console.WriteLine(S.Power.DomeName);
+
             Starting += StartingHandle;
             Shutting += ShuttingHandle;
         }
@@ -60,8 +79,7 @@ namespace heliomaster_wpf {
         public bool ConnectRemote() {
             return S.Remote.LoginMethod == RemoteLoginMethods.UserPass
                 ? Remote.Init(S.Remote.Host, S.Remote.User, S.Remote.Pass, S.Remote.Port)
-                : Remote.Init(S.Remote.Host, S.Remote.User, new PrivateKeyFile(S.Remote.PrivateKeyFilename),
-                              S.Remote.Port);
+                : Remote.Init(S.Remote.Host, S.Remote.User, new PrivateKeyFile(S.Remote.PrivateKeyFilename), S.Remote.Port);
         }
 
 
@@ -173,7 +191,7 @@ namespace heliomaster_wpf {
 
             if (CameraModels.Count < 1) return;
 
-            CommonTimelapse = new CommonTimelapse(new Timelapse {
+            CommonTimelapse.Make(new Timelapse {
                 StopMethod = S.Settings.timelapseStopMethod,
                 Interval   = S.Settings.timelapseInterval,
                 Nshots     = S.Settings.timelapseNshots,
@@ -323,6 +341,8 @@ namespace heliomaster_wpf {
 
         public static ObservableCollection<CameraModel> CamModels => Default.CameraModels;
         public static CommonTimelapse Timelapse => Default.CommonTimelapse;
+
+        public static BasePower Power => Default.Power;
 
         public static event Action Refresh;
         public static void OnRefresh(object o) { Refresh?.Invoke(); }

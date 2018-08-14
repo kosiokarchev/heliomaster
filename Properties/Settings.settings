@@ -35,5 +35,11 @@
     <Setting Name="colorValid" Type="System.Windows.Media.Color" Scope="User">
       <Value Profile="(Default)">#00000000</Value>
     </Setting>
+    <Setting Name="LocalPathFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="RemotePathFormat" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

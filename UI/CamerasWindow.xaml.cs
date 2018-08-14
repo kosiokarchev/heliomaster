@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using heliomaster_wpf.Properties;
 
 namespace heliomaster_wpf
 {
@@ -13,16 +10,6 @@ namespace heliomaster_wpf
     /// Interaction logic for CamerasWindow.xaml
     /// </summary>
     public partial class CamerasWindow : HMWindow {
-        private CommonTimelapse _timelapse;
-        public CommonTimelapse Timelapse {
-            get => _timelapse;
-            set {
-                if (Equals(value, _timelapse)) return;
-                _timelapse = value;
-                OnPropertyChanged();
-            }
-        }
-
         public CamerasWindow() {
             InitializeComponent();
             O.Default.ConnectCameras();
@@ -43,15 +30,15 @@ namespace heliomaster_wpf
         private void MainRadio_Checked(object sender, RoutedEventArgs e) {
             var dc = ((RadioButton)sender).DataContext;
             if (dc != null)
-                Timelapse.i0 = ((CameraModel) dc).Index;
+                O.Timelapse.i0 = ((CameraModel) dc).Index;
         }
 
         private void TiedRadio_Checked(object sender, RoutedEventArgs e) {
             var cb = (CheckBox) sender;
             var dc = cb.DataContext;
             if (dc != null && cb.IsChecked != null) {
-                if (((CameraModel) dc).Index != Timelapse.i0)
-                    Timelapse.SetTied(((CameraModel) dc).Index, (bool) cb.IsChecked);
+                if (((CameraModel) dc).Index != O.Timelapse.i0)
+                    O.Timelapse.SetTied(((CameraModel) dc).Index, (bool) cb.IsChecked);
                 else
                     cb.IsChecked = true;
             }
@@ -60,15 +47,15 @@ namespace heliomaster_wpf
         private void timelapseButton_Click(object sender, RoutedEventArgs e) {
             int i;
             if (((Button) sender).DataContext is Timelapse t
-                && (i = Timelapse.IndexOf(t)) > -1) {
+                && (i = O.Timelapse.IndexOf(t)) > -1) {
                 if (!t.Running) {
-                    if (Timelapse.Tied[i])
-                        Timelapse.Start(CameraModel.TimelapseAction, O.CamModels);
+                    if (O.Timelapse.Tied[i])
+                        O.Timelapse.Start(CameraModel.TimelapseAction, O.CamModels);
                     else
                         t.Start(CameraModel.TimelapseAction, O.CamModels[i]);
                 } else {
-                    if (Timelapse.Tied[i])
-                        Timelapse.Stop();
+                    if (O.Timelapse.Tied[i])
+                        O.Timelapse.Stop();
                     else
                         t.Stop();
                 }
@@ -77,7 +64,7 @@ namespace heliomaster_wpf
 
         private void captureButton_Click(object sender, RoutedEventArgs e) {
             int i;
-            if (((Button) sender).DataContext is Timelapse t && (i = Timelapse.IndexOf(t)) > -1)
+            if (((Button) sender).DataContext is Timelapse t && (i = O.Timelapse.IndexOf(t)) > -1)
                 Task.Factory.StartNew(CameraModel.TimelapseAction, O.CamModels[i]);
         }
 

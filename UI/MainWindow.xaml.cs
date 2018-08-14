@@ -132,7 +132,6 @@ namespace heliomaster_wpf {
             CamerasWindow.Show();
             CamerasWindow.Closed += (o, args) => {
                 _camerasWindow = null;
-                Console.WriteLine();
             };
         }
 
@@ -168,17 +167,22 @@ namespace heliomaster_wpf {
         }
 
         private async void Button_Click_5(object sender, RoutedEventArgs e) {
-            var pass = new SecureString();
-            foreach (var c in "ESACvilspa01")
-                pass.AppendChar(c);
-
-            var ret = await new Netio.Power() {
+            var p = new Netio.Power {
                 UseHttps = true,
-                Host     = "10.66.180.60",
+                Host = "10.66.180.60",
                 User = "ceso",
-                Pass = pass
-            }.Command(new[] {1}, new[]{States.Off}, new[]{OutputActions.Toggle}, new[]{1600});
-            var d = 4;
+                PassString = "ESACvilspa01"
+            };
+
+            S.Power.Netio = p;
+            S.Save();
+
+            var names = p.Names;
+
+            p.Register(O.Dome, "dome");
+            var t = p.Toggle(O.Dome);
+            t.Wait();
+            Console.WriteLine(t.Result.On);
         }
 
         private void Button_Click_6(object sender, RoutedEventArgs e) {

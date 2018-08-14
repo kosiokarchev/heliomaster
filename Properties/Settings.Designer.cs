@@ -154,5 +154,29 @@ namespace heliomaster_wpf.Properties {
                 this["colorValid"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LocalPathFormat {
+            get {
+                return ((string)(this["LocalPathFormat"]));
+            }
+            set {
+                this["LocalPathFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string RemotePathFormat {
+            get {
+                return ((string)(this["RemotePathFormat"]));
+            }
+            set {
+                this["RemotePathFormat"] = value;
+            }
+        }
     }
 }

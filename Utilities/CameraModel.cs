@@ -12,10 +12,17 @@ using System.Windows.Media;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
+using heliomaster_wpf.Properties;
 using Newtonsoft.Json;
 using SmartFormat;
 
 namespace heliomaster_wpf {
+    public enum AutoExposureModes {
+        [Description("AVG")] mean = 0,
+        [Description("MAX")] max = 1,
+        [Description("95%")] percentile = 2
+    }
+
     [SettingsSerializeAs(SettingsSerializeAs.Xml)]
     public class CameraModel : BaseNotify {
         private int _index;
@@ -130,6 +137,26 @@ namespace heliomaster_wpf {
             }
         }
 
+        private AutoExposureModes _autoMode;
+        public AutoExposureModes AutoMode {
+            get => _autoMode;
+            set {
+                if (value == _autoMode) return;
+                _autoMode = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _autoLevel;
+        public double AutoLevel {
+            get => _autoLevel;
+            set {
+                if (value.Equals(_autoLevel)) return;
+                _autoLevel = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         private string _focuserID;
         public string FocuserID {
@@ -226,22 +253,27 @@ namespace heliomaster_wpf {
             };
 
             cimg.Saved += c => {
-                c.Transfer(O.Remote, Smart.Format(RemotePathFormat, new {
-                    Cam           = Name,
-                    DateTime      = DateTime.UtcNow,
-                    LocalPath     = c.LocalPath,
-                    LocalBaseName = Path.GetFileName(c.LocalPath),
-                }));
+                if (S.Remote.DoTransfer)
+                    c.Transfer(O.Remote, Smart.Format(RemotePathFormat, new {
+                        Cam           = Name,
+                        DateTime      = DateTime.UtcNow,
+                        LocalPath     = c.LocalPath,
+                        LocalBaseName = Path.GetFileName(c.LocalPath),
+                    }));
             };
             cimg.Transferred += c => {
-                c.Process(O.Remote, Smart.Format(RemoteCommandFormat, new {
-                    Cam            = Name,
-                    DateTime       = DateTime.UtcNow,
-                    LocalPath      = c.LocalPath,
-                    LocalBaseName  = Path.GetFileName(c.LocalPath),
-                    RemoteBaseName = Path.GetFileName(c.RemotePath),
-                    RemotePath     = c.RemotePath
-                }));
+                if (S.Remote.DoDeleteLocal)
+                    File.Delete(c.LocalPath); // TODO: Deleting fails...
+
+                if (S.Remote.DoCommand)
+                    c.Process(O.Remote, Smart.Format(RemoteCommandFormat, new {
+                        Cam            = Name,
+                        DateTime       = DateTime.UtcNow,
+                        LocalPath      = c.LocalPath,
+                        LocalBaseName  = Path.GetFileName(c.LocalPath),
+                        RemoteBaseName = Path.GetFileName(c.RemotePath),
+                        RemotePath     = c.RemotePath
+                    }));
             };
 
             cimg.Save();

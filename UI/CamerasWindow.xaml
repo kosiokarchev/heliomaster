@@ -6,7 +6,6 @@
         xmlns:local="clr-namespace:heliomaster_wpf"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
-        xmlns:system="clr-namespace:System;assembly=mscorlib"
         mc:Ignorable="d"
         Title="CamerasWindow" SizeToContent="WidthAndHeight" Height="670" Width="401"
         >
@@ -144,6 +143,16 @@
         </DataTemplate>
 
         <DataTemplate x:Key="CameraTemplate" DataType="{x:Type local:CameraModel}">
+            <DataTemplate.Resources>
+                <Style x:Key="AutoExposingStyle">
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding AutoExpose}" Value="True">
+                            <Setter Property="UIElement.IsEnabled" Value="False" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </DataTemplate.Resources>
+
             <Grid Margin="0" VerticalAlignment="Stretch">
                 <Grid.RowDefinitions>
                     <RowDefinition/>
@@ -169,41 +178,58 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition/>
                     </Grid.ColumnDefinitions>
 
                     <Label Grid.Column="0"
                            Margin="3" HorizontalAlignment="Right"  VerticalAlignment="Center"
                            Content="{x:Static properties:Resources.gain}"/>
-                    <xctk:IntegerUpDown Grid.Column="1" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left" Value="{Binding Gain}"/>
+                    <xctk:IntegerUpDown Grid.Column="1" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                        Value="{Binding Gain}"
+                                        Style="{StaticResource AutoExposingStyle}" />
 
                     <Label Grid.Column="2"
                            Margin="3" HorizontalAlignment="Right" VerticalAlignment="Center"
                            Content="{x:Static properties:Resources.exposure}" />
-                    <xctk:IntegerUpDown Grid.Column="3" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left" Value="{Binding Exposure}"/>
+                    <xctk:IntegerUpDown Grid.Column="3" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
+                                        Value="{Binding Exposure}"
+                                        Style="{StaticResource AutoExposingStyle}" />
 
                     <CheckBox Grid.Column="4"
-                              Margin="3" VerticalAlignment="Center" HorizontalAlignment="Center"
-                              Content="{x:Static properties:Resources.auto}"
-                              IsChecked="{Binding AutoExpose}" />
+                        Margin="3" VerticalAlignment="Center" HorizontalAlignment="Center"
+                        Content="{x:Static properties:Resources.auto}"
+                        IsChecked="{Binding AutoExpose}" />
+
+                    <StackPanel Grid.Column="5" Orientation="Horizontal" Visibility="{Binding AutoExpose, Converter={local:VisibilityConverter}}">
+                        <ComboBox ItemsSource="{Binding Source={local:EnumBindingSource {x:Type local:AutoExposureModes}}}"
+                                  SelectedIndex="{Binding AutoMode, Converter={local:EnumToIntConverter}}" VerticalAlignment="Center"/>
+
+                        <xctk:DoubleUpDown Minimum="0" Maximum="1" Increment="0.01" FormatString="{}{0:P0}"
+                                           VerticalAlignment="Center"
+                                           Value="{Binding AutoLevel}" ClipValueToMinMax="True" />
+                    </StackPanel>
                 </Grid>
 
                 <GroupBox Margin="0" Grid.Row="2">
                     <GroupBox.Header>
                         <StackPanel Orientation="Horizontal">
                             <CheckBox VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0" Checked="TiedRadio_Checked" Unchecked="TiedRadio_Checked">
-                                <CheckBox.IsChecked>
-                                    <MultiBinding Converter="{local:IndexConverter}" Mode="OneWay">
-                                        <Binding Path="Timelapse.Tied" RelativeSource="{RelativeSource AncestorType=local:HMWindow}" />
-                                        <Binding Path="Index" />
-                                    </MultiBinding>
-                                </CheckBox.IsChecked>
+                                <CheckBox.Style>
+                                    <Style>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Timelapse.Free}" Value="false">
+                                                <Setter Property="CheckBox.IsChecked" Value="true" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </CheckBox.Style>
                             </CheckBox>
 
                             <RadioButton VerticalAlignment="Center" HorizontalAlignment="Left" GroupName="MainRadios" Margin="3,0,0,0" Checked="MainRadio_Checked">
                                 <RadioButton.IsChecked>
                                     <MultiBinding Converter="{local:EqualityConverter}">
-                                        <Binding Path="Timelapse.i0" RelativeSource="{RelativeSource AncestorType=local:HMWindow}" />
+                                        <Binding Path="i0" Source="{x:Static local:O.Timelapse}" />
                                         <Binding Path="Index" />
                                     </MultiBinding>
                                 </RadioButton.IsChecked>

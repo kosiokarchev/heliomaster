@@ -86,12 +86,12 @@ namespace heliomaster_wpf.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string BaseDir {
+        public string InitCommand {
             get {
-                return ((string)(this["BaseDir"]));
+                return ((string)(this["InitCommand"]));
             }
             set {
-                this["BaseDir"] = value;
+                this["InitCommand"] = value;
             }
         }
         
@@ -121,7 +121,7 @@ namespace heliomaster_wpf.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool DoCommand {
             get {
                 return ((bool)(this["DoCommand"]));
@@ -152,6 +152,18 @@ namespace heliomaster_wpf.Properties {
             }
             set {
                 this["LoginMethod"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool DoInitCommand {
+            get {
+                return ((bool)(this["DoInitCommand"]));
+            }
+            set {
+                this["DoInitCommand"] = value;
             }
         }
     }

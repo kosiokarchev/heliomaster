@@ -7,6 +7,7 @@ using System.Net;
 using System.Security.Permissions;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Navigation;
 using heliomaster_wpf.Properties;
 
 namespace heliomaster_wpf {
@@ -15,7 +16,11 @@ namespace heliomaster_wpf {
     /// </summary>
     public partial class App : Application {
         [SecurityPermission(SecurityAction.Demand, Flags = SecurityPermissionFlag.ControlAppDomain)]
-        public App() {
+        public App() {}
+
+        protected override void OnStartup(StartupEventArgs args) {
+            base.OnStartup(args);
+
             SetupErrorHandling();
 
             Python.Initialize();
@@ -24,9 +29,27 @@ namespace heliomaster_wpf {
 
             O.StartRefresh(S.Settings.Refresh);
 
-            try {
-                O.Default.ConnectRemote();
-            } catch { } // TODO: Smarter way to initialize connection
+            try { // TODO: Smarter way to initialize connection
+                if (O.Default.ConnectRemote()) {
+                    if (S.Remote.DoInitCommand && !string.IsNullOrWhiteSpace(S.Remote.InitCommand)) {
+                        var initcmdtask = O.Remote.Execute(S.Remote.InitCommand);
+                        initcmdtask.Wait();
+                        if (initcmdtask.Exception != null)
+                            throw initcmdtask.Exception;
+                        var initcmd = initcmdtask.Result;
+                        if (!initcmd.Success)
+                            MessageBox.Show($"Initialization script failed{Environment.NewLine}{initcmd.cmd.CommandText}{Environment.NewLine}Exit code: {initcmd.cmd.ExitStatus}");
+                    }
+                } else
+                    MessageBox.Show($"Could not connect:{Environment.NewLine}SSH: {O.Remote.SSHError?.Message}{Environment.NewLine}SFTP: {O.Remote.SFTPError?.Message}");
+            } catch (Exception e) {
+                Console.WriteLine(e.Message);
+            }
+
+            if (S.Power.Netio.Get() != null) {
+                S.Power.Netio.Register(O.Mount, S.Power.MountName);
+                S.Power.Netio.Register(O.Dome, S.Power.DomeName);
+            }
         }
 
         private void SetupErrorHandling() {
