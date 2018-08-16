@@ -8,12 +8,16 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ASCOM.DeviceInterface;
-using heliomaster_wpf.Netio;
+using heliomaster.Properties;
+using heliomaster.Netio;
 using Drivers = ASCOM.DriverAccess;
-using heliomaster_wpf.Properties;
 using Microsoft.Win32;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
+    public enum HardwareControlButtons {
+        On, Off, Reset, Connect, Disconnect
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -34,13 +38,16 @@ namespace heliomaster_wpf {
             S.Save();
         }
 
-        #region MOUNT
-
-        private async void Button_Click_2(object sender, RoutedEventArgs e) {
-            if (string.IsNullOrEmpty(S.Mount.MountID)) return;
-            if (!await O.Mount.Connect(S.Mount.MountID))
-                MessageBox.Show($"Connecting to camera {S.Mount .MountID} failed.");
+        private async Task Connect(BaseHardwareControl h, string id = null) {
+            id = id ?? (h is Dome   ? S.Dome.DomeID :
+                     h is Telescope ? S.Mount.MountID :
+                     h is Weather   ? S.Weather.WeatherID : null);
+            if (!string.IsNullOrWhiteSpace(id) && !await h.Connect(id)) {
+                MessageBox.Show($"Connecting to {h.Type.ToLower()} {id} failed.");
+            }
         }
+
+        #region MOUNT
 
         private void mountStop_Click(object sender, RoutedEventArgs e) {
             O.Mount.StopAllMotion();
@@ -61,6 +68,7 @@ namespace heliomaster_wpf {
         }
 
         private void mountTracking_Checked(object sender, RoutedEventArgs e) {
+            // TODO: Implement sophisticated tracking!
             e.Handled = true;
             TryCommand(() => {
                 var isChecked = ((CheckBox) sender).IsChecked;
@@ -72,17 +80,12 @@ namespace heliomaster_wpf {
 
         #region DOME
 
-        private async void Button_Click_3(object sender, RoutedEventArgs e) {
-            if (string.IsNullOrEmpty(S.Dome.DomeID)) return;
-            if (!await O.Dome.Connect(S.Dome.DomeID))
-                MessageBox.Show($"Connecting to dome {S.Dome.DomeID} failed.");
-        }
-
         private async void domeSlewButton_Click(object sender, RoutedEventArgs e) {
             if ((sender as Button)?.Tag is GuideDirections d) {
                 await O.Dome.Slew((d == GuideDirections.guideEast ? -1 : 1) * DomePulseSlider.CustomValue);
             } else {
-                O.Default.UnSlaveDomeFromMount();
+                await O.Dome.StopAllMotion(); // TODO: Is this really necessary?
+                await O.Default.UnSlaveDomeFromMount();
                 await O.Dome.StopAllMotion();
             }
         }
@@ -114,76 +117,45 @@ namespace heliomaster_wpf {
 
         #endregion
 
-        #region WEATHER
+        #region POWER
 
-        private async void Button_Click(object sender, RoutedEventArgs e) {
-            if (string.IsNullOrEmpty(S.Weather.WeatherID)) return;
-            if (!await O.Weather.Connect(S.Weather.WeatherID))
-                MessageBox.Show($"Connecting to weather {S.Weather.WeatherID} failed.");
+        private async void HardwareControlButton_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button b && b.DataContext is BaseHardwareControl h && b.Tag is HardwareControlButtons tag) {
+                b.IsEnabled = false;
+                switch (tag) {
+                    case HardwareControlButtons.On:    await h.On();    break;
+                    case HardwareControlButtons.Off:   await h.Off();   break;
+                    case HardwareControlButtons.Reset:
+                        if (h.Valid) {
+                            await h.Disconnect();
+                            await h.Reset();
+                            await Connect(h);
+                        } else await h.Reset();
+
+                        break;
+
+                    case HardwareControlButtons.Connect: await Connect(h); break;
+                    case HardwareControlButtons.Disconnect: await h.Disconnect(); break;
+                }
+                b.IsEnabled = true;
+            }
+
         }
 
         #endregion
 
-
         private void SettingsMenu_Click(object sender, RoutedEventArgs e) {
             SettingsWindow.Show();
+            SettingsWindow.Activate();
         }
         private void CamerasMenu_Click(object sender, RoutedEventArgs e) {
             CamerasWindow.Show();
             CamerasWindow.Closed += (o, args) => {
                 _camerasWindow = null;
             };
+            SettingsWindow.Activate();
         }
 
-
-//        private async void Button_Click_5(object sender, RoutedEventArgs e) {
-////            var fdialog = new OpenFileDialog();
-////            if (fdialog.ShowDialog() == true) {
-////                var res = await O.Uploader.Upload(fdialog.FileName, "/sun_monitor/"+Path.GetFileName(fdialog.FileName));
-////                Console.WriteLine(res.Success);
-////                Console.WriteLine(res.StatusDescription);
-////                if (!res.Success && res.Error != null)
-////                    throw res.Error;
-////            }
-//            var fdialog = new OpenFileDialog();
-//            if (fdialog.ShowDialog() == true)
-//                await O.Remote.Upload(fdialog.FileName, "/home/sun_monitor/ftp_publiic/"+Path.GetFileName(fdialog.FileName));
-//
-////            var cmd = await O.Remote.Execute("uptime");
-////            Console.Write(cmd.cmd.Result);
-////            Console.Write(cmd.cmd.ExitStatus);
-//        }
-
-
-
-        private async void Button_Click_4(object sender, RoutedEventArgs e) {
-            var n = new Netio.Power {
-                UseHttps = true,
-                Host = "10.66.180.60"
-            };
-
-            var a = await n.Get();
-            var b = 1;
-        }
-
-        private async void Button_Click_5(object sender, RoutedEventArgs e) {
-            var p = new Netio.Power {
-                UseHttps = true,
-                Host = "10.66.180.60",
-                User = "ceso",
-                PassString = "ESACvilspa01"
-            };
-
-            S.Power.Netio = p;
-            S.Save();
-
-            var names = p.Names;
-
-            p.Register(O.Dome, "dome");
-            var t = p.Toggle(O.Dome);
-            t.Wait();
-            Console.WriteLine(t.Result.On);
-        }
 
         private void Button_Click_6(object sender, RoutedEventArgs e) {
             CamerasWindow.Show();

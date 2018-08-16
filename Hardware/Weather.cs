@@ -6,10 +6,10 @@ using System.Linq;
 using System.Reflection;
 using System.Windows.Media;
 using ASCOM.DriverAccess;
-using heliomaster_wpf.Annotations;
-using heliomaster_wpf.Properties;
+using heliomaster.Annotations;
+using heliomaster.Properties;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     [SettingsSerializeAs(SettingsSerializeAs.Xml)]
     public class WeatherItem : BaseNotify {
         public enum Conditions {
@@ -137,6 +137,8 @@ namespace heliomaster_wpf {
             typeof(ObservingConditions);
 
         public ObservingConditions Driver => (ObservingConditions) driver;
+
+        public override string Type => Resources.weather;
 
         public WeatherItem CloudCover     { get; [UsedImplicitly] private set; }
         public WeatherItem DewPoint       { get; [UsedImplicitly] private set; }

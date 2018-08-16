@@ -2,9 +2,9 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using heliomaster_wpf.Annotations;
+using heliomaster.Annotations;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class HMWindow : Window, INotifyPropertyChanged {
         #region INotifyPropertyChanged
 

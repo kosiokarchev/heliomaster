@@ -8,21 +8,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace heliomaster_wpf.Properties {
-    
-    
+namespace heliomaster.Properties {
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
     public sealed partial class RemoteSettings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static RemoteSettings defaultInstance = ((RemoteSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new RemoteSettings())));
-        
+
         public static RemoteSettings Default {
             get {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("131.176.161.15")]
@@ -34,7 +34,7 @@ namespace heliomaster_wpf.Properties {
                 this["Host"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("sun_monitor")]
@@ -46,7 +46,7 @@ namespace heliomaster_wpf.Properties {
                 this["User"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -58,7 +58,7 @@ namespace heliomaster_wpf.Properties {
                 this["Pass"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("22")]
@@ -70,7 +70,7 @@ namespace heliomaster_wpf.Properties {
                 this["Port"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -82,7 +82,7 @@ namespace heliomaster_wpf.Properties {
                 this["PrivateKeyFilename"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -94,7 +94,7 @@ namespace heliomaster_wpf.Properties {
                 this["InitCommand"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -106,7 +106,7 @@ namespace heliomaster_wpf.Properties {
                 this["DoTransfer"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -118,7 +118,7 @@ namespace heliomaster_wpf.Properties {
                 this["DoDeleteLocal"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -130,7 +130,7 @@ namespace heliomaster_wpf.Properties {
                 this["DoCommand"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -142,19 +142,19 @@ namespace heliomaster_wpf.Properties {
                 this["CommandFormat"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("UserPass")]
-        public global::heliomaster_wpf.RemoteLoginMethods LoginMethod {
+        public global::heliomaster.RemoteLoginMethods LoginMethod {
             get {
-                return ((global::heliomaster_wpf.RemoteLoginMethods)(this["LoginMethod"]));
+                return ((global::heliomaster.RemoteLoginMethods)(this["LoginMethod"]));
             }
             set {
                 this["LoginMethod"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]

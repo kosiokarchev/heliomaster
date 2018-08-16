@@ -11,7 +11,7 @@ using System.Windows.Markup;
 using System.Windows.Media;
 using System.Xaml;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class BaseMarkupExtension : MarkupExtension {
         public override object ProvideValue(IServiceProvider serviceProvider) {
             return this;

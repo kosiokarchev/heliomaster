@@ -2,18 +2,24 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using heliomaster.Properties;
 using Xceed.Wpf.DataGrid;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class Focuser : BaseHardwareControl {
         protected override Type driverType => typeof(ASCOM.DriverAccess.Focuser);
         public ASCOM.DriverAccess.Focuser Driver => (ASCOM.DriverAccess.Focuser) driver;
 
+        #region properties
+
+        public override string Type => Resources.focuser;
+
         public bool Positionable => Valid && Absolute != null && (bool) Absolute;
-        public bool Moveable => Valid && !moving && !Driver.IsMoving;
+        public bool Moveable     => Valid && !moving && !Driver.IsMoving;
 
         public double Position => Positionable ? StepSize * Driver.Position : Speed;
 
+        #endregion
 
         private bool? _absolute;
         public bool? Absolute {

@@ -132,6 +132,12 @@
   <data name="az" xml:space="preserve">
     <value>Az</value>
   </data>
+  <data name="cameraASCOM" xml:space="preserve">
+    <value>Camera.ASCOM</value>
+  </data>
+  <data name="cameraQHYCCD" xml:space="preserve">
+    <value>Camera.QHYCCD</value>
+  </data>
   <data name="capture" xml:space="preserve">
     <value>Capture</value>
   </data>
@@ -156,6 +162,9 @@
   <data name="exposure" xml:space="preserve">
     <value>exp (ms)</value>
   </data>
+  <data name="focuser" xml:space="preserve">
+    <value>Focuser</value>
+  </data>
   <data name="gain" xml:space="preserve">
     <value>gain</value>
   </data>
@@ -179,6 +188,9 @@
   </data>
   <data name="lst" xml:space="preserve">
     <value>LST</value>
+  </data>
+  <data name="mount" xml:space="preserve">
+    <value>Mount</value>
   </data>
   <data name="notavailable" xml:space="preserve">
     <value>N/A</value>

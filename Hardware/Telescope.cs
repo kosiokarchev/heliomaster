@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using System.Windows.Controls.Primitives;
 using System.Xml.Serialization;
 using ASCOM.DeviceInterface;
-using heliomaster_wpf.Annotations;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
+using heliomaster.Annotations;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public enum guidingMode {
         pulseGuide,
         moveAxis,
@@ -264,8 +264,9 @@ namespace heliomaster_wpf {
 
         #endregion
 
-
         #region properties
+
+        public override string Type => Resources.mount;
 
         public  bool   Moveable       => Valid && !AtPark && !Slewing;
 

@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
      public enum BitDepth {
         depth8,
         depth16,

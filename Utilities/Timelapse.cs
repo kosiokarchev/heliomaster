@@ -4,10 +4,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Security.RightsManagement;
-using heliomaster_wpf.Annotations;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
+using heliomaster.Annotations;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class Timelapse : BaseNotify {
         private bool _free = true;
         public bool Free {

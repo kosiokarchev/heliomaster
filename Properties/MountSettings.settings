@@ -1,11 +1,11 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="MountSettings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster.Properties" GeneratedClassName="MountSettings">
   <Profiles />
   <Settings>
     <Setting Name="MountID" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="Telescope" Type="heliomaster_wpf.Telescope" Scope="User">
+    <Setting Name="Telescope" Type="heliomaster.Telescope" Scope="User">
       <Value Profile="(Default)">
                     &lt;Telescope&gt;
                     &lt;/Telescope&gt;

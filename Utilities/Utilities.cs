@@ -8,12 +8,13 @@ using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ASCOM.DeviceInterface;
 using ASCOM.Utilities;
-using heliomaster_wpf.Annotations;
+using heliomaster.Annotations;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public static class SecureIt {
         private static readonly byte[] entropy = Encoding.Unicode.GetBytes("Salt Is Not A Password");
 

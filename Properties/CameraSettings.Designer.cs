@@ -8,21 +8,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace heliomaster_wpf.Properties {
-    
-    
+namespace heliomaster.Properties {
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
     public sealed partial class CameraSettings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static CameraSettings defaultInstance = ((CameraSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new CameraSettings())));
-        
+
         public static CameraSettings Default {
             get {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfInt xmlns:xsi=\"http://www.w3.org" +
@@ -36,7 +36,7 @@ namespace heliomaster_wpf.Properties {
                 this["Gains"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfInt xmlns:xsi=\"http://www.w3.org" +
@@ -50,7 +50,7 @@ namespace heliomaster_wpf.Properties {
                 this["Exposures"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("<?xml version=\"1.0\" encoding=\"utf-16\"?>\r\n<ArrayOfCameraModel xmlns:xsi=\"http://ww" +
@@ -73,15 +73,15 @@ namespace heliomaster_wpf.Properties {
             "RemoteCommandFormat>\r\n                            <Flip>false</Flip>\r\n          " +
             "                  <Rotate>0</Rotate>\r\n                        </CameraModel>    " +
             "                </ArrayOfCameraModel>")]
-        public global::System.Collections.ObjectModel.ObservableCollection<heliomaster_wpf.CameraModel> CameraModels {
+        public global::System.Collections.ObjectModel.ObservableCollection<heliomaster.CameraModel> CameraModels {
             get {
-                return ((global::System.Collections.ObjectModel.ObservableCollection<heliomaster_wpf.CameraModel>)(this["CameraModels"]));
+                return ((global::System.Collections.ObjectModel.ObservableCollection<heliomaster.CameraModel>)(this["CameraModels"]));
             }
             set {
                 this["CameraModels"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]

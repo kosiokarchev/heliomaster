@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace heliomaster_wpf.Properties {
+namespace heliomaster.Properties {
     using System;
     
     
@@ -39,7 +39,7 @@ namespace heliomaster_wpf.Properties {
         public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("heliomaster_wpf.Properties.Resources", typeof(Resources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("heliomaster.Properties.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -102,6 +102,24 @@ namespace heliomaster_wpf.Properties {
         public static string az {
             get {
                 return ResourceManager.GetString("az", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Camera.ASCOM.
+        /// </summary>
+        public static string cameraASCOM {
+            get {
+                return ResourceManager.GetString("cameraASCOM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Camera.QHYCCD.
+        /// </summary>
+        public static string cameraQHYCCD {
+            get {
+                return ResourceManager.GetString("cameraQHYCCD", resourceCulture);
             }
         }
         
@@ -178,6 +196,15 @@ namespace heliomaster_wpf.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Focuser.
+        /// </summary>
+        public static string focuser {
+            get {
+                return ResourceManager.GetString("focuser", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to gain.
         /// </summary>
         public static string gain {
@@ -246,6 +273,15 @@ namespace heliomaster_wpf.Properties {
         public static string lst {
             get {
                 return ResourceManager.GetString("lst", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Mount.
+        /// </summary>
+        public static string mount {
+            get {
+                return ResourceManager.GetString("mount", resourceCulture);
             }
         }
         

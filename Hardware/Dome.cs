@@ -4,9 +4,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
 using ASCOM.DeviceInterface;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class Dome : BaseHardwareControl {
         public static readonly Dictionary<ShutterState, string> ShutterStateStrings = new Dictionary<ShutterState, string>() {
             {ShutterState.shutterOpen, "open"},
@@ -60,6 +60,8 @@ namespace heliomaster_wpf {
         }
 
         #region properties
+
+        public override string Type => Resources.dome;
 
         public bool Moveable => Valid && !Slaved && !Slewing;
 

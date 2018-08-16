@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public enum CameraTypes {
         [Description("ASCOM")] ASCOM,
         [Description("QHYCCD")] QHYCCD
@@ -30,8 +30,8 @@ namespace heliomaster_wpf {
         };
 
         public static readonly Dictionary<CameraTypes, Type> CameraTypes = new Dictionary<CameraTypes, Type> {
-            {heliomaster_wpf.CameraTypes.ASCOM, typeof(ASCOMCamera)},
-            {heliomaster_wpf.CameraTypes.QHYCCD, typeof(QHYCCDCamera)}
+            {heliomaster.CameraTypes.ASCOM, typeof(ASCOMCamera)},
+            {heliomaster.CameraTypes.QHYCCD, typeof(QHYCCDCamera)}
         };
 
         public static BaseCamera Create(CameraTypes type, params object[] args) {

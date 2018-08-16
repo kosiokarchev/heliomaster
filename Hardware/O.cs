@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
-using heliomaster_wpf.Annotations;
-using heliomaster_wpf.Properties;
+using heliomaster.Annotations;
+using heliomaster.Netio;
+using heliomaster.Properties;
 using Renci.SshNet;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class ObservatoryException : Exception {
         public ObservatoryException() { }
         public ObservatoryException(string message) : base(message) { }
@@ -63,13 +65,7 @@ namespace heliomaster_wpf {
 
 
         public Observatory() {
-            Power = null;
-            S.Power.PropertyChanged += (sender, args) => {
-                if (args.PropertyName == nameof(S.Power.PowerType))
-                    Power = null;
-            };
-            Console.WriteLine(S.Power.MountName);
-            Console.WriteLine(S.Power.DomeName);
+            InitPower();
 
             Starting += StartingHandle;
             Shutting += ShuttingHandle;
@@ -87,6 +83,37 @@ namespace heliomaster_wpf {
             // TODO: Error handling, duh...
             Console.WriteLine(e.Message);
             MessageBox.Show(e.Message);
+        }
+
+
+        private void InitPower() {
+            Power = null;
+            S.Power.PropertyChanged += (sender, args) => {
+                if (args.PropertyName == nameof(S.Power.PowerType)) {
+                    Power = null;
+                }
+            };
+
+            Mount.HasPowerControl = Power?.Register(Mount, S.Power.MountName) ?? false;
+            Dome.HasPowerControl  = Power?.Register(Dome, S.Power.DomeName) ?? false;
+
+            O.Refresh += async () => {
+                if (Power is Netio.Power p && await p.Get() is Netio.Netio s) {
+                    foreach (var hn in new[] {
+                        new {h = (BaseHardwareControl) Dome,  n = S.Power.DomeName},
+                        new {h = (BaseHardwareControl) Mount, n = S.Power.MountName}
+                    })
+                        if ((hn.h.HasPowerControl || p.Register(hn.h, hn.n))
+                            && p.GetID(hn.h) is int id
+                            && s.Outputs.FirstOrDefault(i => i.ID == id) is Output o) {
+                            hn.h.HasPowerControl = true;
+                            hn.h.IsPowerOn       = o.State == States.On;
+                        }
+                } else {
+                    Dome.HasPowerControl = false;
+                    Mount.HasPowerControl = false;
+                }
+            };
         }
 
 

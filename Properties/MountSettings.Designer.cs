@@ -8,21 +8,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace heliomaster_wpf.Properties {
-    
-    
+namespace heliomaster.Properties {
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
     public sealed partial class MountSettings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static MountSettings defaultInstance = ((MountSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new MountSettings())));
-        
+
         public static MountSettings Default {
             get {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -34,14 +34,14 @@ namespace heliomaster_wpf.Properties {
                 this["MountID"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <Telescope>\r\n                    </Telescope>\r\n            " +
             "    ")]
-        public global::heliomaster_wpf.Telescope Telescope {
+        public global::heliomaster.Telescope Telescope {
             get {
-                return ((global::heliomaster_wpf.Telescope)(this["Telescope"]));
+                return ((global::heliomaster.Telescope)(this["Telescope"]));
             }
             set {
                 this["Telescope"] = value;

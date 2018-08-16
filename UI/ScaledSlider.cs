@@ -6,9 +6,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using ASCOM.Utilities;
-using heliomaster_wpf.Annotations;
+using heliomaster.Annotations;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class CustomToolTipSlider : Slider, INotifyPropertyChanged {
         public static readonly DependencyProperty ToolTipFormatProperty = DependencyProperty.Register(nameof(ToolTipFormat), typeof(string), typeof(CustomToolTipSlider), new PropertyMetadata(defaultValue:"{0}"));
         public string ToolTipFormat {

@@ -8,21 +8,21 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace heliomaster_wpf.Properties {
-    
-    
+namespace heliomaster.Properties {
+
+
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
     public sealed partial class DomeSettings : global::System.Configuration.ApplicationSettingsBase {
-        
+
         private static DomeSettings defaultInstance = ((DomeSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new DomeSettings())));
-        
+
         public static DomeSettings Default {
             get {
                 return defaultInstance;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -34,7 +34,7 @@ namespace heliomaster_wpf.Properties {
                 this["DomeID"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("0.5")]
@@ -46,7 +46,7 @@ namespace heliomaster_wpf.Properties {
                 this["SlaveTolerance"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00:05:00")]
@@ -58,7 +58,7 @@ namespace heliomaster_wpf.Properties {
                 this["SlaveInterval"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00:30:00")]
@@ -70,7 +70,7 @@ namespace heliomaster_wpf.Properties {
                 this["SlaveCheckup"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
@@ -82,7 +82,7 @@ namespace heliomaster_wpf.Properties {
                 this["AlwaysSoftSlave"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00:01:00")]
@@ -94,7 +94,7 @@ namespace heliomaster_wpf.Properties {
                 this["ShutterTimeout"] = value;
             }
         }
-        
+
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute(@"
@@ -104,9 +104,9 @@ namespace heliomaster_wpf.Properties {
                         </ShutterTimeout>
                     </Dome>
                 ")]
-        public global::heliomaster_wpf.Dome Dome {
+        public global::heliomaster.Dome Dome {
             get {
-                return ((global::heliomaster_wpf.Dome)(this["Dome"]));
+                return ((global::heliomaster.Dome)(this["Dome"]));
             }
             set {
                 this["Dome"] = value;

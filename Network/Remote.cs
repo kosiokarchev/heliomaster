@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization;
 using Renci.SshNet;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public interface IUploader {
         Task Upload(string fname, string path);
         Task Upload(Stream istream, string path);

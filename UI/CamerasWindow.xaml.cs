@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
-namespace heliomaster_wpf
+namespace heliomaster
 {
     /// <summary>
     /// Interaction logic for CamerasWindow.xaml

@@ -1,0 +1,18 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster.Properties" GeneratedClassName="PowerSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="PowerType" Type="heliomaster.PowerTypes" Scope="User">
+      <Value Profile="(Default)">Netio</Value>
+    </Setting>
+    <Setting Name="MountName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">dome</Value>
+    </Setting>
+    <Setting Name="DomeName" Type="System.String" Scope="User">
+      <Value Profile="(Default)">mount</Value>
+    </Setting>
+    <Setting Name="Netio" Type="heliomaster.Netio.Power" Scope="User">
+      <Value Profile="(Default)">&lt;Power xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"                        xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt; &lt;/Power&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

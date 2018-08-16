@@ -12,11 +12,11 @@ using System.Windows.Media;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
 using Newtonsoft.Json;
 using SmartFormat;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public enum AutoExposureModes {
         [Description("AVG")] mean = 0,
         [Description("MAX")] max = 1,

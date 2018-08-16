@@ -1,6 +1,6 @@
 ﻿using System.Configuration;
 
-namespace heliomaster_wpf.Properties {
+namespace heliomaster.Properties {
     public static class S {
         public static readonly Settings        Settings = Settings.Default;
         public static readonly DomeSettings    Dome     = DomeSettings.Default;

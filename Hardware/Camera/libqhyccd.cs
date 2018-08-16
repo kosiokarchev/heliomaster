@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
  public static class libqhyccd {
   public enum CONTROL_ID {
    CONTROL_BRIGHTNESS = 0, //!< image brightness

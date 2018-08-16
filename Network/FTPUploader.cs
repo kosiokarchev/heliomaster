@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public struct UploadResult {
         public bool Success;
         public string StatusDescription;

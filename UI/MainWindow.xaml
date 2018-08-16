@@ -3,9 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:heliomaster_wpf"
-        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Name="window" x:Class="heliomaster_wpf.MainWindow"
-        xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
+        xmlns:local="clr-namespace:heliomaster"
+        xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit" x:Name="window" x:Class="heliomaster.MainWindow"
+        xmlns:properties="clr-namespace:heliomaster.Properties"
         xmlns:ASCOMDeviceInterface="clr-namespace:ASCOM.DeviceInterface;assembly=ASCOM.DeviceInterfaces"
         mc:Ignorable="d"
         Title="MainWindow" DataContext="{x:Static local:O.Default}" Closing="OnExit" SizeToContent="WidthAndHeight" Height="1030" Width="812">
@@ -24,6 +24,87 @@
                 </TextBlock>
             </StackPanel>
         </DataTemplate>
+
+        <DataTemplate x:Key="HardwareHeaderTemplate" DataType="local:BaseHardwareControl">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Grid.Resources>
+                    <Style x:Key="ButtonStyle">
+                        <Setter Property="Viewbox.Width" Value="20" />
+                        <Setter Property="Viewbox.Height" Value="20" />
+                    </Style>
+                </Grid.Resources>
+
+                <StackPanel Grid.Column="0" Orientation="Horizontal"
+                            Visibility="{Binding HasPowerControl, Converter={local:VisibilityConverter}}">
+                    <StackPanel.Resources>
+                        <Style x:Key="PowerButtonStyle" BasedOn="{StaticResource ButtonStyle}">
+                            <Setter Property="Button.Tag" Value="{x:Static local:HardwareControlButtons.On}" />
+
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding IsPowerOn}" Value="True">
+                                    <Setter Property="Button.Tag" Value="{x:Static local:HardwareControlButtons.Off}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Resources>
+
+                    <Button Click="HardwareControlButton_Click" Padding="0" VerticalAlignment="Center" HorizontalAlignment="Left" Style="{StaticResource PowerButtonStyle}">
+                        <Viewbox Child="{StaticResource icon-flash}" />
+                    </Button>
+                    <Button  Padding="0" VerticalAlignment="Center" HorizontalAlignment="Left"
+                             Tag="{x:Static local:HardwareControlButtons.Reset}"
+                             Click="HardwareControlButton_Click"
+                             Style="{StaticResource PowerButtonStyle}">
+                        <Viewbox Child="{StaticResource icon-reset}" />
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Grid.Column="1" Orientation="Horizontal">
+                    <Button  Click="HardwareControlButton_Click">
+                        <Button.Style>
+                            <Style BasedOn="{StaticResource ButtonStyle}">
+                                <Setter Property="Button.Tag" Value="{x:Static local:HardwareControlButtons.Connect}" />
+
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Valid}" Value="True">
+                                        <Setter Property="Button.Tag" Value="{x:Static local:HardwareControlButtons.Disconnect}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+
+                        <Viewbox Child="{StaticResource icon-link}" />
+                    </Button>
+                </StackPanel>
+
+                <TextBlock Grid.Column="2"
+                           TextTrimming="CharacterEllipsis" MaxWidth="100">
+                    <Run Text="{Binding Type, Mode=OneTime}" />
+                    <Run Text=": " />
+                    <Run Text="{Binding Name, Mode=OneWay}" />
+                </TextBlock>
+            </Grid>
+        </DataTemplate>
+
+        <Style x:Key="HardwareGroupStyle">
+            <Setter Property="GroupBox.Header" Value="{Binding}" />
+            <Setter Property="GroupBox.HeaderTemplate" Value="{StaticResource HardwareHeaderTemplate}" />
+
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Valid}" Value="True">
+                    <Setter Property="GroupBox.BorderBrush" Value="LimeGreen" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding Valid}" Value="False">
+                    <Setter Property="GroupBox.BorderBrush" Value="Crimson" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </local:HMWindow.Resources>
 
     <DockPanel>
@@ -35,12 +116,8 @@
         <Grid x:Name="windowCanvas" DockPanel.Dock="Bottom">
 
             <Button Content="Capture" HorizontalAlignment="Left" Margin="410,10,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
-            <Button Content="Dome" HorizontalAlignment="Left" Margin="410,37,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_3"/>
-            <Button Content="Mount" HorizontalAlignment="Left" Margin="410,64,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_2"/>
-            <Button Content="Weather" HorizontalAlignment="Left" Margin="410,91,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click"/>
-            <!-- <Button Content="Send file" HorizontalAlignment="Left" Margin="436,37,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_5"/> -->
 
-            <GroupBox Header="{x:Static properties:Resources.dome}" HorizontalAlignment="Left" DataContext="{x:Static local:O.Dome}" Height="225" Margin="189,158,0,0" VerticalAlignment="Top" Width="216">
+            <GroupBox Style="{StaticResource HardwareGroupStyle}" HorizontalAlignment="Left" DataContext="{x:Static local:O.Dome}" Height="225" Margin="189,158,0,0" VerticalAlignment="Top" Width="216">
                 <GroupBox.Resources>
                     <Style x:Key="NavButtonStyle">
                         <Setter Property="Button.IsEnabled" Value="False" />
@@ -57,16 +134,8 @@
                         </Style.Triggers>
                     </Style>
                 </GroupBox.Resources>
-                <GroupBox.Style>
-                    <Style>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding Valid}" Value="true">
-                                <Setter Property="GroupBox.BorderBrush" Value="LimeGreen" />
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </GroupBox.Style>
-                <Grid Margin="0">
+
+                <Grid Margin="0" IsEnabled="{Binding Valid}">
                     <Grid.RowDefinitions>
                         <RowDefinition/>
                         <RowDefinition Height="Auto"/>
@@ -208,7 +277,7 @@
                 </Grid>
             </GroupBox>
 
-            <GroupBox Grid.Row="0" Header="{x:Static properties:Resources.weather}" DataContext="{Binding Source={x:Static local:O.Weather}}" Margin="189,10,0,0" HorizontalAlignment="Left" Width="216" Height="143" VerticalAlignment="Top">
+            <GroupBox Style="{StaticResource HardwareGroupStyle}" Grid.Row="0" DataContext="{Binding Source={x:Static local:O.Weather}}" Margin="189,10,0,0" HorizontalAlignment="Left" Width="216" Height="143" VerticalAlignment="Top">
                 <GroupBox.BorderBrush>
                     <PriorityBinding>
                         <Binding Path="Condition" Converter="{local:WeatherConditionConverter}" />
@@ -277,8 +346,8 @@
                 </WrapPanel>
             </GroupBox>
 
-            <GroupBox Header="Mount" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"
-                      DataContext="{x:Static local:O.Mount}" Height="382" IsEnabled="{Binding Valid}">
+            <GroupBox  Style="{StaticResource HardwareGroupStyle}" HorizontalAlignment="Left" Margin="10,12,0,0" VerticalAlignment="Top"
+                      DataContext="{x:Static local:O.Mount}">
                 <GroupBox.Resources>
                     <Style x:Key="NavButtonStyle">
                         <Setter Property="Button.IsEnabled" Value="True" />
@@ -293,7 +362,8 @@
                         </Style.Triggers>
                     </Style>
                 </GroupBox.Resources>
-                <Grid Margin="0">
+
+                <Grid Margin="0" IsEnabled="{Binding Valid}">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
@@ -533,8 +603,6 @@
                 </Grid>
             </GroupBox>
 
-            <Button Content="Netio GET" HorizontalAlignment="Left" Margin="410,158,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_4"/>
-            <Button Content="Netio POST" HorizontalAlignment="Left" Margin="410,185,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_5"/>
             <Button Content="Startup" HorizontalAlignment="Left" Margin="410,212,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_6"/>
             <Button Content="Shutdown" HorizontalAlignment="Left" Margin="410,239,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_7"/>
         </Grid>

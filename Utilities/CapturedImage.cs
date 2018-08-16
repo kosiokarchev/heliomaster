@@ -2,9 +2,9 @@
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Media;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class CapturedImage : BaseNotify {
         public CameraImage Image { get; set; }
         public string LocalPath { get; set; }

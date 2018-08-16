@@ -8,7 +8,7 @@ using System.Windows.Documents;
 using System.Windows.Forms;
 using Timer = System.Threading.Timer;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class QueueItem<Tin,Tout> {
         public Func<Tin, Tout> Func;
         public Tin             Param;

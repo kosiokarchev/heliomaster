@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Windows;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
 using Python.Runtime;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class NoPythonException : NotSupportedException {
         public NoPythonException() : base("No Python support.") { }
     }

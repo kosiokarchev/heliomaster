@@ -5,12 +5,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using heliomaster.Properties;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class QHYCCDCamera : BaseCamera {
 //        private readonly QHYCCDLocalizer libqhyccd = new QHYCCDLocalizer();
 
         protected override Type driverType { get; } = null;
+        public override string Type => Resources.cameraQHYCCD;
 
         private         uint     _width;
         public override uint     Width => _width;

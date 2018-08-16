@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="CameraSettings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster.Properties" GeneratedClassName="CameraSettings">
   <Profiles />
   <Settings>
     <Setting Name="Gains" Type="System.Int32[]" Scope="User">
@@ -16,7 +16,7 @@
   &lt;int&gt;20&lt;/int&gt;
 &lt;/ArrayOfInt&gt;</Value>
     </Setting>
-    <Setting Name="CameraModels" Type="System.Collections.ObjectModel.ObservableCollection&lt;heliomaster_wpf.CameraModel&gt;" Scope="User">
+    <Setting Name="CameraModels" Type="System.Collections.ObjectModel.ObservableCollection&lt;heliomaster.CameraModel&gt;" Scope="User">
       <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfCameraModel xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                         xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;

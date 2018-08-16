@@ -6,7 +6,7 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{C3DEE6D0-0417-4E54-BBE7-850AB94FC64A}</ProjectGuid>
     <OutputType>WinExe</OutputType>
-    <RootNamespace>heliomaster_wpf</RootNamespace>
+    <RootNamespace>heliomaster</RootNamespace>
     <AssemblyName>heliomaster-wpf</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -20,7 +20,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
@@ -139,7 +139,7 @@
     <Compile Include="Hardware\Camera\QHYCCDCamera.cs" />
     <Compile Include="Hardware\Camera\QHYCCDImage.cs" />
     <Compile Include="Hardware\Power.cs" />
-    <Compile Include="PowerSettings.Designer.cs">
+    <Compile Include="Properties\PowerSettings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>PowerSettings.settings</DependentUpon>
@@ -225,7 +225,7 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <None Include="PowerSettings.settings">
+    <None Include="Properties\PowerSettings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>PowerSettings.Designer.cs</LastGenOutput>
     </None>

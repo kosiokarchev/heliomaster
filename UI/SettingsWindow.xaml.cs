@@ -4,10 +4,10 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
 using Microsoft.Win32;
 
-namespace heliomaster_wpf
+namespace heliomaster
 {
     /// <summary>
     /// Interaction logic for SettingsWindow.xaml

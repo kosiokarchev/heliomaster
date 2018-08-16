@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="PythonSettings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster.Properties" GeneratedClassName="PythonSettings">
   <Profiles />
   <Settings>
     <Setting Name="IsEnabled" Type="System.Boolean" Scope="User">

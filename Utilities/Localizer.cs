@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public abstract class Localizer {
         [DllImport("kernel32.dll", CharSet = CharSet.Ansi)]
         protected static extern IntPtr LoadLibrary(string dllToLoad);

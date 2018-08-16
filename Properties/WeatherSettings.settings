@@ -1,11 +1,11 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster_wpf.Properties" GeneratedClassName="WeatherSettings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster.Properties" GeneratedClassName="WeatherSettings">
   <Profiles />
   <Settings>
     <Setting Name="WeatherID" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CloudCover" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="CloudCover" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;%&lt;/Unit&gt;
@@ -15,7 +15,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="DewPoint" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="DewPoint" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;°C&lt;/Unit&gt;
@@ -23,7 +23,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="Pressure" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="Pressure" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;hPa&lt;/Unit&gt;
@@ -31,7 +31,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="RainRate" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="RainRate" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;mm/h&lt;/Unit&gt;
@@ -39,7 +39,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="SkyBrightness" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="SkyBrightness" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;lux&lt;/Unit&gt;
@@ -49,7 +49,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="SkyQuality" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="SkyQuality" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;IsReversed&gt;true&lt;/IsReversed&gt;
@@ -57,7 +57,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="SkyTemperature" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="SkyTemperature" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;°C&lt;/Unit&gt;
@@ -65,7 +65,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="StarFWHM" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="StarFWHM" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;"&lt;/Unit&gt;
@@ -74,7 +74,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="Temperature" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="Temperature" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;°C&lt;/Unit&gt;
@@ -83,7 +83,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="WindDirection" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="WindDirection" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;°&lt;/Unit&gt;
@@ -93,7 +93,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="WindGust" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="WindGust" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;m/s&lt;/Unit&gt;
@@ -101,7 +101,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="WindSpeed" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="WindSpeed" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;m/s&lt;/Unit&gt;
@@ -109,7 +109,7 @@
                     &lt;/WeatherItem&gt;
                 </Value>
     </Setting>
-    <Setting Name="Humidity" Type="heliomaster_wpf.WeatherItem" Scope="User">
+    <Setting Name="Humidity" Type="heliomaster.WeatherItem" Scope="User">
       <Value Profile="(Default)">
                     &lt;WeatherItem&gt;
                         &lt;Unit&gt;%&lt;/Unit&gt;

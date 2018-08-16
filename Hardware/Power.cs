@@ -11,28 +11,29 @@ using System.Net.Http.Headers;
 using System.Security;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Xml.Serialization;
-using heliomaster_wpf.Annotations;
+using heliomaster.Annotations;
 using Newtonsoft.Json;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     public class PowerStatus {
         public bool? On;
     }
 
     public abstract class BasePower : BaseNotify {
-        [XmlIgnore] public abstract ObservableCollection<string> Names { get; }
+        [XmlIgnore] public abstract ObservableCollection<string> Names { get; protected set; }
         [XmlIgnore] public abstract bool Available { get; }
         public abstract bool Register(object o, string name);
 
         public abstract Task<PowerStatus> On(object o);
         public abstract Task<PowerStatus> Off(object o);
         public abstract Task<PowerStatus> Toggle(object o);
-        public abstract Task<PowerStatus> Reset(object o, TimeSpan dt);
-        public abstract Task<PowerStatus> Pulse(object o, TimeSpan dt);
+        public abstract Task<PowerStatus> Reset(object o, TimeSpan? dt = null);
+        public abstract Task<PowerStatus> Pulse(object o, TimeSpan? dt = null);
     }
 
     public enum PowerTypes {
@@ -40,7 +41,7 @@ namespace heliomaster_wpf {
     }
 }
 
-namespace heliomaster_wpf.Netio {
+namespace heliomaster.Netio {
     public enum States {
         Off = 0,
         On  = 1
@@ -66,12 +67,13 @@ namespace heliomaster_wpf.Netio {
     }
     public class Output {
         public int           ID;
-        public string        Name { internal get; [UsedImplicitly] set; }
+        public string        Name { internal get; set; }
         public States        State;
         public OutputActions Action;
         public int           Delay;
 
-        public bool ShouldSerializeDelay() => Action == OutputActions.OffDelay || Action == OutputActions.OffDelay;
+        public bool ShouldSerializeDelay() => Delay >= 100 && (Action == OutputActions.OffDelay || Action == OutputActions.OffDelay);
+        public bool ShouldSerializeState() => Action == OutputActions.Ignore;
 //        [JsonIgnore] public double        Current, PowerFactor, Load, Energy;
     }
     public class Netio {
@@ -83,6 +85,7 @@ namespace heliomaster_wpf.Netio {
     [SettingsSerializeAs(SettingsSerializeAs.Xml)]
     public class Power : BasePower {
         private readonly UriBuilder uriBuilder = new UriBuilder {Path = "netio.json"};
+
         public string Host {
             get => uriBuilder.Host;
             set {
@@ -105,6 +108,7 @@ namespace heliomaster_wpf.Netio {
                 var scheme = value ? Uri.UriSchemeHttps : Uri.UriSchemeHttp;
                 if (scheme.Equals(uriBuilder.Scheme)) return;
                 uriBuilder.Scheme = scheme;
+                uriBuilder.Port = -1;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Port));
             }
@@ -137,59 +141,99 @@ namespace heliomaster_wpf.Netio {
             set => Pass = value.DecryptString();
         }
 
+        public TimeSpan Timeout {
+            get => hc.Timeout;
+            set {
+                if (value.Equals(hc.Timeout)) return;
+                try {
+                    hc.Timeout = value;
+                } catch {
+                    hc.Timeout = new TimeSpan(0, 0, 10);
+                }
+                OnPropertyChanged();
+            }
+        }
+
         [XmlIgnore] private Netio _socket;
         [XmlIgnore] public Netio Socket {
             get => _socket ?? (_socket = Get().Result);
-            set => _socket = value;
+            set {
+                _socket = value;
+                Names = new ObservableCollection<string>();
+            }
         }
 
         private Uri uri => uriBuilder.Uri;
         private readonly HttpClient hc = new HttpClient();
 
-        private readonly HttpRequestMessage _msg = new HttpRequestMessage { Method = HttpMethod.Post };
-        private HttpRequestMessage get_msg(IEnumerable<Output> os) {
-            _msg.RequestUri            = uri;
-            _msg.Headers.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes($"{User}:{new NetworkCredential(User, Pass).Password}")));
-            _msg.Content = new StringContent(JsonConvert.SerializeObject(new Netio {Outputs = os}));
-            Logger.debug("NETIO: Sending: " + _msg.Content.ReadAsStringAsync().Result);
-            return _msg;
+        private HttpRequestMessage get_msg(IEnumerable<Output> os = null) {
+            var ret = new HttpRequestMessage {
+                Method     = os == null ? HttpMethod.Get : HttpMethod.Post,
+                RequestUri = uri,
+                Headers = {
+                    Authorization =
+                        new AuthenticationHeaderValue(
+                            "Basic",
+                            Convert.ToBase64String(
+                                Encoding.ASCII.GetBytes($"{User}:{new NetworkCredential(User, Pass).Password}")))
+                }
+            };
+            if (os != null) {
+                var json = JsonConvert.SerializeObject(new Netio {Outputs = os});
+                ret.Content = new StringContent(json);
+                Logger.debug($"NETIO: Sending: {json}");
+            }
+            return ret;
         }
 
-        private void cleanPassword() {
-            _msg.Headers.Authorization = null;
-        }
 
-        public Task<Netio> Get() {
-            return Task<Netio>.Factory.StartNew(() => {
-                var json = "";
-                Utilities.InsecureSSL(() => {
-                    try { json = hc.GetStringAsync(uri).Result; }
-                    catch {}
-                }).Wait();
-                Logger.debug($"NETIO: Received: \"{json}\"");
-                try { Socket = JsonConvert.DeserializeObject<Netio>(json); }
-                catch { Socket = null; }
-                return _socket;
-            });
-        }
-
-        private Task<Netio> send(IReadOnlyCollection<Output> os) {
-            return Task<Netio>.Factory.StartNew(() => {
+        private SemaphoreSlim sem = new SemaphoreSlim(1, 1);
+        private Netio sendMessage(HttpRequestMessage msg) {
+            try {
                 HttpResponseMessage response = null;
-                Utilities.InsecureSSL(() => { response = hc.SendAsync(get_msg(os)).Result; }).Wait();
-                cleanPassword();
 
-                if (response?.StatusCode == HttpStatusCode.OK) {
-                    var resp = response.Content.ReadAsStringAsync().Result;
-                    Socket = JsonConvert.DeserializeObject<Netio>(resp);
-                    return Socket;
-                } else return null;
-            });
+                var token = new CancellationTokenSource(Timeout);
+                sem.Wait();
+                Utilities.InsecureSSL(() => {
+                    try {
+                        var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead, token.Token);
+                        task.Wait(token.Token);
+                        if (task.Status == TaskStatus.RanToCompletion)
+                            response = task.Result;
+                    } catch(OperationCanceledException) {}
+                }).Wait(token.Token);
+                sem.Release();
+
+                if (response.IsSuccessStatusCode) {
+                    var json = response?.Content.ReadAsStringAsync().Result;
+                    Logger.debug($"NETIO: Received: \"{json}\"");
+                    Socket = JsonConvert.DeserializeObject<Netio>(json);
+                } else {
+                    Logger.debug($"NETIO: Got bad response: {response.StatusCode}");
+                    Socket = null;
+                }
+            } catch (Exception e) {
+                Logger.debug($"NETIO: Error in get: {e.GetType().Name}: {e.Message}");
+                Socket = null;
+            }
+
+            return _socket;
         }
-        private Task<Netio> send(Output o) => send(new[] {o});
+
+        public Task<Netio> Get()
+            => Task<Netio>.Factory.StartNew(
+                o => sendMessage((HttpRequestMessage) o),
+                get_msg());
+
+        private Task<Netio> Post(IEnumerable<Output> os)
+            => Task<Netio>.Factory.StartNew(
+                o => sendMessage((HttpRequestMessage) o),
+                get_msg(os));
+
+        private Task<Netio> Post(Output o) => Post(new[] {o});
 
         public Task<Netio> Command(int id, States s = States.Off, OutputActions a = OutputActions.Ignore, int delay = 0)
-            => send(new Output {
+            => Post(new Output {
                 ID     = id,
                 State  = s,
                 Action = a,
@@ -203,7 +247,7 @@ namespace heliomaster_wpf.Netio {
             var actions = new List<OutputActions>(_actions);
             var delays  = new List<int>(_delays);
 
-            return send(ids.Select((t, i) => new Output {
+            return Post(ids.Select((t, i) => new Output {
                 ID     = t,
                 State  = i < states.Count ? states[i] : States.Off,
                 Action = i < actions.Count ? actions[i] : OutputActions.Ignore,
@@ -215,22 +259,28 @@ namespace heliomaster_wpf.Netio {
             return n?.Outputs.FirstOrDefault(o => o.ID == id);
         }
 
-        [XmlIgnore] private readonly ObservableCollection<string> _names = new ObservableCollection<string>();
+        [XmlIgnore] private ObservableCollection<string> _names = new ObservableCollection<string>();
         [XmlIgnore] public override ObservableCollection<string> Names {
             get {
                 if (_names.Count == 0) {
-                    var names = Socket?.Outputs.Select(o => o.Name);
+                    var names = Socket?.Outputs?.Select(o => o.Name);
                     if (names != null) foreach (var name in names) _names.Add(name);
                 }
 
                 return _names;
             }
+            protected set {
+                _names = value;
+                OnPropertyChanged();
+            }
         }
         public override bool Available {
             get {
                 var t = Get();
-                t.Wait();
-                return t.Exception == null && t.Result != null;
+                try {
+                    t.Wait();
+                    return t.Result != null;
+                } catch { return false; }
             }
         }
 
@@ -240,17 +290,16 @@ namespace heliomaster_wpf.Netio {
             name = name.ToLower();
             var id = Socket?.Outputs?.FirstOrDefault(output => output.Name.ToLower() == name)?.ID;
             if (id != null) {
-                registry.Add(o, (int) id);
+                registry[o] = (int) id;
                 return true;
             } else return false;
         }
 
         public bool Registered(object o) => registry.ContainsKey(o);
-        private int checkRegistered(object o) {
-            if (!Registered(o))
-                throw new ArgumentException("The object is not registered on the device.");
-            return registry[o];
-        }
+        public int? GetID(object o) => registry.ContainsKey(o) ? registry[o] : (int?) null;
+        private int checkRegistered(object o)
+            => GetID(o)
+               ?? throw new ArgumentException("The object is not registered on the device.");
 
         private Task<PowerStatus> control(object o, OutputActions action, int delay = 0) {
             return Task<PowerStatus>.Factory.StartNew(() => {
@@ -274,12 +323,12 @@ namespace heliomaster_wpf.Netio {
             return control(o, OutputActions.Toggle);
         }
 
-        public override Task<PowerStatus> Reset(object o, TimeSpan dt) {
-            return control(o, OutputActions.OffDelay, (int) dt.TotalMilliseconds);
+        public override Task<PowerStatus> Reset(object o, TimeSpan? dt = null) {
+            return control(o, OutputActions.OffDelay, (int?) dt?.TotalMilliseconds ?? 0);
         }
 
-        public override Task<PowerStatus> Pulse(object o, TimeSpan dt) {
-            return control(o, OutputActions.OnDelay, (int) dt.TotalMilliseconds);
+        public override Task<PowerStatus> Pulse(object o, TimeSpan? dt = null) {
+            return control(o, OutputActions.OnDelay, (int?) dt?.TotalMilliseconds ?? 0);
         }
     }
 }

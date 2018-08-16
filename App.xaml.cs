@@ -8,9 +8,9 @@ using System.Security.Permissions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Navigation;
-using heliomaster_wpf.Properties;
+using heliomaster.Properties;
 
-namespace heliomaster_wpf {
+namespace heliomaster {
     /// <summary>
     /// Interaction logic for App.xaml
     /// </summary>
@@ -44,11 +44,6 @@ namespace heliomaster_wpf {
                     MessageBox.Show($"Could not connect:{Environment.NewLine}SSH: {O.Remote.SSHError?.Message}{Environment.NewLine}SFTP: {O.Remote.SFTPError?.Message}");
             } catch (Exception e) {
                 Console.WriteLine(e.Message);
-            }
-
-            if (S.Power.Netio.Get() != null) {
-                S.Power.Netio.Register(O.Mount, S.Power.MountName);
-                S.Power.Netio.Register(O.Dome, S.Power.DomeName);
             }
         }
 

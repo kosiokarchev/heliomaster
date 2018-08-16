@@ -1,10 +1,10 @@
-﻿<Window x:Class="heliomaster_wpf.SettingsWindow"
+﻿<Window x:Class="heliomaster.SettingsWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:heliomaster_wpf"
-        xmlns:properties="clr-namespace:heliomaster_wpf.Properties"
+        xmlns:local="clr-namespace:heliomaster"
+        xmlns:properties="clr-namespace:heliomaster.Properties"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         mc:Ignorable="d"
         Title="SettingsWindow" SizeToContent="WidthAndHeight" MinWidth="640" MinHeight="480">
@@ -495,12 +495,12 @@
 
                                 <Label Grid.Row="0" Grid.Column="0" Content="Mount name:" HorizontalAlignment="Right" />
                                 <ComboBox Grid.Row="0" Grid.Column="1" VerticalAlignment="Center"
-                                          ItemsSource="{Binding Names, Source={x:Static local:O.Power}}"
+                                          ItemsSource="{Binding Power.Names, Source={x:Static local:O.Default}}"
                                           SelectedValue="{Binding MountName, Mode=TwoWay}" />
 
                                 <Label Grid.Row="1" Grid.Column="0" Content="Dome name:" HorizontalAlignment="Right" />
                                 <ComboBox Grid.Row="1" Grid.Column="1" VerticalAlignment="Center"
-                                          ItemsSource="{Binding Names, Source={x:Static local:O.Power}}"
+                                          ItemsSource="{Binding Power.Names, Source={x:Static local:O.Default}}"
                                           SelectedValue="{Binding DomeName, Mode=TwoWay}" />
                             </Grid>
 
