@@ -71,7 +71,7 @@ namespace heliomaster.Netio {
         public bool ShouldSerializeState() => Action == OutputActions.Ignore;
 //        [JsonIgnore] public double        Current, PowerFactor, Load, Energy;
     }
-    public class NetioSocket {
+    public class Netio {
         [JsonIgnore] public Agent                Agent;
         [JsonIgnore] public GlobalMeasure        GlobalMeasure;
         public              IEnumerable<Output>  Outputs;
@@ -129,6 +129,8 @@ namespace heliomaster.Netio {
             get => Pass.ToInsecureString();
             set => Pass = value.ToSecureString();
         }
+
+        [UsedImplicitly]
         public string EncryptedPassword {
             get => Pass.EncryptString();
             set => Pass = value.DecryptString();
@@ -148,8 +150,8 @@ namespace heliomaster.Netio {
         }
 
         [XmlIgnore] private bool faulted;
-        [XmlIgnore] private NetioSocket _socket;
-        [XmlIgnore] public NetioSocket Socket {
+        [XmlIgnore] private Netio _socket;
+        [XmlIgnore] public Netio Socket {
             get => _socket ?? (faulted ? null : _socket = Get().Result);
             set {
                 _socket = value;
@@ -174,7 +176,7 @@ namespace heliomaster.Netio {
                 }
             };
             if (os != null) {
-                var json = JsonConvert.SerializeObject(new NetioSocket {Outputs = os});
+                var json = JsonConvert.SerializeObject(new Netio {Outputs = os});
                 ret.Content = new StringContent(json);
                 Logger.debug($"NETIO: Sending: {json}");
             }
@@ -182,56 +184,61 @@ namespace heliomaster.Netio {
         }
 
 
-        private SemaphoreSlim sem = new SemaphoreSlim(1, 1);
-        private NetioSocket sendMessage(HttpRequestMessage msg) {
+        private readonly SemaphoreSlim sem = new SemaphoreSlim(1, 1);
+        private Netio sendMessage(HttpRequestMessage msg) {
             try {
+                Exception           e        = null;
                 HttpResponseMessage response = null;
 
-                var token = new CancellationTokenSource(Timeout);
+
                 sem.Wait();
                 Utilities.InsecureSSL(() => {
                     try {
-                        var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead, token.Token);
-                        task.Wait(token.Token);
+                        var t = new CancellationTokenSource(Timeout);
+                        var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead,
+                                                t.Token);
+                        task.Wait(t.Token);
                         if (task.Status == TaskStatus.RanToCompletion)
                             response = task.Result;
-                    } catch (OperationCanceledException e) {
-                        Logger.debug($"NETIO: Operation timed out: {e.Message}");
-                    } catch (Exception e) {
-                        Logger.debug($"NETIO: Error in HttpClient: {e.Message}");
+                    } catch (Exception err) {
+                        e = err;
                     }
-                }).Wait(token.Token);
-                sem.Release();
+                }).Wait();
+
+                if (e != null)
+                    throw e;
 
                 if (response.IsSuccessStatusCode) {
                     var json = response?.Content.ReadAsStringAsync().Result;
-                    Logger.debug($"NETIO: Received: \"{json}\"");
-                    Socket = JsonConvert.DeserializeObject<NetioSocket>(json);
+//                    Logger.debug($"NETIO: Received: \"{json}\"");
+                    Socket = JsonConvert.DeserializeObject<Netio>(json);
                 } else {
                     Logger.debug($"NETIO: Got bad response: {response.StatusCode}");
                     Socket = null;
                 }
             } catch (Exception e) {
-                Logger.debug($"NETIO: Error in get: {e.GetType().Name}: {e.Message}");
+                Logger.debug($"NETIO: Error in {msg.Method}: {e.GetType().Name}: {e.Message}");
                 Socket = null;
+            } finally {
+                sem.Release();
             }
 
             return _socket;
         }
 
-        public Task<NetioSocket> Get()
-            => Task<NetioSocket>.Factory.StartNew(
+        public Task<Netio> Get()
+            => Task<Netio>.Factory.StartNew(
                 o => sendMessage((HttpRequestMessage) o),
                 get_msg());
 
-        private Task<NetioSocket> Post(IEnumerable<Output> os)
-            => Task<NetioSocket>.Factory.StartNew(
+        private Task<Netio> Post(IEnumerable<Output> os)
+            => Task<Netio>.Factory.StartNew(
                 o => sendMessage((HttpRequestMessage) o),
                 get_msg(os));
 
-        private Task<NetioSocket> Post(Output o) => Post(new[] {o});
+        private Task<Netio> Post(Output o) => Post(new[] {o});
 
-        public Task<NetioSocket> Command(int id, States s = States.Off, OutputActions a = OutputActions.Ignore, int delay = 0)
+        public Task<Netio> Command(int id, States s = States.Off, OutputActions a = OutputActions.Ignore, int delay = 0)
             => Post(new Output {
                 ID     = id,
                 State  = s,
@@ -239,7 +246,7 @@ namespace heliomaster.Netio {
                 Delay  = delay
             });
 
-        public Task<NetioSocket> Command(IEnumerable<int> _ids, IEnumerable<States> _states,
+        public Task<Netio> Command(IEnumerable<int> _ids, IEnumerable<States> _states,
                                    IEnumerable<OutputActions> _actions, IEnumerable<int> _delays) {
             var ids     = new List<int>(_ids);
             var states  = new List<States>(_states);
@@ -254,7 +261,7 @@ namespace heliomaster.Netio {
             }).ToList());
         }
 
-        private Output pick(NetioSocket n, int id) {
+        private Output pick(Netio n, int id) {
             return n?.Outputs.FirstOrDefault(o => o.ID == id);
         }
 
@@ -286,6 +293,7 @@ namespace heliomaster.Netio {
         private readonly Dictionary<object, int> registry = new Dictionary<object, int>();
 
         public override bool Register(object o, string name) {
+            if (name == null) return false;
             name = name.ToLower();
             var id = Socket?.Outputs?.FirstOrDefault(output => output.Name.ToLower() == name)?.ID;
             if (id != null) {

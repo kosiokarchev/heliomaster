@@ -138,7 +138,6 @@ namespace heliomaster {
             if (Valid)
                 foreach (var p in props)
                     OnPropertyChanged(p);
-            else DisconnectedRaise();
         }
 
         #endregion

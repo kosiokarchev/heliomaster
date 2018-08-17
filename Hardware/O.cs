@@ -1,32 +1,70 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Threading;
 using heliomaster.Annotations;
 using heliomaster.Netio;
 using heliomaster.Properties;
 using Renci.SshNet;
 
 namespace heliomaster {
-    public class ObservatoryException : Exception {
+    public abstract class ObservatoryException : Exception {
         public ObservatoryException() { }
         public ObservatoryException(string message) : base(message) { }
     }
-    public class ObservatoryWarning : ObservatoryException {
+
+    public abstract class ObservatoryWarning : ObservatoryException {
         public ObservatoryWarning() { }
         public ObservatoryWarning(string message) : base(message) { }
     }
+
     public class SlavingWarning : ObservatoryWarning {
         public SlavingWarning() { }
         public SlavingWarning(string message) : base(message) { }
     }
+
+    public class AutoOperationsWarning : ObservatoryWarning {
+        public AutoOperationsWarning() { }
+        public AutoOperationsWarning(string message) : base(message) { }
+    }
+    public class RefuseAutomationWarning : AutoOperationsWarning {
+        public RefuseAutomationWarning() { }
+        public RefuseAutomationWarning(string message) : base(message) { }
+    }
+
     public class AutoOperationsException : ObservatoryException {
         public AutoOperationsException() { }
         public AutoOperationsException(string message) : base(message) { }
+    }
+
+    public class HardwareError : AutoOperationsException {
+        public HardwareError() { }
+        public HardwareError(string message) : base(message) { }
+    }
+    public class ConnectionError : HardwareError {
+        public ConnectionError() { }
+        public ConnectionError(string message) : base(message) { }
+    }
+    public class FixingFailedError : AutoOperationsException {
+        public FixingFailedError() { }
+        public FixingFailedError(string message) : base(message) { }
+    }
+
+    public class ObjectNotLocatedError : AutoOperationsException {
+        public ObjectNotLocatedError() { }
+        public ObjectNotLocatedError(string message) : base(message) { }
+    }
+
+    public class CriticalObservatoryError : ObservatoryException {
+        public CriticalObservatoryError() { }
+        public CriticalObservatoryError(string message) : base(message) { }
     }
 
 
@@ -69,6 +107,13 @@ namespace heliomaster {
 
             Starting += StartingHandle;
             Shutting += ShuttingHandle;
+
+            WeatherSafeChanged += WeatherSafeChangedHandle;
+
+            StartupFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during startup: {e.GetType().Name}: {e.Message}"));
+            ShutdownFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during shutdown: {e.GetType().Name}: {e.Message}"));
+
+            ObjectNotFound += ObjectNotFoundHandle;
         }
 
 
@@ -98,7 +143,7 @@ namespace heliomaster {
             Dome.HasPowerControl  = Power?.Register(Dome, S.Power.DomeName) ?? false;
 
             O.Refresh += async () => {
-                if (Power is Netio.Power p && await p.Get() is Netio.NetioSocket s) {
+                if (Power is Netio.Power p && await p.Get() is Netio.Netio s) {
                     foreach (var hn in new[] {
                         new {h = (BaseHardwareControl) Dome,  n = S.Power.DomeName},
                         new {h = (BaseHardwareControl) Mount, n = S.Power.MountName}
@@ -193,11 +238,10 @@ namespace heliomaster {
         #endregion
 
 
+        #region CAMERAS
+
         public async void ConnectCameras() {
-            foreach (var exmodel in CameraModels) {
-                O.Refresh -= exmodel.Cam.RefreshRaise;
-                await exmodel.Cam.Disconnect();
-            }
+            DisconnectCameras();
 
             foreach (var model in S.Cameras.CameraModels) {
                 var cam = BaseCamera.Create(model.CameraType);
@@ -228,12 +272,101 @@ namespace heliomaster {
             }
         }
 
+        public async void DisconnectCameras() {
+            foreach (var exmodel in CameraModels) {
+                O.Refresh -= exmodel.Cam.RefreshRaise;
+                exmodel.Images.Clear();
+                CommonTimelapse.Stop();
+                await exmodel.Cam.Disconnect();
+            }
+
+            CameraModels.Clear();
+        }
+
+        #endregion
+
+
+        #region OBJECT_DETECTION
+
+        public event Action ObjectNotFound;
+        public void         ObjectNotFoundRaise() => ObjectNotFound?.Invoke();
+        public void ObjectNotFoundHandle() {
+            // TODO: Search for object
+        }
+
+        public bool ObjectIsInView() => false;
+        public bool SearchForObject() { return false; }
+
+        #endregion
+
+
+        #region WEATHER_PROTECTION
+
+        private bool _weatherProtectionOn;
+        public bool WeatherProtectionOn {
+            get => _weatherProtectionOn;
+            set {
+                if (_weatherProtectionOn.Equals(value)) return;
+                _weatherProtectionOn = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private bool? currSafeState;
+        public event Action<bool?> WeatherSafeChanged;
+        private void WeatherSafeChangedHandle(bool? safe) {
+            if (safe != true) Shutdown();
+        }
+        public event Action WeatherIsUnsafe;
+
+        private void weatherProtection(object o, PropertyChangedEventArgs args) {
+            if (args.PropertyName == nameof(Weather.Safe)) {
+                var safe = Weather.Safe;
+                if (safe != currSafeState) {
+                    currSafeState = safe;
+                    WeatherSafeChanged?.Invoke(currSafeState);
+                }
+                if (currSafeState != true)
+                    WeatherIsUnsafe?.Invoke();
+            }
+        }
+
+        public bool StartWeatherProtection() {
+            Weather.PropertyChanged += weatherProtection;
+            WeatherProtectionOn = true;
+            return Weather.Safe == true;
+        }
+        public void StopWeatherProtection() {
+            Weather.PropertyChanged -= weatherProtection;
+            WeatherProtectionOn = false;
+        }
+
+        #endregion
+
 
         #region AUTOMATION
 
-        public event Action Starting;
-        public void StartingRaise() => Starting?.Invoke();
-        private void StartingHandle() => Startup();
+        public class StartupArguments {
+            public bool RequireInView;
+            public bool Autostart;
+            public DateTime? CloseAt;
+            public TimeSpan? CamMargin;
+            public TimeSpan? CloseMargin;
+
+            private DateTime? Marginalize(TimeSpan? margin) {
+                return CloseAt == null ? (DateTime?) null
+                    : (margin == null
+                        ? (DateTime) CloseAt
+                        : (DateTime) CloseAt - (TimeSpan) margin);
+            }
+
+            public DateTime? CamShutdownTime => Marginalize(CloseMargin);
+            public DateTime? ShutdownTime => Marginalize(CloseMargin);
+        }
+
+        public event Action<StartupArguments> Starting;
+        public void StartingRaise(StartupArguments args = null) => Starting?.Invoke(args ?? new StartupArguments());
+        private void StartingHandle(StartupArguments args) => Startup(args);
 
         public event Action StartupSuccess;
         public void StartupSuccessRaise() => StartupSuccess?.Invoke();
@@ -249,24 +382,91 @@ namespace heliomaster {
         public event Action ShutdownSuccess;
         public void ShutdownSuccessRaise() => ShutdownSuccess?.Invoke();
 
-        public event Action<ObservatoryException> ShutdownFailure;
-        public void ShutdownFailureRaise(ObservatoryException e) => ShutdownFailure?.Invoke(e);
+        public event Action<Exception> ShutdownFailure;
+        public void ShutdownFailureRaise(Exception e) => ShutdownFailure?.Invoke(e);
 
 
-        private readonly CancellationTokenSource cancelwait = new CancellationTokenSource();
+        public event Action Fixing;
+        public void FixingRaise() => Fixing?.Invoke();
 
-        public async Task<bool> Startup(bool autostart = false, DateTime? closeAt = null, TimeSpan? camMargin = null, TimeSpan? closeMargin = null) {
+        public event Action FixingSuccess;
+        public void FixingSuccessRaise() => FixingSuccess?.Invoke();
+
+        public event Action FixingFailure;
+        public void FixingFailureRaise() => FixingFailure?.Invoke();
+
+
+        private CancellationTokenSource closewait;
+        private Task closewaittask;
+
+        private bool perform(Task<bool> t, string msg) {
+            t.Wait();
+            if (t.Exception != null || t.Result) {
+                Emit(new AutoOperationsException(
+                         $"{msg}: {(t.Exception == null ? "no details" : t.Exception.Message)}"));
+                return false;
+            } else
+                return true;
+        }
+
+        private async Task<bool> connect(BaseHardwareControl h, string id) {
+            if (h.Valid || await h.Connect(id)) return true;
+            else throw new ConnectionError($"Could not connect hardware type {h.GetType().Name} with id \"{id}\"");
+        }
+        private Task<bool> connect(BaseHardwareControl h) {
+            string id;
+            if (h.Equals(Dome)) id = S.Dome.DomeID;
+            else if (h.Equals(Mount)) id = S.Mount.MountID;
+            else if (h.Equals(Weather)) id = S.Weather.WeatherID;
+            else throw new ArgumentException();
+            return connect(h, id);
+        }
+
+        public enum AutomationStates {
+            Idle,
+            Starting,
+            InOperation,
+            Closing,
+            WaitingForWeather,
+            Faulted
+        }
+
+        private AutomationStates _automationState;
+        public AutomationStates AutomationState {
+            get => _automationState;
+            set {
+                if (_automationState.Equals(value)) return;
+                _automationState = value;
+
+                Logger.info($"Transitioning to {_automationState}");
+
+                OnPropertyChanged();
+            }
+        }
+
+        private readonly SemaphoreSlim autosem = new SemaphoreSlim(1, 1);
+
+        public async Task<bool> Startup(StartupArguments args) {
+            await autosem.WaitAsync();
+
             try {
-                if (!Mount.Valid && !await Mount.Connect(S.Mount.MountID))
-                    throw new AutoOperationsException($"Could not connect telescope {S.Mount.MountID}");
-                if (!Dome.Valid && !await Dome.Connect(S.Dome.DomeID))
-                    throw new AutoOperationsException($"Could not connect dome {S.Dome.DomeID}");
+                if (AutomationState != AutomationStates.Idle)
+                    throw new RefuseAutomationWarning("The state should be idle for startup");
+                AutomationState = AutomationStates.Starting;
+
+                await connect(Mount);
+                await connect(Dome);
+                await connect(Weather);
+
+                if (!StartWeatherProtection())
+                    throw new RefuseAutomationWarning("Good weather not confirmed.");
+
+                if (!await Dome.SmartShutter(true))
+                    throw new AutoOperationsException("Could not open dome.");
 
                 if (!(await Mount.Unpark() && await Mount.GoTo()))
                     throw new AutoOperationsException("Could not operate telescope.");
 
-                if (!await Dome.SmartShutter(true))
-                    throw new AutoOperationsException("Could not open dome.");
 
                 await SlaveDomeToMount();
 
@@ -275,54 +475,67 @@ namespace heliomaster {
                     model.Cam.StartLivePreview(30); // TODO: Unhardcode maxfps --> cam setting
 
                 CommonTimelapse.TieAll();
-                if (closeAt != null) {
-                    CommonTimelapse.Main.StopMethod = 2;
-                    CommonTimelapse.Main.End        = camMargin==null
-                                                          ? (DateTime) closeAt
-                                                          : (DateTime) closeAt - (TimeSpan) camMargin;
-                } else {
-                    CommonTimelapse.Main.StopMethod = 0;
-                    CommonTimelapse.Main.Nshots     = 1000;
+                if (CommonTimelapse.Main is Timelapse m) {
+                    if (args.CamShutdownTime is DateTime cst) {
+                        m.StopMethod = 2;
+                        m.End = cst;
+                    } else { // TODO: What to do when no end time given? Until object sets?
+                        m.StopMethod = 0;
+                        m.Nshots     = 1000;
+                    }
                 }
 
-                // TODO: Assert object is in view
-                if (autostart)
+
+                if (args.RequireInView && !SearchForObject())
+                    throw new ObjectNotLocatedError();
+
+
+                if (args.Autostart)
                     CommonTimelapse.Start(CameraModel.TimelapseAction, CameraModels);
 
-
+                AutomationState = AutomationStates.InOperation;
                 StartupSuccessRaise();
 
-
-                if (closeAt != null)
-                    Task.Run(() => {
+                closewait = new CancellationTokenSource();
+                if (args.ShutdownTime is DateTime st)
+                    closewaittask = Task.Run(() => {
                         try {
-                            Task.Delay(
-                                (closeMargin == null
-                                    ? (DateTime) closeAt
-                                    : (DateTime) closeAt - (TimeSpan) closeMargin)
-                                - DateTime.Now, cancelwait.Token);
+                            Task.Delay(st - DateTime.Now, closewait.Token);
                             ShuttingRaise();
                         } catch (Exception e) {
                             Console.WriteLine(e.GetType().Name);
                             Console.WriteLine(e.Message);
                         }
+
+                        closewaittask = null;
+                        closewait = null;
                     });
 
                 return true;
             } catch (ObservatoryException e) {
-                Emit(e);
                 StartupFailureRaise(e);
+                Fix();
                 return false;
+            } finally {
+                autosem.Release();
             }
         }
 
         public async Task<bool> Shutdown() {
+            await autosem.WaitAsync();
             try {
+                Interrupt();
+
+                await connect(Mount);
+                await connect(Dome);
+
+                AutomationState = AutomationStates.Closing;
+
+                StopWeatherProtection();
+
                 CommonTimelapse.Stop();
 
-                var camtasks = new List<Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>>>();
-                foreach (var model in CameraModels)
-                    camtasks.Add(model.Cam.Stop());
+                var camtasks = CameraModels.Select(i => i.Cam.Stop());
 
                 await UnSlaveDomeFromMount();
 
@@ -330,7 +543,7 @@ namespace heliomaster {
                 var dometask  = Dome.SmartShutter(false);
 
                 if (!await mounttask)
-                    Emit(new AutoOperationsException("Could not park mount"));
+                    Emit(new AutoOperationsException("Could not park mount."));
 
                 if (!await dometask)
                     Emit(new AutoOperationsException("Could not close dome."));
@@ -341,18 +554,54 @@ namespace heliomaster {
                 if (mounttask.Result && dometask.Result) {
                     await Dome.HomeOrPark(home: false);
 
+                    AutomationState = AutomationStates.Idle;
                     ShutdownSuccessRaise();
                     return true;
                 } else throw new AutoOperationsException("Observatory shutdown with errors.");
-            } catch (ObservatoryException e) {
-                Emit(e);
+            } catch (Exception e) {
                 ShutdownFailureRaise(e);
+                Fix();
                 return false;
+            } finally {
+                autosem.Release();
             }
         }
 
         public void Interrupt() {
-            cancelwait.Cancel();
+            closewait?.Cancel();
+        }
+
+        public async Task<bool> Fix() {
+            Logger.info("Attempting to fix observatory state.");
+
+            bool domesuccess = false, mountsuccess = false;
+            try {
+                await connect(Dome);
+                domesuccess = await Dome.SmartShutter(false);
+                if (!domesuccess)
+                    throw new FixingFailedError("Dome state could not be fixed.");
+                else if (!await Dome.HomeOrPark(false))
+                    Emit(new AutoOperationsWarning("Could not park dome."));
+            } catch (Exception e) {
+                Emit(new AutoOperationsException($"Error while fixing dome: {e.GetType().Name}: {e.Message}"));
+            }
+
+            try {
+                await connect(Mount);
+                mountsuccess = await Mount.Park();
+                if (!mountsuccess)
+                    throw new FixingFailedError("Mount state could not be fixed.");
+            } catch (Exception e) {
+                Logger.error($"Error while fixing mount: {e.GetType().Name}: {e.Message}");
+            }
+
+            if (!(domesuccess && mountsuccess)) {
+                Emit(new CriticalObservatoryError("Could not fix observatory state"));
+                return false;
+            } else {
+                Logger.info("State was successfully fixed.");
+                return true;
+            }
         }
 
         #endregion

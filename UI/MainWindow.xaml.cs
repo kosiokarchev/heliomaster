@@ -63,8 +63,8 @@ namespace heliomaster {
         }
 
         private void MountParkButton_Click(object sender, RoutedEventArgs e) {
-            if (O.Mount.AtPark) O.Mount.Unpark();
-            else O.Mount.Park();
+            if (O.Mount.AtPark==true) O.Mount.Unpark();
+            else if (O.Mount.AtPark==false) O.Mount.Park();
         }
 
         private void mountTracking_Checked(object sender, RoutedEventArgs e) {
@@ -163,6 +163,18 @@ namespace heliomaster {
         }
 
         private void Button_Click_7(object sender, RoutedEventArgs e) {
+            O.Default.Interrupt();
+            O.Default.ShuttingRaise();
+        }
+
+        private void RunUntilButton_Click(object sender, RoutedEventArgs e) {
+            CamerasWindow.Show();
+            O.Default.StartingRaise(new Observatory.StartupArguments {
+                CloseAt = ShutdownTime.Value
+            });
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e) {
             O.Default.Interrupt();
             O.Default.ShuttingRaise();
         }

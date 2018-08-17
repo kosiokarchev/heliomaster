@@ -191,7 +191,7 @@ namespace heliomaster {
     }
 
     public class CommonTimelapse : BaseNotify {
-        private Timelapse[] _;
+        private Timelapse[] _ = new Timelapse[0];
         private int _i0;
         public int i0 {
             get => _i0;
@@ -270,6 +270,6 @@ namespace heliomaster {
                     return i;
             return -1;
         }
-        public Timelapse Main => _[i0];
+        public Timelapse Main => i0 < _.Length ? _[i0] : null;
     }
 }

@@ -5,7 +5,9 @@ using System.Configuration;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Threading;
 using System.Xml.Serialization;
 using ASCOM.DeviceInterface;
 using heliomaster.Properties;
@@ -100,6 +102,8 @@ namespace heliomaster {
         }
 
         public override void Initialize() {
+
+
             CanMoveAxes = Driver.CanMoveAxis(TelescopeAxes.axisPrimary) &&
                           Driver.CanMoveAxis(TelescopeAxes.axisSecondary);
             if (Driver.CanPulseGuide) {
@@ -109,13 +113,8 @@ namespace heliomaster {
             if (CanMoveAxes) {
                 foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisPrimary))
                     PrimaryAxisRates.Add(rate);
-//                SelectedPrimaryRate = PrimaryAxisRates[SelectedPrimaryRateIndex < PrimaryAxisRates.Count ? SelectedPrimaryRateIndex : 0];
-//                OnPropertyChanged(nameof(SelectedPrimaryRate));
-
                 foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisSecondary))
                     SecondaryAxisRates.Add(rate);
-//                SelectedSecondaryRate = SecondaryAxisRates[SelectedSecondaryRateIndex < SecondaryAxisRates.Count ? SelectedSecondaryRateIndex : 0];
-//                OnPropertyChanged(nameof(SelectedSecondaryRate));
 
                 gMode = guidingMode.moveAxis;
             }
@@ -161,7 +160,8 @@ namespace heliomaster {
                         var trackingState = Tracking;
                         Driver.Tracking = true;
                         Driver.SlewToCoordinates(ra, dec);
-                        Driver.Tracking = trackingState;
+                        if (trackingState != null)
+                            Driver.Tracking = (bool) trackingState;
 
                         SlewedRaise();
                         return true;
@@ -184,13 +184,13 @@ namespace heliomaster {
                         Driver.Park();
                     }
                 } catch {}
-                return Valid && AtPark;
+                return Valid && AtPark==true;
             });
         }
         public Task<bool> Unpark() {
             return Task<bool>.Factory.StartNew(() => {
                 try { if (CanPark) Driver.Unpark(); } catch {}
-                return Valid && !AtPark;
+                return Valid && AtPark==false;
             });
         }
 
@@ -257,39 +257,105 @@ namespace heliomaster {
                     Driver.MoveAxis(TelescopeAxes.axisPrimary,   0);
                     Driver.MoveAxis(TelescopeAxes.axisSecondary, 0);
 
-                    Driver.Tracking = trackingState;
+                    if (trackingState != null)
+                        Driver.Tracking = (bool) trackingState;
                 }
             });
         }
 
         #endregion
 
-        #region properties
+        #region PROPERTIES
 
         public override string Type => Resources.mount;
 
-        public  bool   Moveable       => Valid && !AtPark && !Slewing;
+        public  bool   Moveable       => Valid && AtPark==false && Slewing==false;
 
-        public  double SiderealTime   => Valid ? Driver.SiderealTime : double.NaN;
-        public  double Altitude       => Valid && !Driver.AtPark ? Driver.Altitude : double.NaN;
-        public  double Azimuth        => Valid && !Driver.AtPark ? Driver.Azimuth : double.NaN;
-        public  double RightAscension => Valid && !Driver.AtPark ? Driver.RightAscension : double.NaN;
-        public  double Declination    => Valid && !Driver.AtPark ? Driver.Declination : double.NaN;
-        public  bool   AtPark         => Valid && Driver.AtPark;
-        public  bool   Slewing        => Valid && Driver.Slewing;
-        public  bool   Tracking       => Valid && Driver.Tracking;
+        public double SiderealTime {
+            get {
+                if (Valid)
+                    try {return Driver.SiderealTime;}
+                    catch {return double.NaN;}
+                else return double.NaN;
+            }
+        }
+        public double Altitude {
+            get {
+                if (Valid)
+                    try {return Driver.Altitude;}
+                    catch {return double.NaN;}
+                else return double.NaN;
+            }
+        }
+        public double Azimuth {
+            get {
+                if (Valid)
+                    try {return Driver.Azimuth;}
+                    catch {return double.NaN;}
+                else return double.NaN;
+            }
+        }
+        public double RightAscension {
+            get {
+                if (Valid)
+                    try {return Driver.RightAscension;}
+                    catch {return double.NaN;}
+                else return double.NaN;
+            }
+        }
+        public double Declination {
+            get {
+                if (Valid)
+                    try {return Driver.Declination;}
+                    catch {return double.NaN;}
+                else return double.NaN;
+            }
+        }
+        public bool? AtPark {
+            get {
+                if (Valid)
+                    try {return Driver.AtPark;}
+                    catch {return null;}
+                else return null;
+            }
+        }
+        public bool? Slewing {
+            get {
+                if (Valid)
+                    try {return Driver.Slewing;}
+                    catch {return null;}
+                else return null;
+            }
+        }
+        public bool? Tracking {
+            get {
+                if (Valid)
+                    try {return Driver.Tracking;}
+                    catch {return null;}
+                else return null;
+            }
+        }
 
         public bool   CanTrack   => Moveable && Driver.CanSetTracking;
         public bool   CanSlew    => Moveable && Driver.CanSlew;
         public bool   CanGoTo    => CanSlew;
-        public bool   CanPark    => Valid && Driver.CanPark && !Slewing;
-        public string ParkAction => AtPark ? Resources.unpark : Resources.park;
+        public bool   CanPark    => Valid && Driver.CanPark && Slewing==false;
+        public string ParkAction => AtPark==true ? Resources.unpark : Resources.park;
 
 
         public event Action FlippedChanged;
         protected void FlippedChangedRaise() { FlippedChanged?.Invoke(); }
         private PierSide _sideOfPier = PierSide.pierUnknown;
-        public PierSide SideOfPier => Valid ? Driver.SideOfPier : PierSide.pierUnknown;
+
+        public PierSide SideOfPier {
+            get {
+                try {
+                    return Driver.SideOfPier;
+                } catch {
+                    return PierSide.pierUnknown;
+                }
+            }
+        }
 
         private bool _nsflip;
         public bool NSFlip {
@@ -330,9 +396,9 @@ namespace heliomaster {
         #endregion
 
         public override string ToString() {
-            var parkedstate = AtPark ? "parked" : "not parked";
-            var slewstate   = Slewing ? "slewing" : "not slewing";
-            var trackstate  = Tracking ? "tracking" : "not tracking";
+            var parkedstate = AtPark==true ? "parked" : "not parked";
+            var slewstate   = Slewing==true ? "slewing" : "not slewing";
+            var trackstate  = Tracking==true ? "tracking" : "not tracking";
             return
                 $"Telescope, LST={SiderealTime}, Alt={Altitude}, Az={Azimuth}, RA={RightAscension}, Dec={Declination}, {parkedstate}, {slewstate}, {trackstate}";
         }

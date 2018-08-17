@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -134,22 +135,24 @@ namespace heliomaster {
 
                     PreviewOn = true;
                     try {
+                        Logger.debug("CAMERA: Starting live preview.");
                         while (!cancelPreview.IsCancellationRequested) {
                             var nextTime = DateTime.Now + dt;
                             try {
                                 Capture(Priority.LiveView).Wait(cancelPreview);
-                            } catch (OperationCanceledException) {
-                                throw;
+                                var towait = nextTime - DateTime.Now;
+                                if (towait > TimeSpan.Zero)
+                                    Task.Delay(towait, cancelPreview).Wait(cancelPreview);
                             } catch (Exception e) {
-                                Console.WriteLine(e.Message);
+                                if (!(e is OperationCanceledException))
+                                    Logger.debug($"Exception during live preview: {e.GetType().Name}: {e.Message}");
                             }
-
-                            var towait = nextTime - DateTime.Now;
-                            if (towait > TimeSpan.Zero)
-                                Task.Delay(towait, cancelPreview).Wait(cancelPreview);
                         }
-                    } catch (OperationCanceledException) {}
-                }, cancelPreview);
+                    } finally {
+                        Logger.debug("CAMERA: Live preview ending.");
+                        PreviewOn = false;
+                    }
+                });
             }
         }
 

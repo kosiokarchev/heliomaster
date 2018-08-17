@@ -202,6 +202,7 @@
     <Compile Include="Utilities\CapturedImage.cs" />
     <Compile Include="Utilities\Converters.cs" />
     <Compile Include="Utilities\Localizer.cs" />
+    <Compile Include="Utilities\PasswordStore.cs" />
     <Compile Include="Utilities\Python.cs" />
     <Compile Include="Utilities\QueueConsumer.cs" />
     <Compile Include="Utilities\Timelapse.cs" />

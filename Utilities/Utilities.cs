@@ -15,52 +15,6 @@ using ASCOM.Utilities;
 using heliomaster.Annotations;
 
 namespace heliomaster {
-    public static class SecureIt {
-        private static readonly byte[] entropy = Encoding.Unicode.GetBytes("Salt Is Not A Password");
-
-        public static string EncryptString(this SecureString input) {
-            if (input == null) return null;
-            return Convert.ToBase64String(
-                ProtectedData.Protect(Encoding.Unicode.GetBytes(input.ToInsecureString()), entropy,
-                                      DataProtectionScope.CurrentUser));
-        }
-
-        public static SecureString DecryptString(this string encryptedData) {
-            if (encryptedData == null) return null;
-
-            try {
-                return Encoding.Unicode.GetString(
-                    ProtectedData.Unprotect(
-                        Convert.FromBase64String(encryptedData), entropy, DataProtectionScope.CurrentUser
-                    )
-                ).ToSecureString();
-            } catch {
-                return new SecureString();
-            }
-        }
-
-        public static SecureString ToSecureString(this IEnumerable<char> input) {
-            if (input == null) return null;
-
-            var secure = new SecureString();
-
-            foreach (var c in input)
-                secure.AppendChar(c);
-
-            secure.MakeReadOnly();
-            return secure;
-        }
-
-        public static string ToInsecureString(this SecureString input) {
-            if (input == null) return null;
-
-            var ptr = Marshal.SecureStringToBSTR(input);
-
-            try { return Marshal.PtrToStringBSTR(ptr); }
-            finally { Marshal.ZeroFreeBSTR(ptr); }
-        }
-    }
-
     public abstract class BaseNotify : INotifyPropertyChanged {
         public event PropertyChangedEventHandler PropertyChanged;
         [NotifyPropertyChangedInvocator]

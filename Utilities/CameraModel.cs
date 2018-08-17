@@ -253,6 +253,7 @@ namespace heliomaster {
             };
 
             cimg.Saved += c => {
+                c.Dispose();
                 if (S.Remote.DoTransfer)
                     c.Transfer(O.Remote, Smart.Format(RemotePathFormat, new {
                         Cam           = Name,
@@ -266,13 +267,15 @@ namespace heliomaster {
                     File.Delete(c.LocalPath); // TODO: Deleting fails...
 
                 if (S.Remote.DoCommand)
-                    c.Process(O.Remote, Smart.Format(RemoteCommandFormat, new {
+                    c.Process(O.Remote, Smart.Format(RemoteCommandFormat.Replace(Environment.NewLine, " "), new {
                         Cam            = Name,
                         DateTime       = DateTime.UtcNow,
                         LocalPath      = c.LocalPath,
+                        LocalDir       = Path.GetDirectoryName(c.LocalPath),
                         LocalBaseName  = Path.GetFileName(c.LocalPath),
+                        RemotePath     = c.RemotePath,
+                        RemoteDir      = Path.GetDirectoryName(c.RemotePath),
                         RemoteBaseName = Path.GetFileName(c.RemotePath),
-                        RemotePath     = c.RemotePath
                     }));
             };
 

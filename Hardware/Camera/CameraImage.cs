@@ -52,33 +52,33 @@ namespace heliomaster {
             rwlock.EnterWriteLock();
 
             var gch = GCHandle.Alloc(data, GCHandleType.Pinned);
-            unsafe {
-                Int32 * d = (Int32*) gch.AddrOfPinnedObject();
-                int     r = -1;
 
-                switch (Depth) {
-                    case BitDepth.depth32:
-                        for (var i = 0; i < Height; ++i)
-                            for (var j = 0; j < Width; ++j)
-                                for (var k=0; k<Channels; ++k)
-                                    ((UInt32*) raw)[++r] = (UInt32) d[j*Height*Channels + i*Channels + k];
-                        break;
-                    case BitDepth.depth16:
-                        for (var i = 0; i < Height; ++i)
-                            for (var j = 0; j < Width; ++j)
-                                for (var k=0; k<Channels; ++k)
-                                    ((UInt16*) raw)[++r] = (UInt16) d[j*Height*Channels + i*Channels + k];
-                        break;
-                    case BitDepth.depth8:
-                        for (var i = 0; i < Height; ++i)
-                            for (var j = 0; j < Width; ++j)
-                                for (var k=0; k<Channels; ++k)
-                                    ((byte*) raw)[++r] = (byte) d[j*Height*Channels + i*Channels + k];
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
+            Int32 * d = (Int32*) gch.AddrOfPinnedObject();
+            int     r = -1;
+
+            switch (Depth) {
+                case BitDepth.depth32:
+                    for (var i = 0; i < Height; ++i)
+                        for (var j = 0; j < Width; ++j)
+                            for (var k=0; k<Channels; ++k)
+                                ((UInt32*) raw)[++r] = (UInt32) d[j*Height*Channels + i*Channels + k];
+                    break;
+                case BitDepth.depth16:
+                    for (var i = 0; i < Height; ++i)
+                        for (var j = 0; j < Width; ++j)
+                            for (var k=0; k<Channels; ++k)
+                                ((UInt16*) raw)[++r] = (UInt16) d[j*Height*Channels + i*Channels + k];
+                    break;
+                case BitDepth.depth8:
+                    for (var i = 0; i < Height; ++i)
+                        for (var j = 0; j < Width; ++j)
+                            for (var k=0; k<Channels; ++k)
+                                ((byte*) raw)[++r] = (byte) d[j*Height*Channels + i*Channels + k];
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
+
             gch.Free();
 
             rwlock.ExitWriteLock();
@@ -186,11 +186,18 @@ namespace heliomaster {
             });
         }
 
-        ~CameraImage() {
+        private bool disposed;
+        public void Dispose() {
+            if (disposed) return;
             rwlock.EnterWriteLock();
             Marshal.FreeHGlobal((IntPtr) raw);
             rwlock.ExitWriteLock();
             rwlock.Dispose();
+            disposed = true;
+        }
+
+        ~CameraImage() {
+            Dispose();
         }
     }
 }

@@ -139,6 +139,7 @@ namespace heliomaster {
                 try {
                     if (home) Driver.FindHome();
                     else Driver.Park();
+                    SpinWait.SpinUntil(() => Slewing, new TimeSpan(0, 0, 10)); // TODO: unhardcode
                     SpinWait.SpinUntil(() => !Slewing);
                     Logger.info($"{action} complete.");
                     return home ? AtHome : AtPark;

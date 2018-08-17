@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -20,10 +21,12 @@ namespace heliomaster
             RemotePasswordBox.Password = S.Remote.Pass;
             NetioPasswordBox.Password = S.Power.Netio.PassString;
 
-            O.Dome.Connected += () => { fillCans(O.Dome.Driver, DomeCansPanel.Children); };
-            O.Mount.Connected += () => { fillCans(O.Mount.Driver, MountCansPanel.Children); };
-            O.Weather.Connected += () => { fillCans(O.Weather.Driver, WeatherCansPanel.Children); };
+            O.Dome.Connected += () => { fillCans(O.Dome.Driver, DomeCans); };
+            O.Mount.Connected += () => { fillCans(O.Mount.Driver, MountCans); };
         }
+
+        public ObservableCollection<CheckBox> DomeCans { get; set; } = new ObservableCollection<CheckBox>();
+        public ObservableCollection<CheckBox> MountCans { get; set; } = new ObservableCollection<CheckBox>();
 
         private static void fillCans(ASCOM.DriverAccess.AscomDriver driver, IList children) {
             children.Clear();
@@ -68,11 +71,11 @@ namespace heliomaster
 
         }
 
-        private void NetioTestConnectionButton_Click(object sender, RoutedEventArgs e) {
+        private async void NetioTestConnectionButton_Click(object sender, RoutedEventArgs e) {
             NetioTestConnectionButton.Content   =  "Connecting...";
             NetioTestConnectionButton.IsEnabled =  false;
 
-            MessageBox.Show(O.Power.Available ? "Connection successful" : "Connection failed.");
+            MessageBox.Show(await Task<bool>.Factory.StartNew(() => O.Power.Available) ? "Connection successful" : "Connection failed.");
 
             NetioTestConnectionButton.Content   =  "Test connection";
             NetioTestConnectionButton.IsEnabled =  true;

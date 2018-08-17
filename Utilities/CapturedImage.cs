@@ -61,6 +61,10 @@ namespace heliomaster {
             }
         }
 
+        public void Dispose() {
+            Image.Dispose();
+        }
+
         public async void Save() {
             if (IsSaved != true && Path.GetDirectoryName(LocalPath) is string dirname)
                 try {

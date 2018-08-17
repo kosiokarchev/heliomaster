@@ -139,7 +139,7 @@
                             </StackPanel>
                         </StackPanel>
 
-                        <StackPanel x:Name="DomeCansPanel" IsEnabled="False" />
+                        <ListView ItemsSource="{Binding Path=DomeCans, RelativeSource={RelativeSource AncestorType=local:SettingsWindow}}" IsEnabled="False" />
                     </StackPanel>
                 </Grid>
             </TabItem>
@@ -158,7 +158,8 @@
                         </Grid>
                         <CheckBox Content="Telescope is flipped:" IsChecked="{Binding Telescope.NSFlip}" />
                         <TextBlock Margin="20,0,0,0" TextWrapping="Wrap" Text="If this box is checked, the positive declination motor direction will correspond to a southward motion of the open end of the telescope." />
-                        <StackPanel x:Name="MountCansPanel" IsEnabled="False" />
+
+                        <ListView ItemsSource="{Binding Path=MountCans, RelativeSource={RelativeSource AncestorType=local:SettingsWindow}}" IsEnabled="False" />
                     </StackPanel>
                 </Grid>
             </TabItem>
@@ -313,7 +314,6 @@
                             <TextBox IsEnabled="False" Grid.Column="1" DataContext="{Binding WeatherID}" Style="{StaticResource NotChosenStyle}" VerticalAlignment="Center" Margin="0,0,5,0" />
                             <Button x:Name="WeatherChooseButton" Grid.Column="2" Content="Choose" Click="ChooseButton_Click" />
                         </Grid>
-                        <StackPanel x:Name="WeatherCansPanel" IsEnabled="False" />
                         <Border DataContext="{x:Static local:O.Weather}" BorderBrush="{Binding Condition, Converter={local:WeatherConditionConverter}}" BorderThickness="2">
                             <ListView Margin="0" ItemsSource="{Binding Items}">
                                 <ListView.View>
@@ -455,7 +455,7 @@
                                 <CheckBox IsChecked="{Binding DoDeleteLocal}" Content="Delete local copy after transfer" />
                                 <CheckBox IsChecked="{Binding DoCommand}" Content="Execute remote command" />
                                 <StackPanel Orientation="Vertical" Margin="20,0,0,0">
-                                    <TextBox Text="{Binding CommandFormat, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding DoCommand, Converter={local:VisibilityConverter}}"/>
+                                    <TextBox Text="{Binding CommandFormat, UpdateSourceTrigger=PropertyChanged}" Visibility="{Binding DoCommand, Converter={local:VisibilityConverter}}" AcceptsReturn="True" AcceptsTab="True" TextWrapping="Wrap"/>
                                     <TextBlock TextWrapping="Wrap" Text="(This remote command format is used as a fallback if the per-camera format is empty.)" />
                                 </StackPanel>
                             </StackPanel>
@@ -506,6 +506,7 @@
 
                             <Grid Margin="0,3,0,5" VerticalAlignment="Top">
                                 <Grid.RowDefinitions>
+                                    <RowDefinition/>
                                     <RowDefinition/>
                                     <RowDefinition/>
                                     <RowDefinition Height="Auto" />
