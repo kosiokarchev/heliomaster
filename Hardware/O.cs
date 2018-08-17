@@ -98,7 +98,7 @@ namespace heliomaster {
             Dome.HasPowerControl  = Power?.Register(Dome, S.Power.DomeName) ?? false;
 
             O.Refresh += async () => {
-                if (Power is Netio.Power p && await p.Get() is Netio.Netio s) {
+                if (Power is Netio.Power p && await p.Get() is Netio.NetioSocket s) {
                     foreach (var hn in new[] {
                         new {h = (BaseHardwareControl) Dome,  n = S.Power.DomeName},
                         new {h = (BaseHardwareControl) Mount, n = S.Power.MountName}
