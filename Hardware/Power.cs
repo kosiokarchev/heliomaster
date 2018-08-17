@@ -2,19 +2,14 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Configuration;
-using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Interop;
 using System.Xml.Serialization;
 using heliomaster.Annotations;
 using Newtonsoft.Json;
@@ -76,7 +71,7 @@ namespace heliomaster.Netio {
         public bool ShouldSerializeState() => Action == OutputActions.Ignore;
 //        [JsonIgnore] public double        Current, PowerFactor, Load, Energy;
     }
-    public class Netio {
+    public class NetioSocket {
         [JsonIgnore] public Agent                Agent;
         [JsonIgnore] public GlobalMeasure        GlobalMeasure;
         public              IEnumerable<Output>  Outputs;
@@ -134,8 +129,6 @@ namespace heliomaster.Netio {
             get => Pass.ToInsecureString();
             set => Pass = value.ToSecureString();
         }
-
-        [UsedImplicitly]
         public string EncryptedPassword {
             get => Pass.EncryptString();
             set => Pass = value.DecryptString();
@@ -154,11 +147,13 @@ namespace heliomaster.Netio {
             }
         }
 
-        [XmlIgnore] private Netio _socket;
-        [XmlIgnore] public Netio Socket {
-            get => _socket ?? (_socket = Get().Result);
+        [XmlIgnore] private bool faulted;
+        [XmlIgnore] private NetioSocket _socket;
+        [XmlIgnore] public NetioSocket Socket {
+            get => _socket ?? (faulted ? null : _socket = Get().Result);
             set {
                 _socket = value;
+                faulted = value == null;
                 Names = new ObservableCollection<string>();
             }
         }
@@ -179,7 +174,7 @@ namespace heliomaster.Netio {
                 }
             };
             if (os != null) {
-                var json = JsonConvert.SerializeObject(new Netio {Outputs = os});
+                var json = JsonConvert.SerializeObject(new NetioSocket {Outputs = os});
                 ret.Content = new StringContent(json);
                 Logger.debug($"NETIO: Sending: {json}");
             }
@@ -188,7 +183,7 @@ namespace heliomaster.Netio {
 
 
         private SemaphoreSlim sem = new SemaphoreSlim(1, 1);
-        private Netio sendMessage(HttpRequestMessage msg) {
+        private NetioSocket sendMessage(HttpRequestMessage msg) {
             try {
                 HttpResponseMessage response = null;
 
@@ -200,14 +195,18 @@ namespace heliomaster.Netio {
                         task.Wait(token.Token);
                         if (task.Status == TaskStatus.RanToCompletion)
                             response = task.Result;
-                    } catch(OperationCanceledException) {}
+                    } catch (OperationCanceledException e) {
+                        Logger.debug($"NETIO: Operation timed out: {e.Message}");
+                    } catch (Exception e) {
+                        Logger.debug($"NETIO: Error in HttpClient: {e.Message}");
+                    }
                 }).Wait(token.Token);
                 sem.Release();
 
                 if (response.IsSuccessStatusCode) {
                     var json = response?.Content.ReadAsStringAsync().Result;
                     Logger.debug($"NETIO: Received: \"{json}\"");
-                    Socket = JsonConvert.DeserializeObject<Netio>(json);
+                    Socket = JsonConvert.DeserializeObject<NetioSocket>(json);
                 } else {
                     Logger.debug($"NETIO: Got bad response: {response.StatusCode}");
                     Socket = null;
@@ -220,19 +219,19 @@ namespace heliomaster.Netio {
             return _socket;
         }
 
-        public Task<Netio> Get()
-            => Task<Netio>.Factory.StartNew(
+        public Task<NetioSocket> Get()
+            => Task<NetioSocket>.Factory.StartNew(
                 o => sendMessage((HttpRequestMessage) o),
                 get_msg());
 
-        private Task<Netio> Post(IEnumerable<Output> os)
-            => Task<Netio>.Factory.StartNew(
+        private Task<NetioSocket> Post(IEnumerable<Output> os)
+            => Task<NetioSocket>.Factory.StartNew(
                 o => sendMessage((HttpRequestMessage) o),
                 get_msg(os));
 
-        private Task<Netio> Post(Output o) => Post(new[] {o});
+        private Task<NetioSocket> Post(Output o) => Post(new[] {o});
 
-        public Task<Netio> Command(int id, States s = States.Off, OutputActions a = OutputActions.Ignore, int delay = 0)
+        public Task<NetioSocket> Command(int id, States s = States.Off, OutputActions a = OutputActions.Ignore, int delay = 0)
             => Post(new Output {
                 ID     = id,
                 State  = s,
@@ -240,7 +239,7 @@ namespace heliomaster.Netio {
                 Delay  = delay
             });
 
-        public Task<Netio> Command(IEnumerable<int> _ids, IEnumerable<States> _states,
+        public Task<NetioSocket> Command(IEnumerable<int> _ids, IEnumerable<States> _states,
                                    IEnumerable<OutputActions> _actions, IEnumerable<int> _delays) {
             var ids     = new List<int>(_ids);
             var states  = new List<States>(_states);
@@ -255,7 +254,7 @@ namespace heliomaster.Netio {
             }).ToList());
         }
 
-        private Output pick(Netio n, int id) {
+        private Output pick(NetioSocket n, int id) {
             return n?.Outputs.FirstOrDefault(o => o.ID == id);
         }
 
