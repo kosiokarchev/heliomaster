@@ -1,0 +1,39 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="heliomaster.Properties" GeneratedClassName="LoggingSettings">
+  <Profiles />
+  <Settings>
+    <Setting Name="IsEnabled" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="Directory" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="Debug" Type="heliomaster.LoggerParameters" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;LoggerParameters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsEnabled&gt;false&lt;/IsEnabled&gt;
+  &lt;Filename&gt;heliomaster-debug.log&lt;/Filename&gt;
+  &lt;BackupCount&gt;0&lt;/BackupCount&gt;
+  &lt;Level&gt;Debug&lt;/Level&gt;
+&lt;/LoggerParameters&gt;</Value>
+    </Setting>
+    <Setting Name="Info" Type="heliomaster.LoggerParameters" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;LoggerParameters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsEnabled&gt;false&lt;/IsEnabled&gt;
+  &lt;Filename&gt;heliomaster-info.log&lt;/Filename&gt;
+  &lt;BackupCount&gt;0&lt;/BackupCount&gt;
+  &lt;Level&gt;Info&lt;/Level&gt;
+&lt;/LoggerParameters&gt;</Value>
+    </Setting>
+    <Setting Name="Error" Type="heliomaster.LoggerParameters" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;LoggerParameters xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsEnabled&gt;false&lt;/IsEnabled&gt;
+  &lt;Filename&gt;heliomaster-error.log&lt;/Filename&gt;
+  &lt;BackupCount&gt;0&lt;/BackupCount&gt;
+  &lt;Level&gt;Error&lt;/Level&gt;
+&lt;/LoggerParameters&gt;</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

@@ -4,9 +4,12 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
+using System.Windows.Forms;
 using heliomaster.Properties;
-using Microsoft.Win32;
+using Button = System.Windows.Controls.Button;
+using CheckBox = System.Windows.Controls.CheckBox;
+using MessageBox = System.Windows.MessageBox;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 
 namespace heliomaster
 {
@@ -102,6 +105,28 @@ namespace heliomaster
             e.Cancel = true;
             S.Save();
             Hide();
+        }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button b) {
+                if (b.DataContext is LoggingSettings ls) {
+                    var fdialog = new FolderBrowserDialog {
+                        ShowNewFolderButton = true,
+                        SelectedPath        = ls.Directory,
+                        Description         = "Select the base folder for Heliomaster logs."
+                    };
+                    if (fdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        ls.Directory = fdialog.SelectedPath;
+                } else if (b.DataContext is PythonSettings ps) {
+                    var fdialog = new FolderBrowserDialog {
+                        ShowNewFolderButton = true,
+                        SelectedPath        = ps.Path,
+                        Description         = "Select a folder to add to PYTHONPATH."
+                    };
+                    if (fdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                        ps.Path = fdialog.SelectedPath;
+                }
+            }
         }
     }
 }

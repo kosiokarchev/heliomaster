@@ -102,6 +102,7 @@ namespace heliomaster {
             return Task<bool>.Factory.StartNew(() => {
                 try {
                     slew(absolute ? arg : Azimuth + arg);
+                    SpinWait.SpinUntil(() => Slewing, new TimeSpan(0, 0, 100)); // TODO: Unhardcode
                     SpinWait.SpinUntil(() => !Slewing);
                     Logger.info("Slewing complete.");
                     return true;
@@ -139,7 +140,7 @@ namespace heliomaster {
                 try {
                     if (home) Driver.FindHome();
                     else Driver.Park();
-                    SpinWait.SpinUntil(() => Slewing, new TimeSpan(0, 0, 10)); // TODO: unhardcode
+                    SpinWait.SpinUntil(() => (home && Driver.AtHome) || (!home && Driver.AtPark), new TimeSpan(0, 0, 100)); // TODO: Unhardcode
                     SpinWait.SpinUntil(() => !Slewing);
                     Logger.info($"{action} complete.");
                     return home ? AtHome : AtPark;

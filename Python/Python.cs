@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Windows;
 using heliomaster.Properties;
 using Python.Runtime;
@@ -12,6 +13,8 @@ namespace heliomaster {
     public static class Python {
         public static dynamic np;
         public static dynamic ephem;
+        public static dynamic logger;
+        public static dynamic lib;
 
         public static bool Running;
 
@@ -31,15 +34,29 @@ namespace heliomaster {
             try {
                 var t = DateTime.Now;
                 PythonEngine.Initialize();
+                PythonEngine.BeginAllowThreads();
                 Running = true;
 
                 Run(() => {
+                    if (!string.IsNullOrWhiteSpace(S.Python.Path)) {
+                        dynamic sys = Py.Import("sys");
+                        sys.path.append(S.Python.Path);
+                    }
+
+                    lib = Py.Import("libhm");
+
+                    logger = ((dynamic) Py.Import("logger")).setup(
+                        string.IsNullOrWhiteSpace(S.Logging.Directory)
+                            ? "." : S.Logging.Directory,
+                        S.Logging.Debug, S.Logging.Info, S.Logging.Error);
+
                     np    = Py.Import("numpy");
                     ephem = Py.Import("ephem");
                     Pynder.PyObjects.Initialize();
                 });
 
-                Console.WriteLine($"Python started in {(DateTime.Now - t).TotalSeconds}s");
+                Logger.debug($"Python started in {(DateTime.Now - t).TotalSeconds}s");
+//                Console.WriteLine($"Python started in {(DateTime.Now - t).TotalSeconds}s");
             } catch (Exception e) {
                 MessageBox.Show($"Starting Python failed: {e.Message}");
             }

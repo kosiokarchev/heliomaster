@@ -10,9 +10,10 @@ namespace heliomaster.Properties {
         public static readonly RemoteSettings  Remote   = RemoteSettings.Default;
         public static readonly PowerSettings   Power    = PowerSettings.Default;
         public static readonly PythonSettings  Python   = PythonSettings.Default;
+        public static readonly LoggingSettings Logging  = LoggingSettings.Default;
 
         private static readonly ApplicationSettingsBase[] settings = {
-            Settings, Dome, Mount, Weather, Cameras, Remote, Power, Python
+            Settings, Dome, Mount, Weather, Cameras, Remote, Power, Python, Logging
         };
 
         public static void Save() {

@@ -107,6 +107,7 @@ namespace heliomaster {
 
                 if (item.Result != null)
                     Captured?.Invoke(this, item.Result);
+                var n = item.Result.to_numpy();
                 return copy ? item.Result?.Copy() : item.Result;
             } else return null;
         }
@@ -124,25 +125,23 @@ namespace heliomaster {
         }
 
         private CancellationTokenSource cancelPreviewSource;
-        private CancellationToken cancelPreview;
 
         public void StartLivePreview(double maxfps) {
             if (livePreviewTask == null && !PreviewOn) {
                 cancelPreviewSource = new CancellationTokenSource();
-                cancelPreview = cancelPreviewSource.Token;
                 livePreviewTask = Task.Run(() => {
                     var dt = new TimeSpan((long) (TimeSpan.TicksPerSecond / maxfps));
 
                     PreviewOn = true;
                     try {
                         Logger.debug("CAMERA: Starting live preview.");
-                        while (!cancelPreview.IsCancellationRequested) {
+                        while (!cancelPreviewSource.IsCancellationRequested) {
                             var nextTime = DateTime.Now + dt;
                             try {
-                                Capture(Priority.LiveView).Wait(cancelPreview);
+                                Capture(Priority.LiveView).Wait(cancelPreviewSource.Token);
                                 var towait = nextTime - DateTime.Now;
                                 if (towait > TimeSpan.Zero)
-                                    Task.Delay(towait, cancelPreview).Wait(cancelPreview);
+                                    Task.Delay(towait, cancelPreviewSource.Token).Wait();
                             } catch (Exception e) {
                                 if (!(e is OperationCanceledException))
                                     Logger.debug($"Exception during live preview: {e.GetType().Name}: {e.Message}");
@@ -152,7 +151,7 @@ namespace heliomaster {
                         Logger.debug("CAMERA: Live preview ending.");
                         PreviewOn = false;
                     }
-                });
+                }, cancelPreviewSource.Token);
             }
         }
 

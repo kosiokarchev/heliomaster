@@ -193,6 +193,7 @@ namespace heliomaster {
             Marshal.FreeHGlobal((IntPtr) raw);
             rwlock.ExitWriteLock();
             rwlock.Dispose();
+            _bitmapCache = null;
             disposed = true;
         }
 

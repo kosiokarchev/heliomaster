@@ -138,7 +138,16 @@
     <Compile Include="Hardware\Camera\libqhyccd.cs" />
     <Compile Include="Hardware\Camera\QHYCCDCamera.cs" />
     <Compile Include="Hardware\Camera\QHYCCDImage.cs" />
+    <Compile Include="Hardware\FileObservingConditions.cs" />
     <Compile Include="Hardware\Power.cs" />
+    <Compile Include="Observatory\Errors.cs" />
+    <Compile Include="Observatory\Logger.cs" />
+    <Compile Include="Observatory\O.cs" />
+    <Compile Include="Properties\LoggingSettings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <DependentUpon>LoggingSettings.settings</DependentUpon>
+    </Compile>
     <Compile Include="Properties\PowerSettings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
@@ -154,7 +163,6 @@
     <Compile Include="Hardware\Camera\ASCOMCamera.cs" />
     <Compile Include="Hardware\Dome.cs" />
     <Compile Include="Hardware\Focuser.cs" />
-    <Compile Include="Hardware\O.cs" />
     <Compile Include="Hardware\Telescope.cs" />
     <Compile Include="Hardware\Weather.cs" />
     <Compile Include="Properties\MountSettings.Designer.cs">
@@ -186,6 +194,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>WeatherSettings.settings</DependentUpon>
     </Compile>
+    <Compile Include="Python\Python.cs" />
+    <Compile Include="Python\PythonExtensions.cs" />
     <Compile Include="UI\CamerasWindow.xaml.cs">
       <DependentUpon>CamerasWindow.xaml</DependentUpon>
     </Compile>
@@ -203,7 +213,6 @@
     <Compile Include="Utilities\Converters.cs" />
     <Compile Include="Utilities\Localizer.cs" />
     <Compile Include="Utilities\PasswordStore.cs" />
-    <Compile Include="Utilities\Python.cs" />
     <Compile Include="Utilities\QueueConsumer.cs" />
     <Compile Include="Utilities\Timelapse.cs" />
     <Compile Include="Utilities\Utilities.cs" />
@@ -226,6 +235,10 @@
       <Generator>PublicResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <None Include="Properties\LoggingSettings.settings">
+      <Generator>PublicSettingsSingleFileGenerator</Generator>
+      <LastGenOutput>LoggingSettings.Designer.cs</LastGenOutput>
+    </None>
     <None Include="Properties\PowerSettings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
       <LastGenOutput>PowerSettings.Designer.cs</LastGenOutput>
@@ -280,7 +293,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Resource Include="Resources\compass.png" />
   </ItemGroup>

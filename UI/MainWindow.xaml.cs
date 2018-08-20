@@ -156,17 +156,6 @@ namespace heliomaster {
             SettingsWindow.Activate();
         }
 
-
-        private void Button_Click_6(object sender, RoutedEventArgs e) {
-            CamerasWindow.Show();
-            O.Default.StartingRaise();
-        }
-
-        private void Button_Click_7(object sender, RoutedEventArgs e) {
-            O.Default.Interrupt();
-            O.Default.ShuttingRaise();
-        }
-
         private void RunUntilButton_Click(object sender, RoutedEventArgs e) {
             CamerasWindow.Show();
             O.Default.StartingRaise(new Observatory.StartupArguments {

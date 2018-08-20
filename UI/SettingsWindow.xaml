@@ -557,13 +557,86 @@
             </TabItem>
             <TabItem Header="Python">
                 <Grid Background="#FFE5E5E5" DataContext="{x:Static properties:S.Python}">
-                    <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Vertical" Margin="5">
                         <CheckBox IsChecked="{Binding IsEnabled}" Content="Enable Python. This is necessary for a number of functions:" />
                         <StackPanel Margin="40,0,0,0">
                             <TextBlock Text="Go to object" />
+                            <TextBlock Text="Automatic exposure" />
                             <TextBlock Text="Image tracking" />
                             <TextBlock Text="Saving to FITS files" />
+                            <TextBlock Text="Logging" />
                         </StackPanel>
+
+                        <StackPanel Visibility="{Binding IsEnabled, Converter={local:VisibilityConverter}}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+
+                                <Label Grid.Column="0" Content="Append to path:" />
+                                <TextBox Grid.Column="1" Text="{Binding Path, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="10,0" />
+                                <Button Grid.Column="2" Content="Browse" VerticalAlignment="Center" Click="BrowseButton_Click" />
+                            </Grid>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Logging">
+                <TabItem.Resources>
+                    <DataTemplate x:Key="LoggerParametersTemplate" DataType="{x:Type local:LoggerParameters}">
+                        <Grid Visibility="{Binding IsEnabled, Converter={local:VisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <TextBox Grid.Column="0" Text="{Binding Filename, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center"/>
+                            <Label Grid.Column="1" Content="Keep:" />
+                            <xctk:IntegerUpDown Grid.Column="2" Value="{Binding BackupCount}" VerticalAlignment="Center" />
+                            <Label Grid.Column="3" Content="days" />
+                        </Grid>
+                    </DataTemplate>
+                </TabItem.Resources>
+                <Grid Background="#FFE5E5E5" DataContext="{x:Static properties:S.Logging}">
+                    <StackPanel Margin="5">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" Content="Logging directory:" />
+                            <TextBox Grid.Column="1" Text="{Binding Directory, UpdateSourceTrigger=PropertyChanged}" VerticalAlignment="Center" Margin="10,0" />
+                            <Button Grid.Column="2" Content="Browse" VerticalAlignment="Center" Click="BrowseButton_Click" />
+                        </Grid>
+
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition />
+                                <RowDefinition />
+                                <RowDefinition />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+
+                            <CheckBox Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"
+                                      Content="Debug" IsChecked="{Binding Debug.IsEnabled}" />
+                            <CheckBox Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"
+                                      Content="Info" IsChecked="{Binding Info.IsEnabled}" />
+                            <CheckBox Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"
+                                      Content="Error" IsChecked="{Binding Error.IsEnabled}" />
+
+                            <ContentControl Grid.Row="0" Grid.Column="1" Content="{Binding Debug}" Margin="10,0,0,0" ContentTemplate="{StaticResource LoggerParametersTemplate}" />
+                            <ContentControl Grid.Row="1" Grid.Column="1" Content="{Binding Info}" Margin="10,0,0,0" ContentTemplate="{StaticResource LoggerParametersTemplate}" />
+                            <ContentControl Grid.Row="2" Grid.Column="1" Content="{Binding Error}" Margin="10,0,0,0" ContentTemplate="{StaticResource LoggerParametersTemplate}" />
+                        </Grid>
                     </StackPanel>
                 </Grid>
             </TabItem>

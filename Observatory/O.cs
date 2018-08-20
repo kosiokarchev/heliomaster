@@ -15,71 +15,6 @@ using heliomaster.Properties;
 using Renci.SshNet;
 
 namespace heliomaster {
-    public abstract class ObservatoryException : Exception {
-        public ObservatoryException() { }
-        public ObservatoryException(string message) : base(message) { }
-    }
-
-    public abstract class ObservatoryWarning : ObservatoryException {
-        public ObservatoryWarning() { }
-        public ObservatoryWarning(string message) : base(message) { }
-    }
-
-    public class SlavingWarning : ObservatoryWarning {
-        public SlavingWarning() { }
-        public SlavingWarning(string message) : base(message) { }
-    }
-
-    public class AutoOperationsWarning : ObservatoryWarning {
-        public AutoOperationsWarning() { }
-        public AutoOperationsWarning(string message) : base(message) { }
-    }
-    public class RefuseAutomationWarning : AutoOperationsWarning {
-        public RefuseAutomationWarning() { }
-        public RefuseAutomationWarning(string message) : base(message) { }
-    }
-
-    public class AutoOperationsException : ObservatoryException {
-        public AutoOperationsException() { }
-        public AutoOperationsException(string message) : base(message) { }
-    }
-
-    public class HardwareError : AutoOperationsException {
-        public HardwareError() { }
-        public HardwareError(string message) : base(message) { }
-    }
-    public class ConnectionError : HardwareError {
-        public ConnectionError() { }
-        public ConnectionError(string message) : base(message) { }
-    }
-    public class FixingFailedError : AutoOperationsException {
-        public FixingFailedError() { }
-        public FixingFailedError(string message) : base(message) { }
-    }
-
-    public class ObjectNotLocatedError : AutoOperationsException {
-        public ObjectNotLocatedError() { }
-        public ObjectNotLocatedError(string message) : base(message) { }
-    }
-
-    public class CriticalObservatoryError : ObservatoryException {
-        public CriticalObservatoryError() { }
-        public CriticalObservatoryError(string message) : base(message) { }
-    }
-
-
-    public static class Logger {
-        public static void put(string msg) {
-            Console.WriteLine(msg);
-        }
-
-        public static void debug(string msg) {put($"DEBUG: {msg}");}
-        public static void info(string msg) {put($"INFO: {msg}");}
-        public static void warning(string msg) {put($"WARNING: {msg}");}
-        public static void error(string msg) {put($"ERROR: {msg}");}
-        public static void critical(string msg) {put($"CRITICAL: {msg}");}
-    }
-
     public class Observatory : BaseNotify {
 
         public Telescope        Mount     { get; } = S.Mount.Telescope;
@@ -113,6 +48,8 @@ namespace heliomaster {
             StartupFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during startup: {e.GetType().Name}: {e.Message}"));
             ShutdownFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during shutdown: {e.GetType().Name}: {e.Message}"));
 
+            Fixing += FixingHandle;
+
             ObjectNotFound += ObjectNotFoundHandle;
         }
 
@@ -126,8 +63,15 @@ namespace heliomaster {
 
         public void Emit(ObservatoryException e) {
             // TODO: Error handling, duh...
-            Console.WriteLine(e.Message);
-            MessageBox.Show(e.Message);
+            if (e is ObservatoryWarning w)
+                Logger.warning(e.Message);
+            else if (e is AutoOperationsException) {
+                Logger.error(e.Message);
+                MessageBox.Show(e.Message);
+            } else if (e is CriticalObservatoryError) {
+                Logger.critical(e.Message);
+                MessageBox.Show(e.Message);
+            }
         }
 
 
@@ -388,6 +332,7 @@ namespace heliomaster {
 
         public event Action Fixing;
         public void FixingRaise() => Fixing?.Invoke();
+        private void FixingHandle() => Fix();
 
         public event Action FixingSuccess;
         public void FixingSuccessRaise() => FixingSuccess?.Invoke();
@@ -428,7 +373,8 @@ namespace heliomaster {
             InOperation,
             Closing,
             WaitingForWeather,
-            Faulted
+            Faulted,
+            Fixing
         }
 
         private AutomationStates _automationState;
@@ -500,7 +446,7 @@ namespace heliomaster {
                 if (args.ShutdownTime is DateTime st)
                     closewaittask = Task.Run(() => {
                         try {
-                            Task.Delay(st - DateTime.Now, closewait.Token);
+                            Task.Delay(st - DateTime.Now, closewait.Token).Wait();
                             ShuttingRaise();
                         } catch (Exception e) {
                             Console.WriteLine(e.GetType().Name);
@@ -514,7 +460,8 @@ namespace heliomaster {
                 return true;
             } catch (ObservatoryException e) {
                 StartupFailureRaise(e);
-                Fix();
+                AutomationState = AutomationStates.Faulted;
+                FixingRaise();
                 return false;
             } finally {
                 autosem.Release();
@@ -560,7 +507,8 @@ namespace heliomaster {
                 } else throw new AutoOperationsException("Observatory shutdown with errors.");
             } catch (Exception e) {
                 ShutdownFailureRaise(e);
-                Fix();
+                AutomationState = AutomationStates.Faulted;
+                FixingRaise();
                 return false;
             } finally {
                 autosem.Release();
@@ -572,6 +520,7 @@ namespace heliomaster {
         }
 
         public async Task<bool> Fix() {
+            AutomationState = AutomationStates.Fixing;
             Logger.info("Attempting to fix observatory state.");
 
             bool domesuccess = false, mountsuccess = false;
@@ -597,9 +546,13 @@ namespace heliomaster {
 
             if (!(domesuccess && mountsuccess)) {
                 Emit(new CriticalObservatoryError("Could not fix observatory state"));
+                FixingFailureRaise();
+                AutomationState = AutomationStates.Faulted;
                 return false;
             } else {
                 Logger.info("State was successfully fixed.");
+                AutomationState = AutomationStates.Idle;
+                FixingSuccessRaise();
                 return true;
             }
         }

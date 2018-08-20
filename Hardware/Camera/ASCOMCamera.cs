@@ -71,8 +71,10 @@ namespace heliomaster {
 
                 var a = (Array) Driver.ImageArray;
                 Channels = a.Rank == 2 ? 1 : a.GetLength(2);
-                if (image == null || image.Channels != Channels)
+                if (image == null || image.Channels != Channels) {
+                    image?.Dispose();
                     image = new ASCOMImage((Array) Driver.ImageArray, Channels, Depth);
+                }
                 else
                     image.Put((Array) Driver.ImageArray);
 

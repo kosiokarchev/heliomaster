@@ -48,15 +48,26 @@ namespace heliomaster {
         }
 
         private void SetupErrorHandling() {
+            // TODO: Better error handling:
+            // e.g. generate a meaningful message from internal exceptions, etc.
+
             TaskScheduler.UnobservedTaskException += (sender, args) => {
-                MessageBox.Show($"Task exception: {args.Exception.InnerExceptions[0].Message}");
+                Logger.error($"Task exception: {args.Exception.InnerExceptions[0].Message}");
                 args.SetObserved();
             };
 
             DispatcherUnhandledException += (sender, args) => {
-                MessageBox.Show($"An exception occurred on the main UI thread:{Environment.NewLine}"
-                                + $"{args.Exception.GetType().Name}: {args.Exception.Message}");
+                Logger.error($"An exception occurred on the main UI thread:{Environment.NewLine}"
+                             + $"{args.Exception.GetType().Name}: {args.Exception.Message}");
                 args.Handled = true;
+            };
+
+            AppDomain.CurrentDomain.UnhandledException += (sender, args) => {
+                var msg = $"{args.ExceptionObject.GetType().Name}: {(args.ExceptionObject is Exception e ? e.Message : args.ExceptionObject.ToString())}";
+                if (args.IsTerminating)
+                    Logger.critical(msg);
+                else
+                    Logger.error(msg);
             };
         }
     }

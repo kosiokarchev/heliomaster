@@ -236,7 +236,7 @@ namespace heliomaster {
 
         public static async void TimelapseAction(object state) {
             if (state is CameraModel m)
-                Console.WriteLine(await m.TakeImage());
+                await m.TakeImage();
         }
 
         public async Task<CapturedImage> TakeImage() {
@@ -279,8 +279,8 @@ namespace heliomaster {
                     }));
             };
 
-            cimg.Save();
             Application.Current.Dispatcher.InvokeAsync(() => { Images.Add(cimg); });
+            cimg.Save();
             return cimg;
         }
     }
