@@ -76,7 +76,7 @@ namespace heliomaster {
 
         private StringBuilder id;
 
-        public override Task<bool> Connect(string progID, bool state = true, bool init = true, bool setup = false) {
+        public override Task<bool> Connect(string progID, bool init = true, bool setup = false) {
             return Task<bool>.Factory.StartNew(() => {
                 id = new StringBuilder(progID, 32);
                 camhandle = libqhyccd.OpenQHYCCD(id);

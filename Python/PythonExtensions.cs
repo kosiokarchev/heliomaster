@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace heliomaster {
     public static class PythonExtensions {
-        public static List<int> shape(this CameraImage img) {
-            return new List<int>(new [] {img.Height, img.Width, img.Channels});
+        public static ArrayList shape(this CameraImage img) {
+            return new ArrayList(new [] {img.Height, img.Width, img.Channels});
         }
         public static string dtype(this CameraImage img) {
             return img.Depth == BitDepth.depth8  ? "uint8" :

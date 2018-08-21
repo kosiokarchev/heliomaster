@@ -5,120 +5,6 @@
     <Setting Name="WeatherID" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="CloudCover" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;%&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                        &lt;Max&gt;100&lt;/Max&gt;
-                        &lt;IconKey&gt;icon-cloud&lt;/IconKey&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="DewPoint" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;°C&lt;/Unit&gt;
-                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="Pressure" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;hPa&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="RainRate" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;mm/h&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="SkyBrightness" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;lux&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
-                        &lt;IconKey&gt;icon-bulb&lt;/IconKey&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="SkyQuality" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
-                        &lt;IconKey&gt;icon-thumb&lt;/IconKey&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="SkyTemperature" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;°C&lt;/Unit&gt;
-                        &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="StarFWHM" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;"&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                        &lt;IconKey&gt;icon-eye&lt;/IconKey&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="Temperature" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;°C&lt;/Unit&gt;
-                        &lt;IsReversed&gt;true&lt;/IsReversed&gt;
-                        &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="WindDirection" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;°&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                        &lt;Max&gt;360&lt;/Max&gt;
-                        &lt;Neglect&gt;true&lt;/Neglect&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="WindGust" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;m/s&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="WindSpeed" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;m/s&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
-    <Setting Name="Humidity" Type="heliomaster.WeatherItem" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;WeatherItem&gt;
-                        &lt;Unit&gt;%&lt;/Unit&gt;
-                        &lt;Min&gt;0&lt;/Min&gt;
-                        &lt;Max&gt;100&lt;/Max&gt;
-                        &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
-                    &lt;/WeatherItem&gt;
-                </Value>
-    </Setting>
     <Setting Name="DriverRefresh" Type="System.TimeSpan" Scope="User">
       <Value Profile="(Default)">00:00:10</Value>
     </Setting>
@@ -130,6 +16,197 @@
     </Setting>
     <Setting Name="LogInterval" Type="System.TimeSpan" Scope="User">
       <Value Profile="(Default)">00:00:10</Value>
+    </Setting>
+    <Setting Name="DewPoint" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+  &lt;Min&gt;NaN&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;°C&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;-INF&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="SkyQuality" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+  &lt;Min&gt;NaN&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;IconKey&gt;icon-thumb&lt;/IconKey&gt;
+  &lt;BoundLow&gt;-INF&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="SkyTemperature" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;NaN&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;°C&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;-INF&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="Temperature" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+  &lt;Min&gt;NaN&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;°C&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;-INF&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="UseFile" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="FilePath" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="CloudCover" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;100&lt;/Max&gt;
+  &lt;Unit&gt;%&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;IconKey&gt;icon-cloud&lt;/IconKey&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;100&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="Pressure" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;hPa&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="RainRate" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;mm/h&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="SkyBrightness" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;true&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;lux&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;IconKey&gt;icon-bulb&lt;/IconKey&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="StarFWHM" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;"&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;IconKey&gt;icon-eye&lt;/IconKey&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="WindDirection" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;360&lt;/Max&gt;
+  &lt;Unit&gt;°&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;360&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;true&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="WindGust" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;m/s&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="WindSpeed" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;NaN&lt;/Max&gt;
+  &lt;Unit&gt;m/s&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F0}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;INF&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
+    </Setting>
+    <Setting Name="Humidity" Type="heliomaster.WeatherItem" Scope="User">
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;WeatherItem xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;IsReversed&gt;false&lt;/IsReversed&gt;
+  &lt;Min&gt;0&lt;/Min&gt;
+  &lt;Max&gt;100&lt;/Max&gt;
+  &lt;Unit&gt;%&lt;/Unit&gt;
+  &lt;ValueFormat&gt;{0:F1}&lt;/ValueFormat&gt;
+  &lt;BoundLow&gt;0&lt;/BoundLow&gt;
+  &lt;BoundHigh&gt;100&lt;/BoundHigh&gt;
+  &lt;BoundsReversed&gt;false&lt;/BoundsReversed&gt;
+  &lt;Neglect&gt;false&lt;/Neglect&gt;
+&lt;/WeatherItem&gt;</Value>
     </Setting>
   </Settings>
 </SettingsFile>

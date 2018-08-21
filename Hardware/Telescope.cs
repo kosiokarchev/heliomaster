@@ -30,7 +30,7 @@ namespace heliomaster {
         };
 
         [XmlIgnore] protected override Type driverType => typeof(ASCOM.DriverAccess.Telescope);
-        [XmlIgnore] public ASCOM.DriverAccess.Telescope Driver => (ASCOM.DriverAccess.Telescope) driver;
+        [XmlIgnore] public ASCOM.DriverAccess.Telescope Driver => driver as ASCOM.DriverAccess.Telescope;
 
         public Telescope() {
 //            InitializeScalers();

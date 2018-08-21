@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using heliomaster.Properties;
 
 namespace heliomaster {
     public class ASCOMCamera : BaseCamera {
         protected override Type driverType => typeof(ASCOM.DriverAccess.Camera);
-        public ASCOM.DriverAccess.Camera Driver => (ASCOM.DriverAccess.Camera) driver;
+        public ASCOM.DriverAccess.Camera Driver => driver as ASCOM.DriverAccess.Camera;
 
         public override string Type => Resources.cameraASCOM;
 

@@ -107,7 +107,7 @@ namespace heliomaster {
 
                 if (item.Result != null)
                     Captured?.Invoke(this, item.Result);
-                var n = item.Result.to_numpy();
+//                var n = item.Result.to_numpy();
                 return copy ? item.Result?.Copy() : item.Result;
             } else return null;
         }

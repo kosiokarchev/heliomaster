@@ -19,7 +19,7 @@ namespace heliomaster {
 
         public Telescope        Mount     { get; } = S.Mount.Telescope;
         public Dome             Dome      { get; } = S.Dome.Dome;
-        public Weather          Weather   { get; } = new Weather();
+        public Weather          Weather   { get; }
         public Remote           Remote    { get; } = new Remote();
 
         public ObservableCollection<CameraModel> CameraModels { get; } = new ObservableCollection<CameraModel>();
@@ -38,6 +38,8 @@ namespace heliomaster {
 
 
         public Observatory() {
+            Weather = S.Weather.UseFile ? new WeatherFromFile() : new Weather();
+
             InitPower();
 
             Starting += StartingHandle;
@@ -130,7 +132,7 @@ namespace heliomaster {
 
         private Timer slavingTimer;
 
-        private async void slave() {
+        private async Task slave() {
             var az = Mount.Azimuth;
             if (double.IsNaN(az)) {
                 Emit(new SlavingWarning("Mount state is invalid."));
@@ -150,24 +152,25 @@ namespace heliomaster {
                     Emit(new SlavingWarning("Dome slew was unsuccessful."));
             }
         }
+        private void _slave() => slave();
         public async Task SlaveDomeToMount(TimeSpan? interval = null, TimeSpan? checkup = null) {
             if (!IsSlaving) {
+                await slave(); // TODO: Does not wait for initial sync
+
                 TimeSpan dt;
                 if (!S.Dome.AlwaysSoftSlave && Dome.CanSlave) {
                     await Dome.Slave(true);
-                    dt = checkup ?? S.Dome.SlaveCheckup;
+                    dt                = checkup ?? S.Dome.SlaveCheckup;
                     IsHardwareSlaving = true;
                 } else {
-                    dt = interval ?? S.Dome.SlaveInterval;
+                    dt                = interval ?? S.Dome.SlaveInterval;
                     IsHardwareSlaving = false;
                 }
 
-                slavingTimer = new Timer(o => slave(), null, dt, dt);
-                Mount.Slewed += slave;
+                slavingTimer =  new Timer(o => slave(), null, dt, dt);
+                Mount.Slewed += _slave;
 
                 IsSlaving = true;
-
-                await Task.Run((Action) slave);
             }
         }
         public async Task UnSlaveDomeFromMount() {
@@ -175,7 +178,7 @@ namespace heliomaster {
             slavingTimer?.Change(Timeout.Infinite, Timeout.Infinite);
             slavingTimer?.Dispose();
             slavingTimer = null;
-            Mount.Slewed -= slave;
+            Mount.Slewed -= _slave;
             IsSlaving = false;
         }
 
@@ -362,7 +365,7 @@ namespace heliomaster {
             string id;
             if (h.Equals(Dome)) id = S.Dome.DomeID;
             else if (h.Equals(Mount)) id = S.Mount.MountID;
-            else if (h.Equals(Weather)) id = S.Weather.WeatherID;
+            else if (h.Equals(Weather)) id = O.WeatherID;
             else throw new ArgumentException();
             return connect(h, id);
         }
@@ -425,10 +428,7 @@ namespace heliomaster {
                     if (args.CamShutdownTime is DateTime cst) {
                         m.StopMethod = 2;
                         m.End = cst;
-                    } else { // TODO: What to do when no end time given? Until object sets?
-                        m.StopMethod = 0;
-                        m.Nshots     = 1000;
-                    }
+                    } else { } // TODO: What to do when no end time given? Until object sets?
                 }
 
 
@@ -572,6 +572,8 @@ namespace heliomaster {
         public static CommonTimelapse Timelapse => Default.CommonTimelapse;
 
         public static BasePower Power => Default.Power;
+
+        public static string WeatherID => S.Weather.UseFile ? S.Weather.FilePath : S.Weather.WeatherID;
 
         public static event Action Refresh;
         public static void OnRefresh(object o) { Refresh?.Invoke(); }

@@ -303,17 +303,49 @@
             </TabItem>
             <TabItem Header="Weather" DataContext="{x:Static properties:S.Weather}">
                 <Grid Background="#FFE5E5E5">
-                    <StackPanel Margin="3">
-                        <Grid VerticalAlignment="Center">
+                    <StackPanel Margin="5">
+                        <CheckBox IsChecked="{Binding UseFile}"
+                                  Content="Read from file" />
+
+                        <Grid>
+                            <Grid.Style>
+                                <Style>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding UseFile}" Value="True">
+                                            <Setter Property="Grid.Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Grid.Style>
+
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
-                                <ColumnDefinition/>
+                                <ColumnDefinition />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
-                            <Label Grid.Row="0" Grid.Column="0" Content="DriverID:" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center"/>
-                            <TextBox IsEnabled="False" Grid.Column="1" DataContext="{Binding WeatherID}" Style="{StaticResource NotChosenStyle}" VerticalAlignment="Center" Margin="0,0,5,0" />
-                            <Button x:Name="WeatherChooseButton" Grid.Column="2" Content="Choose" Click="ChooseButton_Click" />
+
+                            <Label Grid.Column="0" Content="WeatherID:" />
+                            <TextBox Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0"
+                                     IsEnabled="False"
+                                     DataContext="{Binding WeatherID}" Style="{StaticResource NotChosenStyle}" />
+                            <Button Grid.Column="2" VerticalAlignment="Center"
+                                    Content="Choose" Click="ChooseButton_Click" />
                         </Grid>
+
+                        <Grid Visibility="{Binding UseFile, Converter={local:VisibilityConverter}}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
+                            <Label Grid.Column="0" Content="Filename:" />
+                            <TextBox Grid.Column="1" VerticalAlignment="Center" Margin="0,0,5,0"
+                                     Text="{Binding FilePath}" />
+                            <Button Grid.Column="2" VerticalAlignment="Center"
+                                    Content="Browse" Click="BrowseButton_Click" />
+                        </Grid>
+
                         <Border DataContext="{x:Static local:O.Weather}" BorderBrush="{Binding Condition, Converter={local:WeatherConditionConverter}}" BorderThickness="2">
                             <ListView Margin="0" ItemsSource="{Binding Items}">
                                 <ListView.View>
@@ -438,7 +470,7 @@
                                     <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBox Text="{Binding PrivateKeyFilename, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,5,0" />
-                                <Button x:Name="BrowsePrivatekeyButton" Content="Browse" Grid.Column="1" Height="22" VerticalAlignment="Top" Click="BrowsePrivatekeyButton_Click" />
+                                <Button Content="Browse" Grid.Column="1" Height="22" VerticalAlignment="Top" Click="BrowseButton_Click" />
                             </Grid>
 
                             <Button x:Name="RemoteTestConnectionButton" Grid.Row="5" Grid.ColumnSpan="2" Grid.Column="0"

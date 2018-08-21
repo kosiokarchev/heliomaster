@@ -43,7 +43,7 @@ namespace heliomaster {
                         sys.path.append(S.Python.Path);
                     }
 
-                    lib = Py.Import("libhm");
+//                    lib = Py.Import("libhm");
 
                     logger = ((dynamic) Py.Import("logger")).setup(
                         string.IsNullOrWhiteSpace(S.Logging.Directory)
@@ -56,7 +56,6 @@ namespace heliomaster {
                 });
 
                 Logger.debug($"Python started in {(DateTime.Now - t).TotalSeconds}s");
-//                Console.WriteLine($"Python started in {(DateTime.Now - t).TotalSeconds}s");
             } catch (Exception e) {
                 MessageBox.Show($"Starting Python failed: {e.Message}");
             }

@@ -41,10 +41,22 @@ namespace heliomaster {
         }
         public Task<bool> On() => power(O.Power.On, true);
         public Task<bool> Off() => power(O.Power.Off, true);
-        public Task<bool> Reset() => power(o => O.Power.Reset(o), true);
+        public Task<bool> Reset(TimeSpan? dt) => power(o => O.Power.Reset(o, dt), true);
+
+        public async Task<bool> Reboot(TimeSpan? timeout = null) {
+            var progID = Valid ? id : null;
+
+             if (Valid) await Disconnect();
+
+            await Reset(timeout);
+            await Task.Run(() => SpinWait.SpinUntil(() => IsPowerOn==true, timeout ?? TimeSpan.FromSeconds(5))); // TODO: Unhardcode
+            await On();
+
+            return IsPowerOn==true && (progID == null || await Connect(progID));
+        }
 
         public abstract string Type { get; }
-        public virtual string Name => Valid ? driver.Name : null;
+        public virtual string Name => Valid ? driver?.Name : null;
 
         public event Action Connected;
         public void ConnectedRaise() => Connected?.Invoke();
@@ -60,7 +72,7 @@ namespace heliomaster {
         public event Action Invalidated;
         public void InvalidatedRaise() => Invalidated?.Invoke();
 
-        protected virtual bool valid => driver != null && driver.Connected;
+        protected virtual bool valid => driver?.Connected == true;
         private bool _valid;
         [XmlIgnore] public bool Valid {
             get {
@@ -81,28 +93,31 @@ namespace heliomaster {
             Refresh      += RefreshHandle;
         }
 
-        protected async Task<bool> connect(bool state = true, bool init = true, bool setup = false) {
+        protected virtual async Task<bool> connect(bool init = true, bool setup = false) {
             if (setup) driver.SetupDialog();
             var ret = await Task.Run(() => {
                 try {
-                    driver.Connected = state;
-                    return driver.Connected == state;
+                    driver.Connected = true;
+                    return driver.Connected == true;
                 } catch (ASCOM.DriverException) {
                     return false;
                 }
             });
 
-            if (init && state && ret)
+            if (init && ret)
                 Initialize();
 
             return ret;
         }
 
-        public virtual async Task<bool> Connect(string progID, bool state = true, bool init = true, bool setup = false) {
+        [XmlIgnore] public virtual string id { get; protected set; }
+
+        public virtual async Task<bool> Connect(string progID, bool init = true, bool setup = false) {
             if (string.IsNullOrEmpty(progID)) return false;
+            id = progID;
 
             driver = (AscomDriver) Activator.CreateInstance(driverType, progID);
-            return await connect(state, init, setup);
+            return await connect(init, setup);
         }
 
         protected virtual Task disconnect() {

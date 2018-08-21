@@ -4,7 +4,9 @@ using System.Collections.ObjectModel;
 using System.Configuration;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Windows.Media;
+using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
 using heliomaster.Annotations;
 using heliomaster.Properties;
@@ -30,7 +32,7 @@ namespace heliomaster {
         public string IconKey { get; set; }
 
 
-        private readonly ObservingConditions driver;
+        private readonly IObservingConditions driver;
         private readonly PropertyInfo pinfo;
 
 
@@ -96,13 +98,13 @@ namespace heliomaster {
         public Conditions Condition =>
             Neglect ? Conditions.OK :
             BoundsReversed
-                ? ((Value > BoundHigh) ? Conditions.OK : (Value > BoundLow) ? Conditions.Warning : Conditions.Bad)
-                : ((Value < BoundLow) ? Conditions.OK : (Value < BoundHigh) ? Conditions.Warning : Conditions.Bad);
+                ? ((Value >= BoundHigh) ? Conditions.OK : (Value >= BoundLow) ? Conditions.Warning : Conditions.Bad)
+                : ((Value <= BoundLow) ? Conditions.OK : (Value <= BoundHigh) ? Conditions.Warning : Conditions.Bad);
 
         // ReSharper disable once UnusedMember.Global
         // Used by deserializer!
         public WeatherItem() {}
-        public WeatherItem(ObservingConditions _driver, string name, string displayName = null) {
+        public WeatherItem(IObservingConditions _driver, string name, string displayName = null) {
             driver      = _driver;
             Name        = name;
             DisplayName = displayName ?? name;
@@ -120,7 +122,7 @@ namespace heliomaster {
 
 
             try {
-                if (typeof(ObservingConditions).GetProperty(name) is PropertyInfo _pinfo) {
+                if (typeof(IObservingConditions).GetProperty(name) is PropertyInfo _pinfo) {
                     _pinfo.GetValue(driver);
                     pinfo = _pinfo;
                     Valid = true;
@@ -133,48 +135,58 @@ namespace heliomaster {
 
 
     public class Weather : BaseHardwareControl {
-        protected override Type driverType =>
-            typeof(ObservingConditions);
-
-        public ObservingConditions Driver => (ObservingConditions) driver;
+        protected override Type driverType => typeof(ObservingConditions);
+        public virtual IObservingConditions Driver => driver as ObservingConditions;
 
         public override string Type => Resources.weather;
 
-        public WeatherItem CloudCover     { get; [UsedImplicitly] private set; }
-        public WeatherItem DewPoint       { get; [UsedImplicitly] private set; }
-        public WeatherItem Humidity       { get; [UsedImplicitly] private set; }
-        public WeatherItem Pressure       { get; [UsedImplicitly] private set; }
-        public WeatherItem RainRate       { get; [UsedImplicitly] private set; }
-        public WeatherItem SkyBrightness  { get; [UsedImplicitly] private set; }
-        public WeatherItem SkyQuality     { get; [UsedImplicitly] private set; }
-        public WeatherItem SkyTemperature { get; [UsedImplicitly] private set; }
-        public WeatherItem StarFWHM       { get; [UsedImplicitly] private set; }
-        public WeatherItem Temperature    { get; [UsedImplicitly] private set; }
-        public WeatherItem WindDirection  { get; [UsedImplicitly] private set; }
-        public WeatherItem WindGust       { get; [UsedImplicitly] private set; }
-        public WeatherItem WindSpeed      { get; [UsedImplicitly] private set; }
+        public WeatherItem CloudCover     { get; private set; }
+        public WeatherItem DewPoint       { get; private set; }
+        public WeatherItem Humidity       { get; private set; }
+        public WeatherItem Pressure       { get; private set; }
+        public WeatherItem RainRate       { get; private set; }
+        public WeatherItem SkyBrightness  { get; private set; }
+        public WeatherItem SkyQuality     { get; private set; }
+        public WeatherItem SkyTemperature { get; private set; }
+        public WeatherItem StarFWHM       { get; private set; }
+        public WeatherItem Temperature    { get; private set; }
+        public WeatherItem WindDirection  { get; private set; }
+        public WeatherItem WindGust       { get; private set; }
+        public WeatherItem WindSpeed      { get; private set; }
 
         public bool? Safe => Condition == null ? (bool?) null : Condition != WeatherItem.Conditions.Bad;
-        public WeatherItem.Conditions? Condition => Valid ? Items.Max(i => i.Condition) : (WeatherItem.Conditions?) null;
+
+        public WeatherItem.Conditions? Condition {
+            get {
+                itemslock.EnterReadLock();
+                var ret = (Valid && Items.Count > 0) ? Items.Max(i => i.Condition) : (WeatherItem.Conditions?) null;
+                itemslock.ExitReadLock();
+                return ret;
+            }
+        }
 
         public ObservableCollection<WeatherItem> Items { get; } = new ObservableCollection<WeatherItem>();
 
-        private readonly string[] propNames = {
+        protected readonly string[] propNames = {
             "CloudCover", "DewPoint", "Humidity", "Pressure", "RainRate", "SkyBrightness", "SkyQuality",
             "SkyTemperature", "StarFWHM", "Temperature", "WindDirection", "WindGust", "WindSpeed"
         };
 
-        private readonly List<string> properties = new List<string> {nameof(Safe), nameof(Condition)};
+        protected readonly List<string> properties = new List<string> {nameof(Safe), nameof(Condition)};
         protected override IEnumerable<string> props => properties;
 
+        private readonly ReaderWriterLockSlim itemslock = new ReaderWriterLockSlim();
         protected override void RefreshHandle() {
             if (Valid) Driver.Refresh();
             base.RefreshHandle();
+            itemslock.EnterReadLock();
             foreach (var i in Items)
                 i.NotifyChanged();
+            itemslock.ExitReadLock();
         }
 
         public override void Initialize() {
+            itemslock.EnterWriteLock();
             foreach (var p in propNames)
                 if (typeof(Weather).GetProperty(p) is PropertyInfo pinfo) {
                     var witem = new WeatherItem(Driver, p);
@@ -186,6 +198,7 @@ namespace heliomaster {
                         properties.Add(p);
                     }
                 }
+            itemslock.ExitWriteLock();
 
             base.Initialize();
         }

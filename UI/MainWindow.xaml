@@ -572,149 +572,94 @@
 
                 <GroupBox DataContext="{x:Static local:O.Weather}" Style="{StaticResource HardwareGroupStyle}"
                           Grid.Row="0" Grid.Column="2" Grid.RowSpan="2">
-                <GroupBox.BorderBrush>
-                    <PriorityBinding>
-                        <Binding Path="Condition" Converter="{local:WeatherConditionConverter}" />
-                        <Binding Path="borderColor" Source="{x:Static properties:Settings.Default}" Converter="{StaticResource ColorToSolidColorBrushConverter}" />
-                    </PriorityBinding>
-                </GroupBox.BorderBrush>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="24" />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                        <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Grid.Resources>
-                        <Style x:Key="IconStyle">
-                            <Setter Property="Viewbox.Width" Value="24" />
-                            <Setter Property="Viewbox.Height" Value="24" />
-                        </Style>
-                    </Grid.Resources>
+                    <GroupBox.BorderBrush>
+                        <PriorityBinding>
+                            <Binding Path="Condition" Converter="{local:WeatherConditionConverter}" />
+                            <Binding Path="borderColor" Source="{x:Static properties:Settings.Default}" Converter="{StaticResource ColorToSolidColorBrushConverter}" />
+                        </PriorityBinding>
+                    </GroupBox.BorderBrush>
+                    <StackPanel>
+                        <StackPanel.Resources>
+                            <Style TargetType="{x:Type Viewbox}">
+                                <Setter Property="Width" Value="24" />
+                                <Setter Property="Height" Value="24" />
+                                <Setter Property="VerticalAlignment" Value="Center" />
+                            </Style>
+                            <Style TargetType="{x:Type Label}" BasedOn="{StaticResource WeatherItemLabelStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Valid}" Value="False">
+                                        <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                            <Style TargetType="{x:Type StackPanel}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Valid}" Value="False">
+                                        <Setter Property="StackPanel.Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </StackPanel.Resources>
 
-                    <Viewbox Child="{StaticResource icon-thermometer}"
-                                 Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" VerticalAlignment="Center" />
-                    <ContentControl Content="{Binding Temperature}"
-                                        Grid.Row="0" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}" />
-                    <ContentControl Content="{Binding Pressure}"
-                                        Grid.Row="1" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Child="{StaticResource icon-thermometer}" />
+                            <StackPanel>
+                                <Label DataContext="{Binding Temperature}"  />
+                                <Label DataContext="{Binding Pressure}" />
+                            </StackPanel>
+                        </StackPanel>
 
-                    <Viewbox Child="{StaticResource icon-droplet}"
-                                 Grid.Row="2" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" />
-                    <ContentControl Content="{Binding Humidity}"
-                                        Grid.Row="2" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                    <ContentControl Content="{Binding RainRate}"
-                                        Grid.Row="3" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}" />
-                    <ContentControl Content="{Binding DewPoint}"
-                                        Grid.Row="4" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}" />
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Child="{StaticResource icon-droplet}" />
+                            <StackPanel>
+                                <Label DataContext="{Binding Humidity}" />
+                                <Label DataContext="{Binding RainRate}" />
+                                <Label DataContext="{Binding DewPoint}" />
+                            </StackPanel>
+                        </StackPanel>
 
-                    <Viewbox Child="{StaticResource icon-cloud}" Grid.Row="5" Grid.Column="0" Style="{StaticResource IconStyle}" />
-                    <Label DataContext="{Binding CloudCover}" Style="{StaticResource WeatherItemLabelStyle}"
-                           Grid.Row="5" Grid.Column="1"/>
-                    <Viewbox Child="{StaticResource icon-bulb}" Grid.Row="6" Grid.Column="0" Style="{StaticResource IconStyle}" />
-                    <Label DataContext="{Binding SkyBrightness}" Style="{StaticResource WeatherItemLabelStyle}"
-                           Grid.Row="6" Grid.Column="1"/>
-                    <Viewbox Child="{StaticResource icon-thumb}" Grid.Row="7" Grid.Column="0" Style="{StaticResource IconStyle}" />
-                    <Label DataContext="{Binding SkyQuality}" Style="{StaticResource WeatherItemLabelStyle}"
-                           Grid.Row="7" Grid.Column="1"/>
-                    <Viewbox Child="{StaticResource icon-thermometer}" Grid.Row="8" Grid.Column="0" Style="{StaticResource IconStyle}" />
-                    <Label DataContext="{Binding SkyTemperature}" Style="{StaticResource WeatherItemLabelStyle}"
-                           Grid.Row="8" Grid.Column="1"/>
-                    <Viewbox Child="{StaticResource icon-eye}" Grid.Row="9" Grid.Column="0" Style="{StaticResource IconStyle}" />
-                    <Label DataContext="{Binding StarFWHM}" Style="{StaticResource WeatherItemLabelStyle}"
-                           Grid.Row="9" Grid.Column="1"/>
+                        <StackPanel Orientation="Horizontal" DataContext="{Binding CloudCover}">
+                            <Viewbox>
+                                <ContentControl Content="{Binding IconKey, Converter={local:StaticResourceConverter}}" />
+                            </Viewbox>
+                            <Label />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DataContext="{Binding SkyBrightness}">
+                            <Viewbox>
+                                <ContentControl Content="{Binding IconKey, Converter={local:StaticResourceConverter}}" />
+                            </Viewbox>
+                            <Label />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DataContext="{Binding SkyQuality}">
+                            <Viewbox>
+                                <ContentControl Content="{Binding IconKey, Converter={local:StaticResourceConverter}}" />
+                            </Viewbox>
+                            <Label />
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" DataContext="{Binding SkyTemperature}">
+                            <Viewbox>
+                                <ContentControl Content="{Binding IconKey, Converter={local:StaticResourceConverter}}" />
+                            </Viewbox>
+                            <Label />
+                        </StackPanel>
 
-                    <Viewbox Child="{StaticResource icon-vane}"
-                                 Grid.Row="10" Grid.Column="0" Grid.RowSpan="3" VerticalAlignment="Center" />
-                    <ContentControl Content="{Binding WindSpeed}"
-                                        Grid.Row="10" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                    <ContentControl Content="{Binding WindGust}"
-                                        Grid.Row="11" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}" />
-                    <ContentControl Content="{Binding WindDirection}"
-                                        Grid.Row="12" Grid.Column="1"
-                                        ContentTemplate="{StaticResource WeatherItemTemplate}" />
-                </Grid>
-                <!--<StackPanel>
-                        <Grid HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" SharedSizeGroup="WeatherIconsColumn"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Viewbox Grid.RowSpan="2" Child="{StaticResource icon-thermometer}" />
-                            <ContentControl Content="{Binding Temperature}" Grid.Row="0" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding Pressure}" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="1"/>
-                        </Grid>
-                        <Grid HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"  SharedSizeGroup="WeatherIconsColumn" />
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Viewbox Grid.RowSpan="3" Child="{StaticResource icon-droplet}"/>
-                            <ContentControl Content="{Binding Humidity}" Grid.Row="0" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding RainRate}" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="1"/>
-                            <ContentControl Content="{Binding DewPoint}" Grid.Column="1" Margin="0" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="2"/>
-                        </Grid>
-                        <Grid Margin="0" HorizontalAlignment="Right" VerticalAlignment="Top">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
+                        <StackPanel Orientation="Horizontal" DataContext="{Binding StarFWHM}">
+                            <Viewbox>
+                                <ContentControl Content="{Binding IconKey, Converter={local:StaticResourceConverter}}" />
+                            </Viewbox>
+                            <Label />
+                        </StackPanel>
 
-                            <ContentControl Content="{Binding CloudCover}" Grid.Row="0" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding SkyBrightness}" Grid.Row="1" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding SkyQuality}" Grid.Row="2" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding SkyTemperature}" Grid.Row="3" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding StarFWHM}" Grid.Row="4" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                        </Grid>
-                        <Grid HorizontalAlignment="Left" Margin="0" VerticalAlignment="Top">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MaxWidth="24"/>
-                                <ColumnDefinition/>
-                            </Grid.ColumnDefinitions>
-                            <Viewbox Grid.RowSpan="3" Width="24" Child="{StaticResource icon-vane}" />
-                            <ContentControl Content="{Binding WindSpeed}" Grid.Row="0" Grid.Column="1" ContentTemplate="{StaticResource WeatherItemTemplate}"/>
-                            <ContentControl Content="{Binding WindGust}" Grid.Column="1" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="1"/>
-                            <ContentControl Content="{Binding WindDirection}" Grid.Column="1" ContentTemplate="{StaticResource WeatherItemTemplate}" Grid.Row="2"/>
-                        </Grid>
-                    </StackPanel>-->
-            </GroupBox>
+                        <StackPanel Orientation="Horizontal">
+                            <Viewbox Child="{StaticResource icon-vane}" />
+                            <StackPanel>
+                                <Label DataContext="{Binding WindSpeed}" />
+                                <Label DataContext="{Binding WindGust}" />
+                                <Label DataContext="{Binding WindDirection}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </GroupBox>
             </Grid>
         </Grid>
     </DockPanel>

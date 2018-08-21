@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms.VisualStyles;
 using System.Xml.Serialization;
 using ASCOM.DeviceInterface;
 using heliomaster.Properties;
+using Renci.SshNet.Messages.Authentication;
+using SmartFormat;
 
 namespace heliomaster {
     public class Dome : BaseHardwareControl {
@@ -17,7 +20,7 @@ namespace heliomaster {
         };
 
         [XmlIgnore] protected override Type driverType => typeof(ASCOM.DriverAccess.Dome);
-        [XmlIgnore] public ASCOM.DriverAccess.Dome Driver => (ASCOM.DriverAccess.Dome) driver;
+        [XmlIgnore] public ASCOM.DriverAccess.Dome Driver => driver as ASCOM.DriverAccess.Dome;
 
         private double _homePosition;
         public double HomePosition {
@@ -140,9 +143,9 @@ namespace heliomaster {
                 try {
                     if (home) Driver.FindHome();
                     else Driver.Park();
-                    SpinWait.SpinUntil(() => (home && Driver.AtHome) || (!home && Driver.AtPark), new TimeSpan(0, 0, 100)); // TODO: Unhardcode
-                    SpinWait.SpinUntil(() => !Slewing);
-                    Logger.info($"{action} complete.");
+                    var timeout = TimeSpan.FromSeconds(100); // TODO: Unhardcode
+                    SpinWait.SpinUntil(() => (home && Driver.AtHome) || (!home && Driver.AtPark), timeout);
+                    Logger.info($"Slewing stopped or timeout {timeout.TotalSeconds}s expired.");
                     return home ? AtHome : AtPark;
                 } catch {
                     Logger.debug($"Attempting software {(home ? "slew to home" : "park")}.");
@@ -200,11 +203,54 @@ namespace heliomaster {
             });
         }
 
+        public async Task<bool> ShutterWithHome(bool open, bool tryreboot = true) {
+            var prefix = $"DOME: ShutterWithHome({open}): ";
+            while (true) {
+                if (!HomeToOpen || await HomeOrPark(home: true)) {
+                    var ret = await Shutter(open);
+                    Logger.info(prefix + (ret ? "success" : "failed: cannot control shutter"));
+                    return ret;
+                }
+
+                if (tryreboot) {
+                    Logger.info(prefix + "rebooting");
+                    if (await Reboot()) {
+                        tryreboot = false;
+                        continue;
+                    } else Logger.info(prefix + "rebooting failed");
+                }
+
+                Logger.info(prefix + "failed: cannot go to home");
+                throw new Exception(prefix + "cannot go to home");
+            }
+        }
+
         public async Task<bool> SmartShutter(bool open) {
-            // TODO: Smarter shutter with RetryClose
-            if (HomeToOpen && !await HomeOrPark(home: true))
+            var prefix = $"DOME: SmartShutter({open}): ";
+            Logger.info(prefix + "starting");
+            try {
+                if (await ShutterWithHome(open)) goto success;
+
+                if (HomeToOpen) {
+                    Logger.info(prefix + "trying to re-go to home");
+                    if (await Slew(20) && await SmartShutter(open)) goto success;
+                }
+
+                Logger.info(prefix + "trying to reboot");
+                if (await Reboot()) {
+                    Logger.info(prefix + "reboot successful");
+                    if (await ShutterWithHome(open)) goto success;
+                }
+
+                Logger.info(prefix + "failed");
+            } catch (Exception e) {
+                Logger.info(prefix + $"failed due to error: {e.GetType().Name}: {e.Message}");
                 return false;
-            return await Shutter(open);
+            }
+
+            success:
+            Logger.info(prefix + "success");
+            return true;
         }
 
         #endregion

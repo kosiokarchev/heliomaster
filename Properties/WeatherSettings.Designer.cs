@@ -9,20 +9,20 @@
 //------------------------------------------------------------------------------
 
 namespace heliomaster.Properties {
-
-
+    
+    
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.8.0.0")]
     public sealed partial class WeatherSettings : global::System.Configuration.ApplicationSettingsBase {
-
+        
         private static WeatherSettings defaultInstance = ((WeatherSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new WeatherSettings())));
-
+        
         public static WeatherSettings Default {
             get {
                 return defaultInstance;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -34,210 +34,7 @@ namespace heliomaster.Properties {
                 this["WeatherID"] = value;
             }
         }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-                    <WeatherItem>
-                        <Unit>%</Unit>
-                        <Min>0</Min>
-                        <Max>100</Max>
-                        <IconKey>icon-cloud</IconKey>
-                    </WeatherItem>
-                ")]
-        public global::heliomaster.WeatherItem CloudCover {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["CloudCover"]));
-            }
-            set {
-                this["CloudCover"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>°C</Unit>\r\n   " +
-            "                     <IsReversed>true</IsReversed>\r\n                    </Weathe" +
-            "rItem>\r\n                ")]
-        public global::heliomaster.WeatherItem DewPoint {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["DewPoint"]));
-            }
-            set {
-                this["DewPoint"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>hPa</Unit>\r\n  " +
-            "                      <Min>0</Min>\r\n                    </WeatherItem>\r\n        " +
-            "        ")]
-        public global::heliomaster.WeatherItem Pressure {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["Pressure"]));
-            }
-            set {
-                this["Pressure"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>mm/h</Unit>\r\n " +
-            "                       <Min>0</Min>\r\n                    </WeatherItem>\r\n       " +
-            "         ")]
-        public global::heliomaster.WeatherItem RainRate {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["RainRate"]));
-            }
-            set {
-                this["RainRate"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-                    <WeatherItem>
-                        <Unit>lux</Unit>
-                        <Min>0</Min>
-                        <IsReversed>true</IsReversed>
-                        <IconKey>icon-bulb</IconKey>
-                    </WeatherItem>
-                ")]
-        public global::heliomaster.WeatherItem SkyBrightness {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["SkyBrightness"]));
-            }
-            set {
-                this["SkyBrightness"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <IsReversed>true</Is" +
-            "Reversed>\r\n                        <IconKey>icon-thumb</IconKey>\r\n              " +
-            "      </WeatherItem>\r\n                ")]
-        public global::heliomaster.WeatherItem SkyQuality {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["SkyQuality"]));
-            }
-            set {
-                this["SkyQuality"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>°C</Unit>\r\n   " +
-            "                     <ValueFormat>{0:F1}</ValueFormat>\r\n                    </We" +
-            "atherItem>\r\n                ")]
-        public global::heliomaster.WeatherItem SkyTemperature {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["SkyTemperature"]));
-            }
-            set {
-                this["SkyTemperature"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>\"</Unit>\r\n    " +
-            "                    <Min>0</Min>\r\n                        <IconKey>icon-eye</Ico" +
-            "nKey>\r\n                    </WeatherItem>\r\n                ")]
-        public global::heliomaster.WeatherItem StarFWHM {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["StarFWHM"]));
-            }
-            set {
-                this["StarFWHM"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>°C</Unit>\r\n   " +
-            "                     <IsReversed>true</IsReversed>\r\n                        <Val" +
-            "ueFormat>{0:F1}</ValueFormat>\r\n                    </WeatherItem>\r\n             " +
-            "   ")]
-        public global::heliomaster.WeatherItem Temperature {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["Temperature"]));
-            }
-            set {
-                this["Temperature"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-                    <WeatherItem>
-                        <Unit>°</Unit>
-                        <Min>0</Min>
-                        <Max>360</Max>
-                        <Neglect>true</Neglect>
-                    </WeatherItem>
-                ")]
-        public global::heliomaster.WeatherItem WindDirection {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["WindDirection"]));
-            }
-            set {
-                this["WindDirection"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>m/s</Unit>\r\n  " +
-            "                      <Min>0</Min>\r\n                    </WeatherItem>\r\n        " +
-            "        ")]
-        public global::heliomaster.WeatherItem WindGust {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["WindGust"]));
-            }
-            set {
-                this["WindGust"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <WeatherItem>\r\n                        <Unit>m/s</Unit>\r\n  " +
-            "                      <Min>0</Min>\r\n                    </WeatherItem>\r\n        " +
-            "        ")]
-        public global::heliomaster.WeatherItem WindSpeed {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["WindSpeed"]));
-            }
-            set {
-                this["WindSpeed"] = value;
-            }
-        }
-
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-                    <WeatherItem>
-                        <Unit>%</Unit>
-                        <Min>0</Min>
-                        <Max>100</Max>
-                        <ValueFormat>{0:F1}</ValueFormat>
-                    </WeatherItem>
-                ")]
-        public global::heliomaster.WeatherItem Humidity {
-            get {
-                return ((global::heliomaster.WeatherItem)(this["Humidity"]));
-            }
-            set {
-                this["Humidity"] = value;
-            }
-        }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00:00:10")]
@@ -249,7 +46,7 @@ namespace heliomaster.Properties {
                 this["DriverRefresh"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
@@ -261,7 +58,7 @@ namespace heliomaster.Properties {
                 this["DoLog"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -273,7 +70,7 @@ namespace heliomaster.Properties {
                 this["LogFileFormat"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("00:00:10")]
@@ -283,6 +80,332 @@ namespace heliomaster.Properties {
             }
             set {
                 this["LogInterval"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>true</IsReversed>
+  <Min>NaN</Min>
+  <Max>NaN</Max>
+  <Unit>°C</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <BoundLow>-INF</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem DewPoint {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["DewPoint"]));
+            }
+            set {
+                this["DewPoint"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>true</IsReversed>
+  <Min>NaN</Min>
+  <Max>NaN</Max>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <IconKey>icon-thumb</IconKey>
+  <BoundLow>-INF</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem SkyQuality {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["SkyQuality"]));
+            }
+            set {
+                this["SkyQuality"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>NaN</Min>
+  <Max>NaN</Max>
+  <Unit>°C</Unit>
+  <ValueFormat>{0:F1}</ValueFormat>
+  <BoundLow>-INF</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem SkyTemperature {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["SkyTemperature"]));
+            }
+            set {
+                this["SkyTemperature"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>true</IsReversed>
+  <Min>NaN</Min>
+  <Max>NaN</Max>
+  <Unit>°C</Unit>
+  <ValueFormat>{0:F1}</ValueFormat>
+  <BoundLow>-INF</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem Temperature {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["Temperature"]));
+            }
+            set {
+                this["Temperature"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseFile {
+            get {
+                return ((bool)(this["UseFile"]));
+            }
+            set {
+                this["UseFile"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string FilePath {
+            get {
+                return ((string)(this["FilePath"]));
+            }
+            set {
+                this["FilePath"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>100</Max>
+  <Unit>%</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <IconKey>icon-cloud</IconKey>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>100</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem CloudCover {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["CloudCover"]));
+            }
+            set {
+                this["CloudCover"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>NaN</Max>
+  <Unit>hPa</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem Pressure {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["Pressure"]));
+            }
+            set {
+                this["Pressure"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>NaN</Max>
+  <Unit>mm/h</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem RainRate {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["RainRate"]));
+            }
+            set {
+                this["RainRate"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>true</IsReversed>
+  <Min>0</Min>
+  <Max>NaN</Max>
+  <Unit>lux</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <IconKey>icon-bulb</IconKey>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem SkyBrightness {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["SkyBrightness"]));
+            }
+            set {
+                this["SkyBrightness"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>NaN</Max>
+  <Unit>""</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <IconKey>icon-eye</IconKey>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem StarFWHM {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["StarFWHM"]));
+            }
+            set {
+                this["StarFWHM"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>360</Max>
+  <Unit>°</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>360</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>true</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem WindDirection {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["WindDirection"]));
+            }
+            set {
+                this["WindDirection"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>NaN</Max>
+  <Unit>m/s</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem WindGust {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["WindGust"]));
+            }
+            set {
+                this["WindGust"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>NaN</Max>
+  <Unit>m/s</Unit>
+  <ValueFormat>{0:F0}</ValueFormat>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>INF</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem WindSpeed {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["WindSpeed"]));
+            }
+            set {
+                this["WindSpeed"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<WeatherItem xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <IsReversed>false</IsReversed>
+  <Min>0</Min>
+  <Max>100</Max>
+  <Unit>%</Unit>
+  <ValueFormat>{0:F1}</ValueFormat>
+  <BoundLow>0</BoundLow>
+  <BoundHigh>100</BoundHigh>
+  <BoundsReversed>false</BoundsReversed>
+  <Neglect>false</Neglect>
+</WeatherItem>")]
+        public global::heliomaster.WeatherItem Humidity {
+            get {
+                return ((global::heliomaster.WeatherItem)(this["Humidity"]));
+            }
+            set {
+                this["Humidity"] = value;
             }
         }
     }

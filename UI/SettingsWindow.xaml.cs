@@ -125,6 +125,22 @@ namespace heliomaster
                     };
                     if (fdialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                         ps.Path = fdialog.SelectedPath;
+                } else if (b.DataContext is WeatherSettings ws) {
+                    var fdialog = new OpenFileDialog {
+                        Multiselect      = false,
+                        CheckFileExists  = true,
+                        InitialDirectory = ws.FilePath
+                    };
+                    if (fdialog.ShowDialog() == true)
+                        S.Weather.FilePath = fdialog.FileName;
+                } else if (b.DataContext is RemoteSettings rs) {
+                    var fdialog = new OpenFileDialog {
+                        Multiselect      = false,
+                        CheckFileExists  = true,
+                        InitialDirectory = rs.PrivateKeyFilename
+                    };
+                    if (fdialog.ShowDialog() == true)
+                        rs.PrivateKeyFilename = fdialog.FileName;
                 }
             }
         }

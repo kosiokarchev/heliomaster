@@ -15,6 +15,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <LangVersion>default</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -138,8 +139,10 @@
     <Compile Include="Hardware\Camera\libqhyccd.cs" />
     <Compile Include="Hardware\Camera\QHYCCDCamera.cs" />
     <Compile Include="Hardware\Camera\QHYCCDImage.cs" />
-    <Compile Include="Hardware\FileObservingConditions.cs" />
     <Compile Include="Hardware\Power.cs" />
+    <Compile Include="Hardware\Weather\FileOC.cs" />
+    <Compile Include="Hardware\Weather\Weather.cs" />
+    <Compile Include="Hardware\Weather\WeatherFromFile.cs" />
     <Compile Include="Observatory\Errors.cs" />
     <Compile Include="Observatory\Logger.cs" />
     <Compile Include="Observatory\O.cs" />
@@ -164,7 +167,6 @@
     <Compile Include="Hardware\Dome.cs" />
     <Compile Include="Hardware\Focuser.cs" />
     <Compile Include="Hardware\Telescope.cs" />
-    <Compile Include="Hardware\Weather.cs" />
     <Compile Include="Properties\MountSettings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>

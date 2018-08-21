@@ -45,6 +45,13 @@ namespace heliomaster {
             } catch (Exception e) {
                 Console.WriteLine(e.Message);
             }
+
+
+
+
+//            var w = (Weather) new WeatherFromFile();
+//            var res = await w.Connect(@"C:\Users\Kosio\Desktop\AAG_CCDAP4.dat");
+//            var b = 314;
         }
 
         private void SetupErrorHandling() {

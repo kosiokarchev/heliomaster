@@ -97,13 +97,15 @@ namespace heliomaster.Properties {
 
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(@"
-                    <Dome xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
-                        <ShutterTimeout>
-                            <TimeSpan>00:01:00</TimeSpan>
-                        </ShutterTimeout>
-                    </Dome>
-                ")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<Dome xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <HasPowerControl>false</HasPowerControl>
+  <IsPowerOn xsi:nil=""true"" />
+  <HomePosition>0</HomePosition>
+  <ParkPosition>0</ParkPosition>
+  <HomeToOpen>false</HomeToOpen>
+  <RetryClose>false</RetryClose>
+</Dome>")]
         public global::heliomaster.Dome Dome {
             get {
                 return ((global::heliomaster.Dome)(this["Dome"]));

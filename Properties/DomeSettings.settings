@@ -21,13 +21,18 @@
       <Value Profile="(Default)">00:01:00</Value>
     </Setting>
     <Setting Name="Dome" Type="heliomaster.Dome" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;Dome xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-                        &lt;ShutterTimeout&gt;
-                            &lt;TimeSpan&gt;00:01:00&lt;/TimeSpan&gt;
-                        &lt;/ShutterTimeout&gt;
-                    &lt;/Dome&gt;
-                </Value>
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;Dome xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;HasPowerControl&gt;false&lt;/HasPowerControl&gt;
+  &lt;IsPowerOn xsi:nil="true" /&gt;
+  &lt;HomePosition&gt;0&lt;/HomePosition&gt;
+  &lt;ParkPosition&gt;0&lt;/ParkPosition&gt;
+  &lt;HomeToOpen&gt;false&lt;/HomeToOpen&gt;
+  &lt;RetryClose&gt;false&lt;/RetryClose&gt;
+&lt;/Dome&gt;</Value>
+    </Setting>
+    <Setting Name="Setting" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>
 </SettingsFile>

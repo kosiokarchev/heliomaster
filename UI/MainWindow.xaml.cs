@@ -38,10 +38,10 @@ namespace heliomaster {
             S.Save();
         }
 
-        private async Task Connect(BaseHardwareControl h, string id = null) {
+        private static async Task Connect(BaseHardwareControl h, string id = null) {
             id = id ?? (h is Dome   ? S.Dome.DomeID :
                      h is Telescope ? S.Mount.MountID :
-                     h is Weather   ? S.Weather.WeatherID : null);
+                     h is Weather   ? O.WeatherID : null);
             if (!string.IsNullOrWhiteSpace(id) && !await h.Connect(id)) {
                 MessageBox.Show($"Connecting to {h.Type.ToLower()} {id} failed.");
             }
@@ -126,12 +126,8 @@ namespace heliomaster {
                     case HardwareControlButtons.On:    await h.On();    break;
                     case HardwareControlButtons.Off:   await h.Off();   break;
                     case HardwareControlButtons.Reset:
-                        if (h.Valid) {
-                            await h.Disconnect();
-                            await h.Reset();
+                        if (await h.Reboot(TimeSpan.FromSeconds(10))) // TODO: Unhardcode
                             await Connect(h);
-                        } else await h.Reset();
-
                         break;
 
                     case HardwareControlButtons.Connect: await Connect(h); break;

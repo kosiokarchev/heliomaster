@@ -1,85 +1,111 @@
 ﻿using System;
 using System.Collections;
 using System.ComponentModel;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using ASCOM;
+using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
 using heliomaster.Annotations;
 
 namespace heliomaster {
-    public abstract class FileOC : ObservingConditions, INotifyPropertyChanged {
-        public new void SetupDialog() { throw new System.NotImplementedException(); }
-        public new string Action(string ActionName, string ActionParameters) => throw new System.NotImplementedException();
-        public new void CommandBlind(string Command, bool Raw = false) { throw new System.NotImplementedException(); }
-        public new bool CommandBool(string Command, bool Raw = false) => throw new System.NotImplementedException();
-        public new string CommandString(string Command, bool Raw = false) => throw new System.NotImplementedException();
-        public new ArrayList SupportedActions { get; set; } = new ArrayList();
+    public class FileParsingException : Exception {
+        public FileParsingException() { }
+        public FileParsingException(string message) : base(message) { }
+    }
 
-        public new string Description { get; }
-        public new string DriverInfo => $"File reader Observing conditions driver v{DriverVersion}";
+    public abstract class FileOC : AscomDriver, IObservingConditions, INotifyPropertyChanged {
+        public void SetupDialog() { throw new System.NotImplementedException(); }
+        public string Action(string ActionName, string ActionParameters) => throw new System.NotImplementedException();
+        public void CommandBlind(string Command, bool Raw = false) { throw new System.NotImplementedException(); }
+        public bool CommandBool(string Command, bool Raw = false) => throw new System.NotImplementedException();
+        public string CommandString(string Command, bool Raw = false) => throw new System.NotImplementedException();
+        public ArrayList SupportedActions { get; set; } = new ArrayList();
 
-        public new string DriverVersion { get; } = "0.1";
-        public new short  InterfaceVersion { get; } = 3;
-        public new string SensorDescription(string PropertyName) => throw new System.NotImplementedException();
+        public string Description { get; }
+        public string DriverInfo => $"File reader Observing conditions driver v{DriverVersion}";
+
+        public string DriverVersion { get; } = "0.1";
+        public short  InterfaceVersion { get; } = 3;
+        public string SensorDescription(string PropertyName) => throw new System.NotImplementedException();
 
 
-        private readonly Timer timer;
+        private Timer timer;
         private bool _connected;
         public new bool Connected {
             get => _connected;
             set {
-                if (_connected.Equals(value)) return;
-                _connected = value;
+                var val = false;
+                if (value)
+                    try {
+                        parse(File.ReadAllText(Description));
+                        val = true;
+                        timer = new Timer(o => Refresh(), null, TimeSpan.Zero, TimeSpan.FromSeconds(AveragePeriod));
+                    } catch {
+                        throw new DriverException();
+                    }
+                else Dispose();
+
+                if (_connected.Equals(val)) return;
+                _connected = val;
+                OnPropertyChanged();
             }
         }
-        
-        
+
+
         protected DateTime lastUpdateTime;
-        public new double TimeSinceLastUpdate(string PropertyName) => (DateTime.Now - lastUpdateTime).TotalSeconds;
+        public double TimeSinceLastUpdate(string PropertyName) => (DateTime.Now - lastUpdateTime).TotalSeconds;
 
-        protected abstract void parse(string file);
-
-        
-        public new async void Refresh() {
+        protected abstract bool parse(string file);
+        public async void Refresh() {
             if (!Connected) return;
 
+            var lastUpdateTimeBackup = lastUpdateTime;
             lastUpdateTime = File.GetLastWriteTime(Description);
             try {
                 using (var f = File.OpenText(Description))
-                    parse(await f.ReadToEndAsync());
-            } catch {}
+                    if (!parse(await f.ReadToEndAsync()))
+                        throw new FileParsingException();
+            } catch {
+                lastUpdateTime = lastUpdateTimeBackup;
+            }
         }
 
 
         public new void Dispose() {
-            timer.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-            timer.Dispose();
+            _cloudCover = _dewPoint = _humidity = _pressure = _rainRate = _skyBrightness = _skyQuality
+                = _skyTemperature = _starFWHM = _temperature = _windDirection = _windGust = _windSpeed
+                    = null;
+
+            timer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
+            timer?.Dispose();
+            timer = null;
         }
         ~FileOC() => Dispose();
 
 
         public new string Name { get; } = "FileOC";
 
-        
-        private double _averagePeriod;
-        public new double AveragePeriod {
+
+        private double _averagePeriod = 10; // TODO: Unhardcode
+        public double AveragePeriod {
             get => _averagePeriod;
             set {
                 if (value.Equals(_averagePeriod)) return;
                 _averagePeriod = value;
 
-                timer.Change(TimeSpan.Zero, TimeSpan.FromHours(_averagePeriod));
-                
+                timer?.Change(TimeSpan.Zero, TimeSpan.FromHours(_averagePeriod));
+
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _cloudCover;
-        public new double CloudCover {
+        public double CloudCover {
             get => _cloudCover ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_cloudCover)) return;
@@ -87,9 +113,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _dewPoint;
-        public new double DewPoint {
+        public double DewPoint {
             get => _dewPoint ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_dewPoint)) return;
@@ -97,9 +123,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _humidity;
-        public new double Humidity {
+        public double Humidity {
             get => _humidity ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_humidity)) return;
@@ -107,9 +133,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _pressure;
-        public new double Pressure {
+        public double Pressure {
             get => _pressure ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_pressure)) return;
@@ -117,9 +143,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _rainRate;
-        public new double RainRate {
+        public double RainRate {
             get => _rainRate ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_rainRate)) return;
@@ -127,9 +153,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _skyBrightness;
-        public new double SkyBrightness {
+        public double SkyBrightness {
             get => _skyBrightness ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_skyBrightness)) return;
@@ -137,9 +163,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _skyQuality;
-        public new double SkyQuality {
+        public double SkyQuality {
             get => _skyQuality ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_skyQuality)) return;
@@ -147,9 +173,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _starFWHM;
-        public new double StarFWHM {
+        public double StarFWHM {
             get => _starFWHM ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_starFWHM)) return;
@@ -157,9 +183,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _skyTemperature;
-        public new double SkyTemperature {
+        public double SkyTemperature {
             get => _skyTemperature ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_skyTemperature)) return;
@@ -167,9 +193,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _temperature;
-        public new double Temperature {
+        public double Temperature {
             get => _temperature ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_temperature)) return;
@@ -177,9 +203,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _windDirection;
-        public new double WindDirection {
+        public double WindDirection {
             get => _windDirection ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_windDirection)) return;
@@ -187,9 +213,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _windGust;
-        public new double WindGust {
+        public double WindGust {
             get => _windGust ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_windGust)) return;
@@ -197,9 +223,9 @@ namespace heliomaster {
                 OnPropertyChanged();
             }
         }
-        
+
         protected double? _windSpeed;
-        public new double WindSpeed {
+        public double WindSpeed {
             get => _windSpeed ?? throw new PropertyNotImplementedException();
             set {
                 if (value.Equals(_windSpeed)) return;
@@ -209,12 +235,11 @@ namespace heliomaster {
         }
 
 
-        public FileOC(string fname, TimeSpan freq) : base(null) {
+        public FileOC(string fname) {
             Description = fname;
-            timer = new Timer(o => Refresh(), null, TimeSpan.Zero, freq);
         }
 
-        
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         [NotifyPropertyChangedInvocator]
@@ -224,41 +249,48 @@ namespace heliomaster {
     }
 
     public class BoltwoodFileOC : FileOC {
-        public BoltwoodFileOC(string fname, TimeSpan freq) : base(fname, freq) { }
+        public BoltwoodFileOC(string fname) : base(fname) { }
 
+        private static double ToDouble(string s) {
+            return double.Parse(s, CultureInfo.InvariantCulture);
+        }
         private static double temp(string name, GroupCollection g) {
-            var val = double.Parse(g[name].Value);
-            return g["Tunit"].Value == "C" ? val : val * 9/5 + 32;
+            var val = ToDouble(g[name].Value);
+            return g["Tunit"].Value == "C" ? val : val * 9.0/5.0 + 32;
         }
         private static double speed(string name, GroupCollection g) {
-            var val = double.Parse(g[name].Value);
+            var val = ToDouble(g[name].Value);
             return g["Vunit"].Value == "m"   ? val
                    : g["Vunit"].Value == "M" ? (1760 * 36 * 0.0254 / 3600) * val
                                                : (1000.0 / 3600.0) * val;
         }
 
-        private static readonly Regex re = new Regex(@"(?<Date>\d\d\d\d-\d\d-\d\d)\s+(?<Time>\d\d:\d\d:\d\d.\d\d)\s+(?<Tunit>[CF])\s+(?<Vunit>[KMm])\s+(?<SkyTemperature>[-.\d]*)\s+(?<Temperature>[-.\d]*)\s+(?<SensorTemperature>[-.\d]*)\s+(?<Wind>[-.\d]*)\s+(?<Humidity>[-.\d]*)\s+(?<DewPoint>[-.\d]*)\s+(?<Heater>[-.\d]*)\s+(?<RainFlag>[012]*)\s+(?<WetFlag>[012]*)\s+(?<Since>[-.\d]*)\s+(?<Now>[-.\d]*)\s+(?<CloudCond>[0123])\s+(?<WindCond>[0123])\s+(?<RainCond>[0123])\s+(?<DayCond>[0123])\s+(?<Roof>[01])\s+(?<Alert>[01])",
-                                            RegexOptions.Compiled | RegexOptions.Singleline);
-        protected override void parse(string file) {
-            if (re.Match(file) is Match m) {
+        private static readonly Regex re = new Regex(
+            @"(?<Date>\d\d\d\d-\d\d-\d\d)\s+(?<Time>\d\d:\d\d:\d\d.\d\d)\s+(?<Tunit>[CF])\s+(?<Vunit>[KMm])\s+(?<SkyTemperature>[-.\d]*)\s+(?<Temperature>[-.\d]*)\s+(?<SensorTemperature>[-.\d]*)\s+(?<Wind>[-.\d]*)\s+(?<Humidity>[-.\d]*)\s+(?<DewPoint>[-.\d]*)\s+(?<Heater>[-.\d]*)\s+(?<RainFlag>[012]*)\s+(?<WetFlag>[012]*)\s+(?<Since>[-.\d]*)\s+(?<Now>[-.\d]*)\s+(?<CloudCond>[0123])\s+(?<WindCond>[0123])\s+(?<RainCond>[0123])\s+(?<DayCond>[0123])\s*(?<Roof>[01]*)\s*(?<Alert>[01]*)",
+            RegexOptions.Compiled | RegexOptions.Singleline);
+        protected override bool parse(string file) {
+            if (re.Match(file) is Match m && m.Success) {
+                var dts = $"{(m.Groups["Date"])} {(m.Groups["Time"])}";
                 lastUpdateTime =
-                    DateTime.ParseExact($"{(m.Groups["Date"])} {(m.Groups["Time"])}",
-                                        "yyyy-MM-dd HH':'mm':'ss.ff", CultureInfo.InvariantCulture)
+                    DateTime.ParseExact(dts, "yyyy-MM-dd HH':'mm':'ss.ff", CultureInfo.InvariantCulture)
                     - TimeSpan.FromSeconds(int.Parse(m.Groups["Since"].Value));
                 SkyTemperature = temp("SkyTemperature", m.Groups);
                 Temperature    = temp("Temperature",    m.Groups);
                 WindSpeed      = speed("Wind", m.Groups);
-                Humidity       = double.Parse(m.Groups["Humidity"].Value);
+                Humidity       = ToDouble(m.Groups["Humidity"].Value);
                 DewPoint       = temp("DewPoint", m.Groups);
-                SkyBrightness  = m.Groups["DayCond"].Value == "1"   ? 0
-                                 : m.Groups["DayCond"].Value == "2" ? 50
-                                 : m.Groups["DayCond"].Value == "3" ? 100 : double.NaN;
+                CloudCover     = m.Groups["CloudCond"].Value == "1"   ? 0
+                                 : m.Groups["CloudCond"].Value == "2" ? 50
+                                 : m.Groups["CloudCond"].Value == "3" ? 100 : double.NaN;
                 RainRate       = (m.Groups["RainFlag"].Value == "0"
                                   && (m.Groups["RainCond"].Value == "0" || m.Groups["RainCond"].Value == "1"))
                                      ? 0 : 10;
                 SkyBrightness  = m.Groups["DayCond"].Value == "1"   ? 100
                                  : m.Groups["DayCond"].Value == "2" ? 1000
                                  : m.Groups["DayCond"].Value == "3" ? 10000 : double.NaN;
+                return true;
+            } else {
+                return false;
             }
         }
     }
