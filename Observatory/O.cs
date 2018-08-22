@@ -53,6 +53,13 @@ namespace heliomaster {
             Fixing += FixingHandle;
 
             ObjectNotFound += ObjectNotFoundHandle;
+
+            StartupSuccess += () => Inform("Startup successful.");
+            StartupFailure += (args) => Inform("Startup unsuccessful.");
+            ShutdownSuccess += () => Inform("Shutdown successful.");
+            StartupFailure += (args) => Inform("Shutdown unsuccessful.");
+            FixingSuccess += () => Inform("Fixing successful");
+            FixingFailure += () => Inform("Fixing unsuccessful.");
         }
 
 
@@ -65,6 +72,7 @@ namespace heliomaster {
 
         public void Emit(ObservatoryException e) {
             // TODO: Error handling, duh...
+            Inform($"{e.GetType().Name}: {e.Message}");
             if (e is ObservatoryWarning w)
                 Logger.warning(e.Message);
             else if (e is AutoOperationsException) {
@@ -74,6 +82,27 @@ namespace heliomaster {
                 Logger.critical(e.Message);
                 MessageBox.Show(e.Message);
             }
+        }
+
+
+        public ObservableConcurrentList<ObservatoryMessage> Messages { get; } = new ObservableConcurrentList<ObservatoryMessage>();
+        private ObservatoryMessage _lastMessage;
+
+        public ObservatoryMessage LastMessage {
+            get => _lastMessage;
+            set {
+                if (_lastMessage == value) return; // reference equality
+                _lastMessage = value;
+                Messages.Add(_lastMessage);
+                OnPropertyChanged();
+            }
+        }
+
+        public void Inform(ObservatoryMessage msg) {
+            LastMessage = msg;
+        }
+        public void Inform(string msg) {
+            Inform(new ObservatoryMessage(msg));
         }
 
 
@@ -99,6 +128,9 @@ namespace heliomaster {
                             && s.Outputs.FirstOrDefault(i => i.ID == id) is Output o) {
                             hn.h.HasPowerControl = true;
                             hn.h.IsPowerOn       = o.State == States.On;
+                        } else {
+                            hn.h.HasPowerControl = false;
+                            hn.h.IsPowerOn       = null;
                         }
                 } else {
                     Dome.HasPowerControl = false;
@@ -194,6 +226,7 @@ namespace heliomaster {
                 var cam = BaseCamera.Create(model.CameraType);
                 if (await cam.Connect(model.CameraID)) {
                     model.Cam = cam;
+                    model.Cam.DisplayName = model.Name;
 
                     O.Refresh += cam.RefreshRaise;
 
@@ -293,6 +326,8 @@ namespace heliomaster {
 
         #region AUTOMATION
 
+        #region AUTOMATION_SUPPORT
+
         public class StartupArguments {
             public bool RequireInView;
             public bool Autostart;
@@ -390,10 +425,49 @@ namespace heliomaster {
                 Logger.info($"Transitioning to {_automationState}");
 
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(CanStart));
+                OnPropertyChanged(nameof(CanShutdown));
+            }
+        }
+
+        #endregion
+
+        public bool CanStart => AutomationState == AutomationStates.Idle;
+        public bool CanSetShutdown => AutomationState == AutomationStates.Idle || AutomationState == AutomationStates.InOperation;
+        public bool CanShutdown { get; } = true;
+
+        private DateTime? _shutdownTime;
+        public DateTime? ShutdownTime {
+            get => _shutdownTime;
+            set {
+                if (_shutdownTime.Equals(value)) return;
+                _shutdownTime = value;
+                OnPropertyChanged();
             }
         }
 
         private readonly SemaphoreSlim autosem = new SemaphoreSlim(1, 1);
+
+        public void SetShutdown(DateTime st) {
+            Interrupt();
+            closewait = new CancellationTokenSource();
+            closewaittask = Task.Run(() => {
+                ShutdownTime = st;
+                try {
+                    Inform($"Setting shutdown timer for {st}.");
+                    Task.Delay(st - DateTime.Now, closewait.Token).Wait();
+                    Inform($"Shutdown timer has expired at {DateTime.Now}");
+                    ShuttingRaise();
+                } catch (Exception e) {
+                    Inform("Shutdown timer has been aborted.");
+                    Logger.debug($"Exception during wait for shutdown: {e.GetType().Name}: {e.Message}");
+                }
+
+                ShutdownTime  = null;
+                closewaittask = null;
+                closewait     = null;
+            });
+        }
 
         public async Task<bool> Startup(StartupArguments args) {
             await autosem.WaitAsync();
@@ -403,23 +477,28 @@ namespace heliomaster {
                     throw new RefuseAutomationWarning("The state should be idle for startup");
                 AutomationState = AutomationStates.Starting;
 
+                Inform("Connecting devices.");
                 await connect(Mount);
                 await connect(Dome);
                 await connect(Weather);
 
+                Inform("Starting weather protection.");
                 if (!StartWeatherProtection())
                     throw new RefuseAutomationWarning("Good weather not confirmed.");
 
+                Inform("Opening dome.");
                 if (!await Dome.SmartShutter(true))
                     throw new AutoOperationsException("Could not open dome.");
 
+                Inform("Pointing telescope.");
                 if (!(await Mount.Unpark() && await Mount.GoTo()))
                     throw new AutoOperationsException("Could not operate telescope.");
 
-
+                Inform("Syncing dome.");
                 await SlaveDomeToMount();
 
 
+                Inform("Starting cameras.");
                 foreach (var model in CameraModels)
                     model.Cam.StartLivePreview(30); // TODO: Unhardcode maxfps --> cam setting
 
@@ -427,7 +506,7 @@ namespace heliomaster {
                 if (CommonTimelapse.Main is Timelapse m) {
                     if (args.CamShutdownTime is DateTime cst) {
                         m.StopMethod = 2;
-                        m.End = cst;
+                        m.End        = cst;
                     } else { } // TODO: What to do when no end time given? Until object sets?
                 }
 
@@ -436,28 +515,22 @@ namespace heliomaster {
                     throw new ObjectNotLocatedError();
 
 
-                if (args.Autostart)
+                if (args.Autostart) {
+                    Inform("Starting timelapses.");
                     CommonTimelapse.Start(CameraModel.TimelapseAction, CameraModels);
+                }
 
                 AutomationState = AutomationStates.InOperation;
                 StartupSuccessRaise();
 
-                closewait = new CancellationTokenSource();
                 if (args.ShutdownTime is DateTime st)
-                    closewaittask = Task.Run(() => {
-                        try {
-                            Task.Delay(st - DateTime.Now, closewait.Token).Wait();
-                            ShuttingRaise();
-                        } catch (Exception e) {
-                            Console.WriteLine(e.GetType().Name);
-                            Console.WriteLine(e.Message);
-                        }
-
-                        closewaittask = null;
-                        closewait = null;
-                    });
+                    SetShutdown(st);
 
                 return true;
+
+            } catch (ObservatoryWarning w) {
+                AutomationState = AutomationStates.Idle;
+                return false;
             } catch (ObservatoryException e) {
                 StartupFailureRaise(e);
                 AutomationState = AutomationStates.Faulted;
@@ -472,33 +545,38 @@ namespace heliomaster {
             await autosem.WaitAsync();
             try {
                 Interrupt();
+                AutomationState = AutomationStates.Closing;
 
                 await connect(Mount);
                 await connect(Dome);
 
-                AutomationState = AutomationStates.Closing;
-
+                Inform("Stopping weather protection.");
                 StopWeatherProtection();
 
                 CommonTimelapse.Stop();
 
                 var camtasks = CameraModels.Select(i => i.Cam.Stop());
 
+                Inform("Unsyncing dome.");
                 await UnSlaveDomeFromMount();
 
                 var mounttask = Mount.Park();
                 var dometask  = Dome.SmartShutter(false);
 
+                Inform("Waiting for telescope to park.");
                 if (!await mounttask)
                     Emit(new AutoOperationsException("Could not park mount."));
 
+                Inform("Waiting for dome to close.");
                 if (!await dometask)
                     Emit(new AutoOperationsException("Could not close dome."));
 
+                Inform("Waiting for cameras ");
                 foreach (var camtask in camtasks)
-                    camtask.Wait();
+                    await camtask;
 
                 if (mounttask.Result && dometask.Result) {
+                    Inform("Waiting for dome to park.");
                     await Dome.HomeOrPark(home: false);
 
                     AutomationState = AutomationStates.Idle;
@@ -517,6 +595,10 @@ namespace heliomaster {
 
         public void Interrupt() {
             closewait?.Cancel();
+            SpinWait.SpinUntil(() => closewaittask?.Status == TaskStatus.Running, TimeSpan.FromSeconds(1)); // TODO: Unhardcode, maybe better way to wait...
+            ShutdownTime  = null;
+            closewaittask = null;
+            closewait     = null;
         }
 
         public async Task<bool> Fix() {

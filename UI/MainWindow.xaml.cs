@@ -18,6 +18,10 @@ namespace heliomaster {
         On, Off, Reset, Connect, Disconnect
     }
 
+    public enum AutomationControlButtons {
+        Run, RunUntil, Stop, WeatherToggle
+    }
+
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
@@ -126,7 +130,7 @@ namespace heliomaster {
                     case HardwareControlButtons.On:    await h.On();    break;
                     case HardwareControlButtons.Off:   await h.Off();   break;
                     case HardwareControlButtons.Reset:
-                        if (await h.Reboot(TimeSpan.FromSeconds(10))) // TODO: Unhardcode
+                        if (await h.Reboot(TimeSpan.FromSeconds(5))) // TODO: Unhardcode
                             await Connect(h);
                         break;
 
@@ -162,6 +166,30 @@ namespace heliomaster {
         private void Button_Click(object sender, RoutedEventArgs e) {
             O.Default.Interrupt();
             O.Default.ShuttingRaise();
+        }
+
+        private void AutomationControlButton_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button b && b.Tag is AutomationControlButtons tag) {
+                switch (tag) {
+                    case AutomationControlButtons.Run:
+                        CamerasWindow.Show();
+                        O.Default.StartingRaise();
+                        break;
+                    case AutomationControlButtons.RunUntil
+                        when ShutdownTime.Value is DateTime st:
+                        CamerasWindow.Show();
+                        if (O.Default.AutomationState == Observatory.AutomationStates.InOperation)
+                            O.Default.SetShutdown(st);
+                        else O.Default.StartingRaise(new Observatory.StartupArguments {
+                            CloseAt = st
+                        });
+                        break;
+                    case AutomationControlButtons.Stop:
+                        O.Default.Interrupt();
+                        O.Default.ShuttingRaise();
+                        break;
+                }
+            }
         }
     }
 }

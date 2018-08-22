@@ -74,10 +74,10 @@
                                     <ColumnDefinition/>
                                 </Grid.ColumnDefinitions>
 
-                                <CheckBox IsChecked="{Binding Dome.HomeToOpen}"
+                                <CheckBox IsChecked="{Binding Dome.HomeToShutter}"
                                           Grid.Column="0" Grid.Row="0" Grid.ColumnSpan="3"
                                           Content="Shutter contol only when at home" />
-                                <CheckBox IsChecked="{Binding Dome.RetryClose}"
+                                <CheckBox IsChecked="{Binding Dome.RetryShutter}"
                                           Grid.Column="0" Grid.Row="1" Grid.ColumnSpan="3"
                                           Content="Automatically retry to close shutter on failure" />
 

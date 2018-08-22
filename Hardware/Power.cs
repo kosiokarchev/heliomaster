@@ -194,10 +194,8 @@ namespace heliomaster.Netio {
                 sem.Wait();
                 Utilities.InsecureSSL(() => {
                     try {
-                        var t = new CancellationTokenSource(Timeout);
-                        var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead,
-                                                t.Token);
-                        task.Wait(t.Token);
+                        var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead, new CancellationTokenSource(Timeout).Token);
+                        task.Wait();
                         if (task.Status == TaskStatus.RanToCompletion)
                             response = task.Result;
                     } catch (Exception err) {
@@ -210,7 +208,6 @@ namespace heliomaster.Netio {
 
                 if (response.IsSuccessStatusCode) {
                     var json = response?.Content.ReadAsStringAsync().Result;
-//                    Logger.debug($"NETIO: Received: \"{json}\"");
                     Socket = JsonConvert.DeserializeObject<Netio>(json);
                 } else {
                     Logger.debug($"NETIO: Got bad response: {response.StatusCode}");

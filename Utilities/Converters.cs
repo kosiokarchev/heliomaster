@@ -10,6 +10,7 @@ using System.Windows.Data;
 using System.Windows.Markup;
 using System.Windows.Media;
 using System.Xaml;
+using ASCOM.DeviceInterface;
 
 namespace heliomaster {
     public class BaseMarkupExtension : MarkupExtension {
@@ -122,25 +123,39 @@ namespace heliomaster {
     }
 
 
-    public class StaticResourceConverter : MarkupExtension, IValueConverter
-    {
+    public class ShutterStateToIconConverter : BaseMarkupExtension, IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+            if (value is ShutterState s
+                && Application.Current.TryFindResource(
+                    s == ShutterState.shutterOpen    ? "icon-dome-open" :
+                    s == ShutterState.shutterClosed  ? "icon-dome-closed" :
+                    s == ShutterState.shutterOpening ? "icon-dome-opening" :
+                    s == ShutterState.shutterClosing ? "icon-dome-closing" : "icon-dome-error"
+                ) is Canvas c)
+                return new Viewbox { Child = c };
+            else return null;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+            throw new NotImplementedException();
+        }
+    }
+
+
+    public class StaticResourceConverter : MarkupExtension, IValueConverter {
         private Control _target;
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-        {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             if (value is string resourceKey)
                 return _target?.FindResource(resourceKey) ?? Application.Current.FindResource(resourceKey);
             else return Binding.DoNothing;
-
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-        {
+        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
             throw new NotSupportedException();
         }
 
-        public override object ProvideValue(IServiceProvider serviceProvider)
-        {
+        public override object ProvideValue(IServiceProvider serviceProvider) {
             var rootObjectProvider = serviceProvider.GetService(typeof(IRootObjectProvider)) as IRootObjectProvider;
             if (rootObjectProvider == null)
                 return this;

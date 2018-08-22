@@ -15,7 +15,7 @@
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <LangVersion>default</LangVersion>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -145,6 +145,7 @@
     <Compile Include="Hardware\Weather\WeatherFromFile.cs" />
     <Compile Include="Observatory\Errors.cs" />
     <Compile Include="Observatory\Logger.cs" />
+    <Compile Include="Observatory\ObservatoryMessage.cs" />
     <Compile Include="Observatory\O.cs" />
     <Compile Include="Properties\LoggingSettings.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -214,6 +215,7 @@
     <Compile Include="Utilities\CapturedImage.cs" />
     <Compile Include="Utilities\Converters.cs" />
     <Compile Include="Utilities\Localizer.cs" />
+    <Compile Include="Utilities\ObservableConcurrentCollection.cs" />
     <Compile Include="Utilities\PasswordStore.cs" />
     <Compile Include="Utilities\QueueConsumer.cs" />
     <Compile Include="Utilities\Timelapse.cs" />

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
+using ASCOM.DeviceInterface;
 using heliomaster.Properties;
 
 namespace heliomaster {
@@ -55,30 +57,51 @@ namespace heliomaster {
                     Gains.Add((string) g);
             }
 
+            // TODO: hack
+            // The following should not be necessary, but QHY cameras sometimes have a problem
+            // starting up with an exception like "StartExposure NumX set - '0' is an invalid
+            // value. The valid range is: 1 to 0"
+            // The ASCOM specs say "it should default to CameraXSize"
+            Driver.NumX = Driver.CameraXSize;
+            Driver.NumY = Driver.CameraYSize;
+
             base.Initialize();
         }
 
         protected override CameraImage capture() {
+            var prefix = $"CAMERA {DisplayName}: "; // TODO: move to a better place
+
             if (Valid) {
-//                var t = (new TimeSpan(DateTime.Now.Ticks)).TotalSeconds;
+                try {
+                    Driver.Gain = (short) Gain; // TODO: hack
+                    Driver.StartExposure(Exposure / 1000, true);
 
-                Driver.Gain = (short) Gain;
-                Driver.StartExposure(Exposure / 1000, true);
-                SpinWait.SpinUntil(() => Driver.ImageReady);
+                    Task.Run(() => SpinWait.SpinUntil(() => Driver?.ImageReady == true))
+                        .Wait(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token); // TODO: Unhardcode
 
-//                Console.WriteLine(1.10 / ((new TimeSpan(DateTime.Now.Ticks)).TotalSeconds - t));
+                    if (!Driver.ImageReady)
+                        throw new TimeoutException("Frame not returned in 1s"); // TODO: Unhardcode
 
-                var a = (Array) Driver.ImageArray;
-                Channels = a.Rank == 2 ? 1 : a.GetLength(2);
-                if (image == null || image.Channels != Channels) {
-                    image?.Dispose();
-                    image = new ASCOMImage((Array) Driver.ImageArray, Channels, Depth);
+                    var a = (Array) Driver.ImageArray;
+                    Channels = a.Rank == 2 ? 1 : a.GetLength(2);
+                    if (image == null || image.Channels != Channels) {
+                        image?.Dispose();
+                        image = new ASCOMImage((Array) Driver.ImageArray, Channels, Depth);
+                    } else
+                        image.Put((Array) Driver.ImageArray);
+
+                    return image;
+                } catch (OperationCanceledException) {
+                    Logger.debug(prefix + "capture timed out");
+                } catch (Exception e) {
+                    Logger.warning($"CAMERA {DisplayName}: Error in capture: {e.GetType().Name}: {e.Message}");
+                } finally {
+                    if (Driver.CameraState == CameraStates.cameraExposing
+                        && Driver.CanStopExposure)
+                        Driver.StopExposure();
                 }
-                else
-                    image.Put((Array) Driver.ImageArray);
-
-                return image;
-            } else return null;
+            }
+            return null;
         }
     }
 }

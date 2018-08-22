@@ -36,23 +36,28 @@ namespace heliomaster {
         private async Task<bool> power(Func<object, Task<PowerStatus>> f, bool desired) {
             if (HasPowerControl) {
                 IsPowerOn = (await f(this)).On;
-                return IsPowerOn == true;
+                return IsPowerOn == desired;
             } else return false;
         }
         public Task<bool> On() => power(O.Power.On, true);
-        public Task<bool> Off() => power(O.Power.Off, true);
+        public Task<bool> Off() => power(O.Power.Off, false);
         public Task<bool> Reset(TimeSpan? dt) => power(o => O.Power.Reset(o, dt), true);
 
         public async Task<bool> Reboot(TimeSpan? timeout = null) {
             var progID = Valid ? id : null;
 
-             if (Valid) await Disconnect();
+            if (Valid) await Disconnect();
 
-            await Reset(timeout);
-            await Task.Run(() => SpinWait.SpinUntil(() => IsPowerOn==true, timeout ?? TimeSpan.FromSeconds(5))); // TODO: Unhardcode
-            await On();
+            if (await Off()) {
+                await Task.Delay(timeout ?? TimeSpan.FromSeconds(10)); // TODO: Unhardcode
+                if (await On()) {
+                    if (progID == null) return true;
+                    await Task.Delay(TimeSpan.FromSeconds(30)); // TODO: Unhardcode!!!!!
+                    return await Connect(progID);
+                }
+            }
 
-            return IsPowerOn==true && (progID == null || await Connect(progID));
+            return false;
         }
 
         public abstract string Type { get; }

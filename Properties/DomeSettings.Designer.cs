@@ -103,8 +103,8 @@ namespace heliomaster.Properties {
   <IsPowerOn xsi:nil=""true"" />
   <HomePosition>0</HomePosition>
   <ParkPosition>0</ParkPosition>
-  <HomeToOpen>false</HomeToOpen>
-  <RetryClose>false</RetryClose>
+  <HomeToShutter>false</HomeToShutter>
+  <RetryShutter>false</RetryShutter>
 </Dome>")]
         public global::heliomaster.Dome Dome {
             get {
