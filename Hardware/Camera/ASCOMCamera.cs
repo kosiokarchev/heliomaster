@@ -94,7 +94,7 @@ namespace heliomaster {
                 } catch (OperationCanceledException) {
                     Logger.debug(prefix + "capture timed out");
                 } catch (Exception e) {
-                    Logger.warning($"CAMERA {DisplayName}: Error in capture: {e.GetType().Name}: {e.Message}");
+                    Logger.warning($"CAMERA {DisplayName}: Error in capture: {Utilities.FormatException(e)}");
                 } finally {
                     if (Driver.CameraState == CameraStates.cameraExposing
                         && Driver.CanStopExposure)

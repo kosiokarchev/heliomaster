@@ -47,8 +47,8 @@ namespace heliomaster {
 
             WeatherSafeChanged += WeatherSafeChangedHandle;
 
-            StartupFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during startup: {e.GetType().Name}: {e.Message}"));
-            ShutdownFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during shutdown: {e.GetType().Name}: {e.Message}"));
+            StartupFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during startup: {Utilities.FormatException(e)}"));
+            ShutdownFailure += (e) => Emit(new AutoOperationsWarning($"An exception has ocurred during shutdown: {Utilities.FormatException(e)}"));
 
             Fixing += FixingHandle;
 
@@ -72,7 +72,7 @@ namespace heliomaster {
 
         public void Emit(ObservatoryException e) {
             // TODO: Error handling, duh...
-            Inform($"{e.GetType().Name}: {e.Message}");
+            Inform(Utilities.FormatException(e));
             if (e is ObservatoryWarning w)
                 Logger.warning(e.Message);
             else if (e is AutoOperationsException) {
@@ -295,7 +295,7 @@ namespace heliomaster {
         private bool? currSafeState;
         public event Action<bool?> WeatherSafeChanged;
         private void WeatherSafeChangedHandle(bool? safe) {
-            if (safe != true) Shutdown();
+            if (AutomationState == AutomationStates.InOperation && safe != true) Shutdown();
         }
         public event Action WeatherIsUnsafe;
 
@@ -379,8 +379,7 @@ namespace heliomaster {
         public void FixingFailureRaise() => FixingFailure?.Invoke();
 
 
-        private CancellationTokenSource closewait;
-        private Task closewaittask;
+
 
         private bool perform(Task<bool> t, string msg) {
             t.Wait();
@@ -446,12 +445,13 @@ namespace heliomaster {
             }
         }
 
-        private readonly SemaphoreSlim autosem = new SemaphoreSlim(1, 1);
+        private CancellationTokenSource closewait;
+        private Task                    closewaittask;
 
-        public void SetShutdown(DateTime st) {
-            Interrupt();
-            closewait = new CancellationTokenSource();
+        public async void SetShutdown(DateTime st) {
+            await Interrupt();
             closewaittask = Task.Run(() => {
+                closewait = new CancellationTokenSource();
                 ShutdownTime = st;
                 try {
                     Inform($"Setting shutdown timer for {st}.");
@@ -460,14 +460,33 @@ namespace heliomaster {
                     ShuttingRaise();
                 } catch (Exception e) {
                     Inform("Shutdown timer has been aborted.");
-                    Logger.debug($"Exception during wait for shutdown: {e.GetType().Name}: {e.Message}");
+                    Logger.debug($"Exception during wait for shutdown: {Utilities.FormatException(e)}");
                 }
 
                 ShutdownTime  = null;
-                closewaittask = null;
                 closewait     = null;
+                closewaittask = null;
             });
         }
+
+        public async Task Interrupt() {
+            closewait?.Cancel();
+
+            if (closewaittask != null)
+                try {
+                    if (await Task.WhenAny(closewaittask, Task.Delay(TimeSpan.FromSeconds(1))) != closewaittask) // TODO: Unhardcode, maybe better way to wait...
+                        Logger.debug("Could not stop closewaittask in time.");
+                    closewaittask.Dispose();
+                } catch(Exception e) {
+                    Logger.debug($"Error while waiting for closewaittask to finish: {Utilities.FormatException(e)}");
+                }
+
+            ShutdownTime  = null;
+            closewait     = null;
+            closewaittask = null;
+        }
+
+        private readonly SemaphoreSlim autosem = new SemaphoreSlim(1, 1);
 
         public async Task<bool> Startup(StartupArguments args) {
             await autosem.WaitAsync();
@@ -529,9 +548,11 @@ namespace heliomaster {
                 return true;
 
             } catch (ObservatoryWarning w) {
+                Emit(w);
                 AutomationState = AutomationStates.Idle;
                 return false;
             } catch (ObservatoryException e) {
+                Emit(e);
                 StartupFailureRaise(e);
                 AutomationState = AutomationStates.Faulted;
                 FixingRaise();
@@ -544,7 +565,7 @@ namespace heliomaster {
         public async Task<bool> Shutdown() {
             await autosem.WaitAsync();
             try {
-                Interrupt();
+                await Interrupt();
                 AutomationState = AutomationStates.Closing;
 
                 await connect(Mount);
@@ -584,6 +605,7 @@ namespace heliomaster {
                     return true;
                 } else throw new AutoOperationsException("Observatory shutdown with errors.");
             } catch (Exception e) {
+                if (e is ObservatoryException) Emit(e as ObservatoryException);
                 ShutdownFailureRaise(e);
                 AutomationState = AutomationStates.Faulted;
                 FixingRaise();
@@ -591,14 +613,6 @@ namespace heliomaster {
             } finally {
                 autosem.Release();
             }
-        }
-
-        public void Interrupt() {
-            closewait?.Cancel();
-            SpinWait.SpinUntil(() => closewaittask?.Status == TaskStatus.Running, TimeSpan.FromSeconds(1)); // TODO: Unhardcode, maybe better way to wait...
-            ShutdownTime  = null;
-            closewaittask = null;
-            closewait     = null;
         }
 
         public async Task<bool> Fix() {
@@ -614,7 +628,7 @@ namespace heliomaster {
                 else if (!await Dome.HomeOrPark(false))
                     Emit(new AutoOperationsWarning("Could not park dome."));
             } catch (Exception e) {
-                Emit(new AutoOperationsException($"Error while fixing dome: {e.GetType().Name}: {e.Message}"));
+                Emit(new AutoOperationsException($"Error while fixing dome: {Utilities.FormatException(e)}"));
             }
 
             try {
@@ -623,7 +637,7 @@ namespace heliomaster {
                 if (!mountsuccess)
                     throw new FixingFailedError("Mount state could not be fixed.");
             } catch (Exception e) {
-                Logger.error($"Error while fixing mount: {e.GetType().Name}: {e.Message}");
+                Emit(new AutoOperationsException($"Error while fixing mount: {Utilities.FormatException(e)}"));
             }
 
             if (!(domesuccess && mountsuccess)) {

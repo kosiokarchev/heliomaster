@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
 using System.Windows.Threading;
 using System.Xml.Serialization;
 using ASCOM.DeviceInterface;
@@ -207,22 +208,63 @@ namespace heliomaster {
 
         #region ADJUST
 
-        public double AdjustDuration          { get; set; }
-        public int    AdjustNTrials           { get; set; }
-        public double AdjustToleranceDec      { get; set; }
-        public double AdjustToleranceRaCosDec { get; set; }
+        private double _adjustDuration;
+        public double AdjustDuration {
+            get => _adjustDuration;
+            set {
+                if (_adjustDuration.Equals(value)) return;
+                _adjustDuration = value;
+                OnPropertyChanged();
+            }
+        }
 
-        private double rcosphi => 1.0 / Math.Cos(Utilities.deg2rad(Declination));
+        private int _adjustNTrials;
+        public int AdjustNTrials {
+            get => _adjustNTrials;
+            set {
+                if (_adjustNTrials.Equals(value)) return;
+                _adjustNTrials = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _adjustToleranceDec;
+        public double AdjustToleranceDec {
+            get => _adjustToleranceDec;
+            set {
+                if (_adjustToleranceDec.Equals(value)) return;
+                _adjustToleranceDec = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private double _adjustToleranceRaCosDec;
+        public double AdjustToleranceRaCosDec {
+            get => _adjustToleranceRaCosDec;
+            set {
+                if (_adjustToleranceRaCosDec.Equals(value)) return;
+                _adjustToleranceRaCosDec = value;
+                OnPropertyChanged();
+            }
+        }
+
 
         private double allowedRate(double r, TelescopeAxes axes) {
             var sign = Math.Sign(r);
             r = Math.Abs(r);
             var ret = 0.0;
-            foreach (var rate in axes == TelescopeAxes.axisPrimary ? PrimaryAxisRates : SecondaryAxisRates)
-                if (rate.Maximum <= r && ret < rate.Maximum)
-                    ret = rate.Maximum;
+            foreach (var rate in axes == TelescopeAxes.axisPrimary ? PrimaryAxisRates : SecondaryAxisRates) {
+                if (rate.Minimum <= r && r < rate.Maximum) return sign * r;
+                if (rate.Maximum < r && ret < rate.Maximum) ret = rate.Maximum;
+            }
             return sign * ret;
         }
+        private double adjustRate(double offset, TelescopeAxes ax) =>
+            allowedRate(offset / AdjustDuration, ax);
+
+        private double ra => RightAscension * 15;
+        private double dec => Declination;
+        private double rcosphi => 1.0 / Math.Cos(Utilities.deg2rad(dec));
 
         public Task Adjust(double dra, double ddec) {
             return Task.Run(() => {
@@ -230,35 +272,42 @@ namespace heliomaster {
                     var trackingState = Tracking;
                     Driver.Tracking = true;
 
-                    var destRa  = RightAscension + dra;
-                    var destDec = Declination + ddec;
+                    var destRa  = ra + dra;
+                    var destDec = dec + ddec;
+
+                    var initime = DateTime.Now;
 
                     var adjusted = true;
                     for (var i = 0; i < AdjustNTrials && adjusted; ++i) {
                         adjusted = false;
 
-                        var offsetRa = Utilities.SymModulo(destRa - RightAscension, 360);
+                        var offsetRa = Utilities.SymModulo(destRa - ra, 360);
                         if (Math.Abs(offsetRa) * rcosphi > AdjustToleranceRaCosDec) {
                             Driver.MoveAxis(TelescopeAxes.axisPrimary,
-                                            allowedRate(offsetRa / AdjustDuration, TelescopeAxes.axisPrimary));
+                                            -adjustRate(offsetRa, TelescopeAxes.axisPrimary));
                             adjusted = true;
-                        }
+                        } else Driver.MoveAxis(TelescopeAxes.axisPrimary, 0);
 
-                        var offsetDec = destDec - Declination;
+                        var offsetDec = destDec - dec;
                         if (Math.Abs(offsetDec) > AdjustToleranceDec) {
                             Driver.MoveAxis(TelescopeAxes.axisSecondary,
-                                            allowedRate(offsetDec / AdjustDuration, TelescopeAxes.axisSecondary));
+                                            adjustRate(offsetDec, TelescopeAxes.axisSecondary));
                             adjusted = true;
-                        }
+                        } else Driver.MoveAxis(TelescopeAxes.axisSecondary, 0);
 
-                        Task.Delay((int) (500 * AdjustDuration)); // Sleep for half of the time, then readjust.
+                        // Sleep half the time, then readjust.
+                        Thread.Sleep((int) (500 * AdjustDuration));
                     }
 
-                    Driver.MoveAxis(TelescopeAxes.axisPrimary,   0);
+                    Driver.MoveAxis(TelescopeAxes.axisPrimary, 0);
                     Driver.MoveAxis(TelescopeAxes.axisSecondary, 0);
+
+                    var timetaken = DateTime.Now - initime;
 
                     if (trackingState != null)
                         Driver.Tracking = (bool) trackingState;
+
+                    Logger.debug($"Adjusted to within {Math.Abs(destRa-ra)*rcosphi / AdjustToleranceRaCosDec:P0}, {(destDec-dec) / AdjustToleranceDec:P0} in {timetaken.TotalSeconds:F3}s (vs {AdjustDuration}s nominal)");
                 }
             });
         }
@@ -333,6 +382,11 @@ namespace heliomaster {
                     try {return Driver.Tracking;}
                     catch {return null;}
                 else return null;
+            }
+            set {
+                Task.Run(() => {
+                    try { if (CanTrack) Driver.Tracking = value == true; } catch {}
+                });
             }
         }
 

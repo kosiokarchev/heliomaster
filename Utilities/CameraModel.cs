@@ -241,6 +241,10 @@ namespace heliomaster {
 
         public async Task<CapturedImage> TakeImage() {
             var img  = await Cam.Capture(copy: true);
+            if (img == null) {
+                return null;
+            }
+
             var t = FinalTransform.Clone();
             t.Freeze();
             var cimg = new CapturedImage {

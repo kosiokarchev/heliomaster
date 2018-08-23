@@ -113,9 +113,32 @@ namespace heliomaster {
 
                 if (item.Result != null)
                     Captured?.Invoke(this, item.Result);
-//                var n = item.Result.to_numpy();
                 return copy ? item.Result?.Copy() : item.Result;
             } else return null;
+        }
+
+        private void livePreview(double maxfps) {
+            var dt = TimeSpan.FromSeconds(1 / maxfps);
+
+            PreviewOn = true;
+            try {
+                Logger.debug("CAMERA: Starting live preview.");
+                while (!cancelPreviewSource.IsCancellationRequested) {
+                    var nextTime = DateTime.Now + dt;
+                    try {
+                        Capture(Priority.LiveView).Wait();
+                        var towait = nextTime - DateTime.Now;
+                        if (towait > TimeSpan.Zero)
+                            Task.Delay(towait, cancelPreviewSource.Token).Wait();
+                    } catch (Exception e) {
+                        if (!(e is OperationCanceledException))
+                            Logger.debug($"Exception during live preview: {Utilities.FormatException(e)}");
+                    }
+                }
+            } finally {
+                Logger.debug("CAMERA: Live preview ending.");
+                PreviewOn = false;
+            }
         }
 
 
@@ -135,46 +158,23 @@ namespace heliomaster {
         public void StartLivePreview(double maxfps) {
             if (livePreviewTask == null && !PreviewOn) {
                 cancelPreviewSource = new CancellationTokenSource();
-                livePreviewTask = Task.Run(() => {
-                    var dt = TimeSpan.FromSeconds(1 / maxfps);
-
-                    PreviewOn = true;
-                    try {
-                        Logger.debug("CAMERA: Starting live pr" + "eview.");
-                        while (!cancelPreviewSource.IsCancellationRequested) {
-                            var nextTime = DateTime.Now + dt;
-                            try {
-                                Capture(Priority.LiveView).Wait();
-                                var towait = nextTime - DateTime.Now;
-                                if (towait > TimeSpan.Zero)
-                                    Task.Delay(towait, cancelPreviewSource.Token).Wait();
-                            } catch (Exception e) {
-                                if (!(e is OperationCanceledException))
-                                    Logger.debug($"Exception during live preview: {e.GetType().Name}: {e.Message}");
-                            }
-                        }
-                    } finally {
-                        Logger.debug("CAMERA: Live preview ending.");
-                        PreviewOn = false;
-                    }
-                });
+                livePreviewTask = Task.Run(() => livePreview(maxfps));
             }
         }
 
-        public void StopLivePreview() {
+        public async Task StopLivePreview() {
             cancelPreviewSource?.Cancel();
-            livePreviewTask?.Wait();
-            livePreviewTask?.Dispose();
+            if (livePreviewTask != null) {
+                await livePreviewTask;
+                livePreviewTask?.Dispose();
+            }
             livePreviewTask = null;
             PreviewOn = false;
         }
 
-        public Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>> Stop() {
-            return Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>>.Factory.StartNew(() => {
-                StopLivePreview();
-                return queue.Clear();
-            });
-
+        public async Task<List<List<QueueItem<SemaphoreSlim, CameraImage>>>> Stop() {
+            await StopLivePreview();
+            return await queue.ClearTask();
         }
 
         public override async Task Disconnect() {

@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Python.Runtime;
 
 namespace heliomaster {
     public static class PythonExtensions {
-        public static ArrayList shape(this CameraImage img) {
-            return new ArrayList(new [] {img.Height, img.Width, img.Channels});
+        public static int[] shape(this CameraImage img) {
+            return new [] {img.Height, img.Width, img.Channels};
         }
         public static string dtype(this CameraImage img) {
             return img.Depth == BitDepth.depth8  ? "uint8" :
@@ -13,12 +14,30 @@ namespace heliomaster {
                    img.Depth == BitDepth.depth32 ? "uint32" : null;
         }
         public static unsafe dynamic to_numpy(this CameraImage img) {
-            dynamic res = null;
-            var ptr = (IntPtr) img.raw;
+            var ptr = (UInt64) img.raw;
             var shape = img.shape();
             var dtype = img.dtype();
-            Python.Run(() => res = Python.lib.pointer_to_ndarray(ptr, shape, dtype));
-            return res;
+            dynamic ret = null;
+            Py.Run(() => {
+                ret = Py.lib.pointer_to_ndarray(ptr, shape, dtype);
+            });
+            return ret;
+        }
+    }
+
+    public static class PythonGeneralExtensions {
+        public static object ToCLI(this PyObject o) {
+            if (PySequence.IsSequenceType(o)) {
+                var list = new List<object>();
+                foreach (PyObject subo in o)
+                    list.Add(subo.ToCLI());
+                return list;
+            }
+            if (PyString.IsStringType(o)) return o.As<string>();
+            if (PyInt.IsIntType(o)) return o.As<long>();
+            if (PyLong.IsLongType(o)) return o.As<long>();
+            if (PyFloat.IsFloatType(o)) return o.As<double>();
+            return o;
         }
     }
 }

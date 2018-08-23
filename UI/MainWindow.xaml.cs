@@ -12,6 +12,7 @@ using heliomaster.Properties;
 using heliomaster.Netio;
 using Drivers = ASCOM.DriverAccess;
 using Microsoft.Win32;
+using Python.Runtime;
 
 namespace heliomaster {
     public enum HardwareControlButtons {
@@ -38,7 +39,6 @@ namespace heliomaster {
         }
 
         private void OnExit(object sender, CancelEventArgs e) {
-            O.Weather.SaveInSettings(S.Weather);
             S.Save();
         }
 
@@ -69,15 +69,6 @@ namespace heliomaster {
         private void MountParkButton_Click(object sender, RoutedEventArgs e) {
             if (O.Mount.AtPark==true) O.Mount.Unpark();
             else if (O.Mount.AtPark==false) O.Mount.Park();
-        }
-
-        private void mountTracking_Checked(object sender, RoutedEventArgs e) {
-            // TODO: Implement sophisticated tracking!
-            e.Handled = true;
-            TryCommand(() => {
-                var isChecked = ((CheckBox) sender).IsChecked;
-                O.Mount?.Track(isChecked.HasValue && isChecked.Value);
-            });
         }
 
         #endregion
@@ -189,6 +180,33 @@ namespace heliomaster {
                         O.Default.ShuttingRaise();
                         break;
                 }
+            }
+        }
+
+        private async void Autoexposure_Click(object sender, RoutedEventArgs e) {
+            if (O.CamModels.Count > 0 &&
+                await O.CamModels[0].Cam.Capture(BaseCamera.Priority.Tracking, copy: true)
+                    is CameraImage img) {
+                var npimg = img.to_numpy();
+                var level = O.CamModels[0].AutoLevel;
+                if (npimg != null) {
+                    dynamic ret = null;
+                    Py.Run(() => {
+                        switch (O.CamModels[0].AutoMode) {
+                            case AutoExposureModes.max:
+                                ret = Py.lib.expcorr_max(npimg, level);
+                                break;
+                            case AutoExposureModes.mean:
+                                ret = Py.lib.expcorr_mean(npimg, level);
+                                break;
+                            case AutoExposureModes.percentile:
+                                ret = Py.lib.expcorr_level(npimg, level, 95);
+                                break;
+                        }
+                    });
+                }
+            } else {
+                MessageBox.Show("Could not capture image");
             }
         }
     }

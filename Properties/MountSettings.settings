@@ -6,10 +6,21 @@
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="Telescope" Type="heliomaster.Telescope" Scope="User">
-      <Value Profile="(Default)">
-                    &lt;Telescope&gt;
-                    &lt;/Telescope&gt;
-                </Value>
+      <Value Profile="(Default)">&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;Telescope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;HasPowerControl&gt;false&lt;/HasPowerControl&gt;
+  &lt;IsPowerOn xsi:nil="true" /&gt;
+  &lt;CanMoveAxes&gt;false&lt;/CanMoveAxes&gt;
+  &lt;RatePrimary&gt;0&lt;/RatePrimary&gt;
+  &lt;RateSecondary&gt;0&lt;/RateSecondary&gt;
+  &lt;SelectedPrimaryRateIndex&gt;0&lt;/SelectedPrimaryRateIndex&gt;
+  &lt;SelectedSecondaryRateIndex&gt;0&lt;/SelectedSecondaryRateIndex&gt;
+  &lt;AdjustDuration&gt;0&lt;/AdjustDuration&gt;
+  &lt;AdjustNTrials&gt;0&lt;/AdjustNTrials&gt;
+  &lt;AdjustToleranceDec&gt;0&lt;/AdjustToleranceDec&gt;
+  &lt;AdjustToleranceRaCosDec&gt;0&lt;/AdjustToleranceRaCosDec&gt;
+  &lt;NSFlip&gt;false&lt;/NSFlip&gt;
+&lt;/Telescope&gt;</Value>
     </Setting>
   </Settings>
 </SettingsFile>

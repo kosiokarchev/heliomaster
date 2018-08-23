@@ -22,10 +22,10 @@ namespace heliomaster {
 
     public static class Logger {
         private static void put(string msg, LoggingLevel level = LoggingLevel.Debug) {
-//            Console.WriteLine($"{DateTime.Now:s}: {level}: {msg}");
-            if (Python.Running && Python.logger != null) {
-                Python.Run(() => {
-                    Python.logger.log((int) level, msg);
+            Console.WriteLine($"{DateTime.Now:s}: {level}: {msg}");
+            if (Py.Running && Py.logger != null) {
+                Py.Run(() => {
+                    Py.logger.log((int) level, msg);
                 });
             }
         }

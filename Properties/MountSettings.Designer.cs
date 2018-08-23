@@ -9,20 +9,20 @@
 //------------------------------------------------------------------------------
 
 namespace heliomaster.Properties {
-
-
+    
+    
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.5.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.8.0.0")]
     public sealed partial class MountSettings : global::System.Configuration.ApplicationSettingsBase {
-
+        
         private static MountSettings defaultInstance = ((MountSettings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new MountSettings())));
-
+        
         public static MountSettings Default {
             get {
                 return defaultInstance;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
@@ -34,11 +34,24 @@ namespace heliomaster.Properties {
                 this["MountID"] = value;
             }
         }
-
+        
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("\r\n                    <Telescope>\r\n                    </Telescope>\r\n            " +
-            "    ")]
+        [global::System.Configuration.DefaultSettingValueAttribute(@"<?xml version=""1.0"" encoding=""utf-16""?>
+<Telescope xmlns:xsi=""http://www.w3.org/2001/XMLSchema-instance"" xmlns:xsd=""http://www.w3.org/2001/XMLSchema"">
+  <HasPowerControl>false</HasPowerControl>
+  <IsPowerOn xsi:nil=""true"" />
+  <CanMoveAxes>false</CanMoveAxes>
+  <RatePrimary>0</RatePrimary>
+  <RateSecondary>0</RateSecondary>
+  <SelectedPrimaryRateIndex>0</SelectedPrimaryRateIndex>
+  <SelectedSecondaryRateIndex>0</SelectedSecondaryRateIndex>
+  <AdjustDuration>0</AdjustDuration>
+  <AdjustNTrials>0</AdjustNTrials>
+  <AdjustToleranceDec>0</AdjustToleranceDec>
+  <AdjustToleranceRaCosDec>0</AdjustToleranceRaCosDec>
+  <NSFlip>false</NSFlip>
+</Telescope>")]
         public global::heliomaster.Telescope Telescope {
             get {
                 return ((global::heliomaster.Telescope)(this["Telescope"]));

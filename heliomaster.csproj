@@ -197,7 +197,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>WeatherSettings.settings</DependentUpon>
     </Compile>
-    <Compile Include="Python\Python.cs" />
+    <Compile Include="Python\Py.cs" />
     <Compile Include="Python\PythonExtensions.cs" />
     <Compile Include="UI\CamerasWindow.xaml.cs">
       <DependentUpon>CamerasWindow.xaml</DependentUpon>

@@ -84,6 +84,11 @@ namespace heliomaster {
         public static Func<double, string> RateFormatter => r => AngleFormatter(r, "{0:0.#}") + "/s";
 
 
+        public static string FormatException(Exception e) {
+            return $"{e.GetType().Name}: {e.Message}";
+        }
+
+
         public static readonly Util ASCOMUtil = new Util();
         public static readonly Dictionary<ShutterState, string> ShutterStateStrings = new Dictionary<ShutterState, string> {
             {ShutterState.shutterOpen, "open"},

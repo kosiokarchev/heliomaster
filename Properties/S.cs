@@ -17,6 +17,7 @@ namespace heliomaster.Properties {
         };
 
         public static void Save() {
+            O.Weather.SaveInSettings(Weather);
             foreach (var s in settings)
                 s.Save();
         }

@@ -214,7 +214,7 @@ namespace heliomaster.Netio {
                     Socket = null;
                 }
             } catch (Exception e) {
-                Logger.debug($"NETIO: Error in {msg.Method}: {e.GetType().Name}: {e.Message}");
+                Logger.debug($"NETIO: Error in {msg.Method}: {Utilities.FormatException(e)}");
                 Socket = null;
             } finally {
                 sem.Release();

@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using ASCOM.Utilities;
 
 namespace heliomaster
 {
@@ -62,10 +63,16 @@ namespace heliomaster
             }
         }
 
-        private void captureButton_Click(object sender, RoutedEventArgs e) {
+        private async void captureButton_Click(object sender, RoutedEventArgs args) {
             int i;
             if (((Button) sender).DataContext is Timelapse t && (i = O.Timelapse.IndexOf(t)) > -1)
-                Task.Factory.StartNew(CameraModel.TimelapseAction, O.CamModels[i]);
+                try {
+                    if (await O.CamModels[i].TakeImage() == null)
+                        MessageBox.Show("Could not capture image.");
+                } catch (Exception e) {
+                    MessageBox.Show($"Could not capture image: {Utilities.FormatException(e)}");
+                }
+
         }
 
         private void focuserButton_Click(object sender, RoutedEventArgs e) {

@@ -23,7 +23,7 @@ namespace heliomaster {
 
             SetupErrorHandling();
 
-            Python.Initialize();
+            Py.Initialize();
 
             QHYCCDCamera.initResource();
 
