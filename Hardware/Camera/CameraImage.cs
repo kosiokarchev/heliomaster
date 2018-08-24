@@ -42,6 +42,14 @@ namespace heliomaster {
             raw      = (void*) Marshal.AllocHGlobal(Size);
         }
 
+        public CameraImage(IntPtr p, int width, int height, int channels, BitDepth depth) {
+            Width    = width;
+            Height   = height;
+            Channels = channels;
+            Depth    = depth;
+            raw      = (void*) p;
+        }
+
         public readonly ReaderWriterLockSlim rwlock = new ReaderWriterLockSlim();
 
         public void BufferUpdated() {

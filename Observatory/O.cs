@@ -672,7 +672,11 @@ namespace heliomaster {
         public static string WeatherID => S.Weather.UseFile ? S.Weather.FilePath : S.Weather.WeatherID;
 
         public static event Action Refresh;
-        public static void OnRefresh(object o) { Refresh?.Invoke(); }
+
+        public static void OnRefresh(object o) {
+            if (Refresh != null)
+                Parallel.ForEach(Refresh.GetInvocationList(), d => d.DynamicInvoke());
+        }
 
         private static bool SubscribeRefresh() {
             Refresh += Mount.RefreshRaise;

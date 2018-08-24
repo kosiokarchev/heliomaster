@@ -12,8 +12,9 @@ namespace heliomaster {
     public static class Py {
         public static dynamic np;
         public static dynamic ephem;
-        public static dynamic logger;
         public static dynamic lib;
+        public static dynamic logger;
+        public static dynamic detect_body;
 
         public static bool Running;
 
@@ -44,10 +45,12 @@ namespace heliomaster {
 
                     lib = PyR.Py.Import("libhm");
 
-                    logger = ((dynamic) PyR.Py.Import("logger")).setup(
+                    logger = lib.logger_setup(
                         string.IsNullOrWhiteSpace(S.Logging.Directory)
                             ? "." : S.Logging.Directory,
                         S.Logging.Debug, S.Logging.Info, S.Logging.Error);
+
+                    detect_body = lib.detect_planet;
 
                     np    = PyR.Py.Import("numpy");
                     ephem = PyR.Py.Import("ephem");

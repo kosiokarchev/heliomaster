@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using System.Security;
 using System.Threading.Tasks;
 using System.Windows;
@@ -208,6 +209,19 @@ namespace heliomaster {
             } else {
                 MessageBox.Show("Could not capture image");
             }
+        }
+
+        private void Track_Click(object sender, RoutedEventArgs e) {
+            CameraImage img = null;
+            var res = 0.430549162042795D;
+
+            List<double> center = null;
+            Py.Run(() => {
+//                dynamic ret = Py.lib.detect_body(img, Pynder.PyObjects.Sun, res);
+                if (Py.lib.detect_mock() is PyObject ret && ret.ToCLI() is List<object> retList && retList.All()) {
+
+                }
+            });
         }
     }
 }

@@ -186,38 +186,43 @@ namespace heliomaster.Netio {
 
         private readonly SemaphoreSlim sem = new SemaphoreSlim(1, 1);
         private Netio sendMessage(HttpRequestMessage msg) {
-            try {
-                Exception           e        = null;
-                HttpResponseMessage response = null;
+            Exception           exc      = null;
+            HttpResponseMessage response = null;
 
+            var cancel = new CancellationTokenSource();
+            var semwait = sem.WaitAsync(cancel.Token);
+            if (Task.WaitAny(new[] {semwait}, TimeSpan.FromSeconds(1)) != 0)
+                cancel.Cancel();
+            else {
+                try {
+                    Utilities.InsecureSSL(() => {
+                        try {
+                            var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead,
+                                                    new CancellationTokenSource(Timeout).Token);
+                            task.Wait();
+                            if (task.Status == TaskStatus.RanToCompletion)
+                                response = task.Result;
+                        } catch (Exception err) {
+                            exc = err;
+                        }
+                    }).Wait();
 
-                sem.Wait();
-                Utilities.InsecureSSL(() => {
-                    try {
-                        var task = hc.SendAsync(msg, HttpCompletionOption.ResponseContentRead, new CancellationTokenSource(Timeout).Token);
-                        task.Wait();
-                        if (task.Status == TaskStatus.RanToCompletion)
-                            response = task.Result;
-                    } catch (Exception err) {
-                        e = err;
+                    if (exc != null)
+                        throw exc;
+
+                    if (response.IsSuccessStatusCode) {
+                        var json = response?.Content.ReadAsStringAsync().Result;
+                        Socket = JsonConvert.DeserializeObject<Netio>(json);
+                    } else {
+                        Logger.debug($"NETIO: Got bad response: {response.StatusCode}");
+                        Socket = null;
                     }
-                }).Wait();
-
-                if (e != null)
-                    throw e;
-
-                if (response.IsSuccessStatusCode) {
-                    var json = response?.Content.ReadAsStringAsync().Result;
-                    Socket = JsonConvert.DeserializeObject<Netio>(json);
-                } else {
-                    Logger.debug($"NETIO: Got bad response: {response.StatusCode}");
+                } catch (Exception e) {
+                    Logger.debug($"NETIO: Error in {msg.Method}: {Utilities.FormatException(e)}");
                     Socket = null;
+                } finally {
+                    sem.Release();
                 }
-            } catch (Exception e) {
-                Logger.debug($"NETIO: Error in {msg.Method}: {Utilities.FormatException(e)}");
-                Socket = null;
-            } finally {
-                sem.Release();
             }
 
             return _socket;

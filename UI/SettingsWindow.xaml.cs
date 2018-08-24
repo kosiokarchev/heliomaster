@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.ObjectModel;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,10 +27,10 @@ namespace heliomaster
             O.Mount.Connected += () => { fillCans(O.Mount.Driver, MountCans); };
         }
 
-        public ObservableCollection<CheckBox> DomeCans { get; set; } = new ObservableCollection<CheckBox>();
-        public ObservableCollection<CheckBox> MountCans { get; set; } = new ObservableCollection<CheckBox>();
+        public ObservableConcurrentList<CheckBox> DomeCans { get; set; } = new ObservableConcurrentList<CheckBox>();
+        public ObservableConcurrentList<CheckBox> MountCans { get; set; } = new ObservableConcurrentList<CheckBox>();
 
-        private static void fillCans(ASCOM.DriverAccess.AscomDriver driver, IList children) {
+        private static void fillCans(ASCOM.DriverAccess.AscomDriver driver, ICollection<CheckBox> children) {
             children.Clear();
             foreach (var p in driver.GetType().GetProperties()) {
                 if (p.PropertyType == typeof(bool) && p.Name.StartsWith("Can"))

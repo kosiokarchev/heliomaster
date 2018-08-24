@@ -17,8 +17,8 @@ namespace heliomaster
         }
 
         protected override async void OnClosing(CancelEventArgs e) {
+            O.Timelapse.Stop();
             foreach (var model in O.CamModels) {
-                O.Timelapse.Stop();
                 await model.Cam.Disconnect();
                 model.Images.Clear();
             }

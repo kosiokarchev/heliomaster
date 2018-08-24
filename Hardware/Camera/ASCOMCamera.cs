@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Media.Media3D;
 using ASCOM.DeviceInterface;
 using heliomaster.Properties;
 
@@ -77,7 +78,7 @@ namespace heliomaster {
                     Driver.StartExposure(Exposure / 1000, true);
 
                     Task.Run(() => SpinWait.SpinUntil(() => Driver?.ImageReady == true))
-                        .Wait(new CancellationTokenSource(TimeSpan.FromSeconds(1)).Token); // TODO: Unhardcode
+                        .Wait(new CancellationTokenSource(TimeSpan.FromSeconds(5)).Token); // TODO: Unhardcode
 
                     if (!Driver.ImageReady)
                         throw new TimeoutException("Frame not returned in 1s"); // TODO: Unhardcode
@@ -96,9 +97,8 @@ namespace heliomaster {
                 } catch (Exception e) {
                     Logger.warning($"CAMERA {DisplayName}: Error in capture: {Utilities.FormatException(e)}");
                 } finally {
-                    if (Driver.CameraState == CameraStates.cameraExposing
-                        && Driver.CanStopExposure)
-                        Driver.StopExposure();
+                    if (Driver.CanAbortExposure)
+                        Driver.AbortExposure();
                 }
             }
             return null;

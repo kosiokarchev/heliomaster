@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using Python.Runtime;
 
 namespace heliomaster {
@@ -23,6 +26,10 @@ namespace heliomaster {
             });
             return ret;
         }
+
+//        public static CameraImage load(string fname) {
+//            Image.FromFile(fname).
+//        }
     }
 
     public static class PythonGeneralExtensions {

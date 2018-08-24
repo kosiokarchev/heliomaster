@@ -63,34 +63,6 @@ namespace heliomaster {
         public abstract string Type { get; }
         public virtual string Name => Valid ? driver?.Name : null;
 
-        public event Action Connected;
-        public void ConnectedRaise() => Connected?.Invoke();
-        protected void ConnectedHandle() {
-            OnPropertyChanged(nameof(Name));
-        }
-
-        public event Action Disconnected;
-        public void DisconnectedRaise() => Disconnected?.Invoke();
-        protected void DisconnectedHandle() {
-            OnPropertyChanged(nameof(Name));
-        }
-        public event Action Invalidated;
-        public void InvalidatedRaise() => Invalidated?.Invoke();
-
-        protected virtual bool valid => driver?.Connected == true;
-        private bool _valid;
-        [XmlIgnore] public bool Valid {
-            get {
-                bool toret;
-                try { toret = valid; }
-                catch { toret = false; }
-                if (_valid && !toret)
-                    InvalidatedRaise();
-                _valid = toret;
-                return _valid;
-            }
-        }
-
         protected BaseHardwareControl() {
             Connected    += RefreshHandle;
             Connected    += ConnectedHandle;
@@ -151,6 +123,40 @@ namespace heliomaster {
 
         public event Action Refresh;
         public void RefreshRaise() => Refresh?.Invoke();
+
+        public event Action Connected;
+        public void ConnectedRaise() => Connected?.Invoke();
+        protected void ConnectedHandle() {
+            OnPropertyChanged(nameof(Name));
+        }
+
+        public event Action Disconnected;
+        public void DisconnectedRaise() => Disconnected?.Invoke();
+        protected void DisconnectedHandle() {
+            OnPropertyChanged(nameof(Name));
+            foreach (var prop in props) {
+                try {
+                    OnPropertyChanged(prop);
+                } catch {}
+            }
+        }
+        public event Action Invalidated;
+        public void InvalidatedRaise() => Invalidated?.Invoke();
+
+        protected virtual bool valid => driver?.Connected == true;
+        private           bool _valid;
+        [XmlIgnore] public bool Valid {
+            get {
+                bool toret;
+                try { toret = valid; }
+                catch { toret = false; }
+                if (_valid && !toret)
+                    InvalidatedRaise();
+                _valid = toret;
+                return _valid;
+            }
+        }
+
 
         protected virtual IEnumerable<string> props { get; } = new string[0];
         protected virtual void RefreshHandle() {
