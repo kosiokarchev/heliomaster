@@ -186,8 +186,8 @@
                            Margin="3" HorizontalAlignment="Right"  VerticalAlignment="Center"
                            Content="{x:Static properties:Resources.gain}"/>
                     <xctk:IntegerUpDown Grid.Column="1" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Left"
-                                        Value="{Binding Gain}"
-                                        Style="{StaticResource AutoExposingStyle}" />
+                                        Value="{Binding Gain}" />
+                                    <!--Style="{StaticResource AutoExposingStyle}" />-->
 
                     <Label Grid.Column="2"
                            Margin="3" HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -196,10 +196,9 @@
                                         Value="{Binding Exposure}"
                                         Style="{StaticResource AutoExposingStyle}" />
 
-                    <CheckBox Grid.Column="4"
-                        Margin="3" VerticalAlignment="Center" HorizontalAlignment="Center"
-                        Content="{x:Static properties:Resources.auto}"
-                        IsChecked="{Binding AutoExpose}" />
+                    <CheckBox Grid.Column="4" Margin="3" VerticalAlignment="Center" HorizontalAlignment="Center"
+                              Content="{x:Static properties:Resources.auto}"
+                              IsChecked="{Binding AutoExpose}" />
 
                     <StackPanel Grid.Column="5" Orientation="Horizontal" Visibility="{Binding AutoExpose, Converter={local:VisibilityConverter}}">
                         <ComboBox ItemsSource="{Binding Source={local:EnumBindingSource {x:Type local:AutoExposureModes}}}"
@@ -209,6 +208,8 @@
                                            VerticalAlignment="Center"
                                            Value="{Binding AutoLevel}" ClipValueToMinMax="True" />
                     </StackPanel>
+
+                    <Button Grid.Column="6" Content="now" Click="AutoAdjustButton_Click" HorizontalAlignment="Left" VerticalAlignment="Center" />
                 </Grid>
 
                 <GroupBox Margin="0" Grid.Row="2">

@@ -114,11 +114,19 @@
         </Menu>
 
         <Grid DockPanel.Dock="Bottom">
-            <Button Content="Capture" HorizontalAlignment="Left" Margin="499,21,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
-            <Button Content="Autoexpose" HorizontalAlignment="Left" Margin="499,70,0,0" VerticalAlignment="Top" Click="Autoexposure_Click"/>
-            <Button Content="Track" HorizontalAlignment="Left" Margin="499,120,0,0" VerticalAlignment="Top" Click="Track_Click"/>
+            <Button Content="Capture" HorizontalAlignment="Left" Margin="500,20,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
+            <Button Content="Autoexpose" HorizontalAlignment="Left" Margin="500,70,0,0" VerticalAlignment="Top" Click="Autoexposure_Click"/>
+            <Button Content="Track" HorizontalAlignment="Left" Margin="500,120,0,0" VerticalAlignment="Top" Click="Track_Click"/>
+            <ComboBox HorizontalAlignment="Left" Margin="500,142,-45,0" VerticalAlignment="Top"
+                      ItemsSource="{x:Static local:O.CamModels}" x:Name="trackingCamComboBox">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:CameraModel}">
+                        <TextBlock Text="{Binding Name}" />
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
 
-            <Grid VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Grid VerticalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
@@ -735,7 +743,6 @@
                         </ScrollViewer>
                     </Grid>
                 </GroupBox>
-
             </Grid>
         </Grid>
     </DockPanel>

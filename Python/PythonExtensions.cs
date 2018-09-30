@@ -40,10 +40,10 @@ namespace heliomaster {
                     list.Add(subo.ToCLI());
                 return list;
             }
-            if (PyString.IsStringType(o)) return o.As<string>();
-            if (PyInt.IsIntType(o)) return o.As<long>();
-            if (PyLong.IsLongType(o)) return o.As<long>();
-            if (PyFloat.IsFloatType(o)) return o.As<double>();
+            if (PyString.IsStringType(o)) return o.AsManagedObject(typeof(string));
+            if (PyInt.IsIntType(o)) return o.AsManagedObject(typeof(long));
+            if (PyLong.IsLongType(o)) return o.AsManagedObject(typeof(long));
+            if (PyFloat.IsFloatType(o)) return o.AsManagedObject(typeof(double));
             return o;
         }
     }

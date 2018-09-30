@@ -5,6 +5,7 @@ using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Media;
 using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
@@ -159,9 +160,12 @@ namespace heliomaster {
         public WeatherItem.Conditions? Condition {
             get {
                 itemslock.EnterReadLock();
-                var ret = (Valid && Items.Count > 0) ? Items.Max(i => i.Condition) : (WeatherItem.Conditions?) null;
-                itemslock.ExitReadLock();
-                return ret;
+                try {
+                    var ret = (Valid && Items.Count > 0) ? Items.Max(i => i.Condition) : (WeatherItem.Conditions?) null;
+                    return ret;
+                } finally {
+                    itemslock.ExitReadLock();
+                }
             }
         }
 
@@ -172,7 +176,8 @@ namespace heliomaster {
             "SkyTemperature", "StarFWHM", "Temperature", "WindDirection", "WindGust", "WindSpeed"
         };
 
-        protected readonly List<string> properties = new List<string> {nameof(Safe), nameof(Condition)};
+        protected static readonly string[] baseProps = { nameof(Safe), nameof(Condition) };
+        protected readonly List<string> properties = new List<string>(baseProps);
         protected override IEnumerable<string> props => properties;
 
         private readonly ReaderWriterLockSlim itemslock = new ReaderWriterLockSlim();
@@ -180,27 +185,38 @@ namespace heliomaster {
             if (Valid) Driver.Refresh();
             base.RefreshHandle();
             itemslock.EnterReadLock();
-            foreach (var i in Items)
-                i.NotifyChanged();
-            itemslock.ExitReadLock();
+            try { foreach (var i in Items) i.NotifyChanged(); }
+            finally { itemslock.ExitReadLock(); }
         }
 
         public override void Initialize() {
             itemslock.EnterWriteLock();
-            foreach (var p in propNames)
-                if (typeof(Weather).GetProperty(p) is PropertyInfo pinfo) {
-                    var witem = new WeatherItem(Driver, p);
-                    pinfo.SetValue(this, witem);
-                    OnPropertyChanged(p);
+            try {
+                foreach (var p in propNames)
+                    if (typeof(Weather).GetProperty(p) is PropertyInfo pinfo)
+                    {
+                        var witem = new WeatherItem(Driver, p);
+                        pinfo.SetValue(this, witem);
+                        OnPropertyChanged(p);
 
-                    if (witem.Valid) {
-                        Items.Add(witem);
-                        properties.Add(p);
+                        if (witem.Valid)
+                        {
+                            Items.Add(witem);
+                            properties.Add(p);
+                        }
                     }
-                }
-            itemslock.ExitWriteLock();
-
+            }
+            finally {
+                itemslock.ExitWriteLock();
+            }
+            
             base.Initialize();
+        }
+
+        public override Task Disconnect() {
+            Items.Clear();
+            properties.Clear(); properties.AddRange(baseProps);
+            return base.Disconnect();
         }
 
         public void SaveInSettings(WeatherSettings s) {

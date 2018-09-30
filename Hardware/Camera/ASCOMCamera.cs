@@ -21,8 +21,9 @@ namespace heliomaster {
         private         BitDepth _depth;
         public override BitDepth Depth => _depth;
 
-        public override double MinExposure => Driver.ExposureMin;
-        public override double MaxExposure => Driver.ExposureMax;
+        // ASCOM (sensibly) works in seconds, but heliomaster prefers milliseconds
+        public override double MinExposure => 1000*Driver.ExposureMin;
+        public override double MaxExposure => 1000*Driver.ExposureMax;
 
         private         int _minGain;
         private         int _maxGain;
@@ -74,7 +75,7 @@ namespace heliomaster {
 
             if (Valid) {
                 try {
-                    Driver.Gain = (short) Gain; // TODO: hack
+                    Driver.Gain = (short) Gain; // TODO: hack to stop QHY inevitable autoexposure
                     Driver.StartExposure(Exposure / 1000, true);
 
                     Task.Run(() => SpinWait.SpinUntil(() => Driver?.ImageReady == true))

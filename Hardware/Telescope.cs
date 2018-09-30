@@ -264,7 +264,7 @@ namespace heliomaster {
 
         private double ra => RightAscension * 15;
         private double dec => Declination;
-        private double rcosphi => 1.0 / Math.Cos(Utilities.deg2rad(dec));
+        public double rcosphi => 1.0 / Math.Cos(Utilities.deg2rad(dec));
 
         public Task Adjust(double dra, double ddec) {
             return Task.Run(() => {

@@ -18,10 +18,8 @@ namespace heliomaster
 
         protected override async void OnClosing(CancelEventArgs e) {
             O.Timelapse.Stop();
-            foreach (var model in O.CamModels) {
-                await model.Cam.Disconnect();
-                model.Images.Clear();
-            }
+            foreach (var model in O.CamModels)
+                await model.Dispose();
             O.CamModels.Clear();
             base.OnClosing(e);
         }
@@ -81,5 +79,13 @@ namespace heliomaster
         }
 
         #endregion
+
+        private async void AutoAdjustButton_Click(object sender, RoutedEventArgs e) {
+            if (sender is Button b && b.DataContext is CameraModel model) {
+                b.IsEnabled = false;
+                await model.AdjustExposure();
+                b.IsEnabled = true;
+            }
+        }
     }
 }

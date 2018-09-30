@@ -184,44 +184,44 @@ namespace heliomaster {
             }
         }
 
-        private async void Autoexposure_Click(object sender, RoutedEventArgs e) {
-            if (O.CamModels.Count > 0 &&
-                await O.CamModels[0].Cam.Capture(BaseCamera.Priority.Tracking, copy: true)
-                    is CameraImage img) {
-                var npimg = img.to_numpy();
-                var level = O.CamModels[0].AutoLevel;
-                if (npimg != null) {
-                    dynamic ret = null;
-                    Py.Run(() => {
-                        switch (O.CamModels[0].AutoMode) {
-                            case AutoExposureModes.max:
-                                ret = Py.lib.expcorr_max(npimg, level);
-                                break;
-                            case AutoExposureModes.mean:
-                                ret = Py.lib.expcorr_mean(npimg, level);
-                                break;
-                            case AutoExposureModes.percentile:
-                                ret = Py.lib.expcorr_level(npimg, level, 95);
-                                break;
-                        }
-                    });
-                }
-            } else {
-                MessageBox.Show("Could not capture image");
+        private void Autoexposure_Click(object sender, RoutedEventArgs e) {
+            if (O.CamModels.Count > 0) {
+                O.CamModels[0].AdjustExposure();
             }
         }
 
-        private void Track_Click(object sender, RoutedEventArgs e) {
-            CameraImage img = null;
-            var res = 0.430549162042795D;
+        private async void Track_Click(object sender, RoutedEventArgs e) {
+            if (trackingCamComboBox.SelectedItem is CameraModel model
+                && await model.CaptureImage() is CapturedImage img
+                && img.Image is CameraImage camimg) {
+                var res = 0.430549162042795D; // px/arcsec
 
-            List<double> center = null;
-            Py.Run(() => {
-//                dynamic ret = Py.lib.detect_body(img, Pynder.PyObjects.Sun, res);
-                if (Py.lib.detect_mock() is PyObject ret && ret.ToCLI() is List<object> retList && retList.All()) {
+                Point loc = new Point();
+                bool found = false;
+                Py.Run(() => {
+                    if (Py.detect_body(camimg.to_numpy(), Pynder.PyObjects.Sun(), res) is PyObject ret && PythonGeneralExtensions.ToCLI(ret) is List<object> retList && retList.All(i => i.GetType() == typeof(double))
+                        && (double) retList[2] > 0.5) {
+                        found = true;
+                        loc.X = (double)retList[0];
+                        loc.Y = (double)retList[1];
+                    }
+                });
 
+                if (found) {
+                    var trans = img.Transform ?? new System.Windows.Media.TransformGroup {
+                        Children = new System.Windows.Media.TransformCollection(new System.Windows.Media.Transform[] {
+                            new System.Windows.Media.ScaleTransform(true ? -1 : 1, 1),
+                            new System.Windows.Media.RotateTransform(-2 * 90)
+                        })
+                    };
+                    loc = trans.Transform(loc);
+                    var c = trans.Transform(new Point(1280 / 2.0, 1024 / 2.0));
+                    var d = loc - c;
+                    var ddec = -d.Y / (3600 * res);
+                    var dra = -d.X / (3600 * res) * O.Mount.rcosphi;
+                    // O.Mount.Adjust(dra, ddec);
                 }
-            });
+            }
         }
     }
 }

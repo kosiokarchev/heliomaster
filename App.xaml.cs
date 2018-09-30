@@ -25,7 +25,7 @@ namespace heliomaster {
 
             Py.Initialize();
 
-            QHYCCDCamera.initResource();
+            // QHYCCDCamera.initResource();
 
             O.StartRefresh(S.Settings.Refresh);
 

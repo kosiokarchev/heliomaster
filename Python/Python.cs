@@ -57,7 +57,7 @@ namespace heliomaster {
                     Pynder.PyObjects.Initialize();
                 });
 
-                Logger.debug($"Py started in {(DateTime.Now - t).TotalSeconds}s");
+                Logger.debug($"Python started in {(DateTime.Now - t).TotalSeconds}s");
             } catch (Exception e) {
                 MessageBox.Show($"Starting Py failed: {e.Message}");
             }

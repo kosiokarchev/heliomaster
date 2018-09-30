@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Security.Permissions;
@@ -128,13 +130,31 @@ namespace heliomaster {
         }
 
         private bool _autoExpose;
-        public bool AutoExpose {
+        [XmlIgnore] public bool AutoExpose {
             get => _autoExpose;
             set {
                 if (value == _autoExpose) return;
                 _autoExpose = value;
+                // TODO: Separate timer for autoexposure?
+                if (value)
+                    O.Refresh += handleAutoExposure;
+                else
+                    O.Refresh -= handleAutoExposure;
                 OnPropertyChanged();
             }
+        }
+
+        private bool autoExposing;
+        private void handleAutoExposure() {
+            if (!autoExposing)
+                Task.Run(async () => {
+                    try {
+                        autoExposing = true;
+                        Console.WriteLine(await AdjustExposure());
+                    } finally {
+                        autoExposing = false;
+                    }
+                });
         }
 
         private AutoExposureModes _autoMode;
@@ -155,6 +175,47 @@ namespace heliomaster {
                 _autoLevel = value;
                 OnPropertyChanged();
             }
+        }
+
+        public async Task<bool> AdjustExposure() {
+            return await Cam.Capture(BaseCamera.Priority.Tracking, copy: true) is CameraImage img
+                && AdjustExposure(img);
+        }
+        public bool AdjustExposure(CameraImage img) {
+            var npimg = img.to_numpy();
+            if (npimg != null) {
+                dynamic ret = null;
+                Py.Run(() => {
+                    switch (O.CamModels[0].AutoMode) {
+                        case AutoExposureModes.max:
+                            ret = Py.lib.expcorr_max(npimg, AutoLevel);
+                            break;
+                        case AutoExposureModes.mean:
+                            ret = Py.lib.expcorr_mean(npimg, AutoLevel);
+                            break;
+                        case AutoExposureModes.percentile:
+                            ret = Py.lib.expcorr_level(npimg, AutoLevel, 95); // TODO: unhardcode 95%?
+                            break;
+                    }
+                });
+
+                if (PythonGeneralExtensions.ToCLI(ret) is List<object> factors
+                    && factors.Count == img.Channels
+                    && factors.All(v => v.GetType() == typeof(double))) {
+                    var f = (double)factors[0]; // TODO: handle multi-channel case by e.g. getting max/min/avg value
+                    adjustExposure(f);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private double adjustExposure(double f) {
+            // TODO: implement more sophisticated exposure adjustment
+            var o = Exposure;
+            var n = Exposure * f;
+            Exposure = Math.Min(100, n); // TODO: Smarter limiting
+            return Exposure / o;
         }
 
 
@@ -229,9 +290,15 @@ namespace heliomaster {
         [XmlIgnore] public ObservableCollection<CapturedImage> Images { get; } = new ObservableCollection<CapturedImage>();
 
         public CameraModel() {
-            O.Mount.FlippedChanged += () => {
-                OnPropertyChanged(nameof(FinalTransform));
-            };
+            O.Mount.FlippedChanged += updateFinalTransform;
+        }
+        private void updateFinalTransform() => OnPropertyChanged(nameof(FinalTransform));
+        public async Task Dispose() {
+            O.Mount.FlippedChanged -= updateFinalTransform;
+            O.Refresh -= handleAutoExposure;
+            await Cam.Disconnect();
+            Images.Clear();
+            
         }
 
         public static async void TimelapseAction(object state) {
@@ -239,15 +306,15 @@ namespace heliomaster {
                 await m.TakeImage();
         }
 
-        public async Task<CapturedImage> TakeImage() {
-            var img  = await Cam.Capture(copy: true);
+        public async Task<CapturedImage> CaptureImage() {
+            var img = await Cam.Capture(copy: true);
             if (img == null) {
                 return null;
             }
 
             var t = FinalTransform.Clone();
             t.Freeze();
-            var cimg = new CapturedImage {
+            return new CapturedImage {
                 Image = img,
                 LocalPath = Smart.Format(LocalPathFormat, new {
                     Cam = Name,
@@ -255,36 +322,41 @@ namespace heliomaster {
                 }),
                 Transform = t
             };
+        }
 
-            cimg.Saved += c => {
-                c.Dispose();
-                if (S.Remote.DoTransfer)
-                    c.Transfer(O.Remote, Smart.Format(RemotePathFormat, new {
-                        Cam           = Name,
-                        DateTime      = DateTime.UtcNow,
-                        LocalPath     = c.LocalPath,
-                        LocalBaseName = Path.GetFileName(c.LocalPath),
-                    }));
-            };
-            cimg.Transferred += c => {
-                if (S.Remote.DoDeleteLocal)
-                    File.Delete(c.LocalPath); // TODO: Deleting fails...
+        public async Task<CapturedImage> TakeImage() {
+            var cimg = await CaptureImage();
+            if (cimg != null) {
+                cimg.Saved += c => {
+                    c.Dispose();
+                    if (S.Remote.DoTransfer)
+                        c.Transfer(O.Remote, Smart.Format(RemotePathFormat, new {
+                            Cam           = Name,
+                            DateTime      = DateTime.UtcNow,
+                            LocalPath     = c.LocalPath,
+                            LocalBaseName = Path.GetFileName(c.LocalPath),
+                        }));
+                };
+                cimg.Transferred += c => {
+                    if (S.Remote.DoDeleteLocal)
+                        File.Delete(c.LocalPath); // TODO: Deleting fails...
 
-                if (S.Remote.DoCommand)
-                    c.Process(O.Remote, Smart.Format(RemoteCommandFormat.Replace(Environment.NewLine, " "), new {
-                        Cam            = Name,
-                        DateTime       = DateTime.UtcNow,
-                        LocalPath      = c.LocalPath,
-                        LocalDir       = Path.GetDirectoryName(c.LocalPath),
-                        LocalBaseName  = Path.GetFileName(c.LocalPath),
-                        RemotePath     = c.RemotePath,
-                        RemoteDir      = Path.GetDirectoryName(c.RemotePath),
-                        RemoteBaseName = Path.GetFileName(c.RemotePath),
-                    }));
-            };
+                    if (S.Remote.DoCommand)
+                        c.Process(O.Remote, Smart.Format(RemoteCommandFormat.Replace(Environment.NewLine, " "), new {
+                            Cam            = Name,
+                            DateTime       = DateTime.UtcNow,
+                            LocalPath      = c.LocalPath,
+                            LocalDir       = Path.GetDirectoryName(c.LocalPath),
+                            LocalBaseName  = Path.GetFileName(c.LocalPath),
+                            RemotePath     = c.RemotePath,
+                            RemoteDir      = Path.GetDirectoryName(c.RemotePath),
+                            RemoteBaseName = Path.GetFileName(c.RemotePath),
+                        }));
+                };
 
-            Application.Current.Dispatcher.InvokeAsync(() => { Images.Add(cimg); });
-            cimg.Save();
+                Application.Current.Dispatcher.InvokeAsync(() => { Images.Add(cimg); });
+                cimg.Save();
+            }
             return cimg;
         }
     }
