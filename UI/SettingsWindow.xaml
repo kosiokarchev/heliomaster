@@ -198,7 +198,7 @@
                             <TextBlock Grid.Row="0" Grid.Column="2" Text="s" />
 
                             <Label Grid.Row="1" Grid.Column="0"
-                                   Content="Steps:"/>
+                                   Content="Max steps:"/>
                             <xctk:IntegerUpDown Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
                                                 Value="{Binding Telescope.AdjustNTrials}" />
                             <Label Grid.Row="2" Grid.Column="0"
@@ -250,6 +250,7 @@
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
                                             <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
                                         </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto"/>
@@ -261,7 +262,6 @@
                                                   SelectedIndex="{Binding CameraType, Converter={local:EnumToIntConverter}}" />
 
                                         <Label Content="ID:" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0" />
-
                                         <Grid Grid.Row="1" Grid.Column="1">
                                             <Grid.Style>
                                                 <Style>
@@ -280,7 +280,6 @@
                                             <TextBox IsEnabled="False" Grid.Column="0" DataContext="{Binding CameraID}" Style="{StaticResource NotChosenStyle}" VerticalAlignment="Center" Margin="0,0,5,0" />
                                             <Button Grid.Column="1" Content="Choose" Click="ChooseButton_Click" VerticalAlignment="Center" />
                                         </Grid>
-
                                         <Grid Grid.Row="1" Grid.Column="1">
                                             <Grid.Style>
                                                 <Style>
@@ -301,16 +300,6 @@
                                                       ItemsSource="{x:Static local:QHYCCDCamera.CameraIDs}"
                                                       SelectedItem="{Binding CameraID}" />
                                             <Button Grid.Column="1" Content="Refresh list" />
-                                        </Grid>
-
-                                        <Label Content="Focuser DriverID" HorizontalAlignment="Left" Margin="0" VerticalAlignment="Center" Grid.Row="7" Grid.Column="0" />
-                                        <Grid Grid.Row="7" Grid.Column="1">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*" />
-                                                <ColumnDefinition Width="Auto" />
-                                            </Grid.ColumnDefinitions>
-                                            <TextBox IsEnabled="False" Grid.Column="0" DataContext="{Binding FocuserID}" Style="{StaticResource NotChosenStyle}" VerticalAlignment="Center" Margin="0,0,5,0" />
-                                            <Button Tag="focuser" Grid.Column="1" Content="Choose" Click="ChooseButton_Click" VerticalAlignment="Center" />
                                         </Grid>
 
                                         <Label Grid.Row="2" Grid.Column="0" Content="Alias:" HorizontalAlignment="Left" VerticalAlignment="Center" />
@@ -345,6 +334,23 @@
                                                 <TextBlock Text="CCW 270°" />
                                             </ComboBox>
                                         </Grid>
+
+                                        <Label Content="Focuser DriverID" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="7" Grid.Column="0" />
+                                        <Grid Grid.Row="7" Grid.Column="1">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBox IsEnabled="False" Grid.Column="0" DataContext="{Binding FocuserID}" Style="{StaticResource NotChosenStyle}" VerticalAlignment="Center" Margin="0,0,5,0" />
+                                            <Button Tag="focuser" Grid.Column="1" Content="Choose" Click="ChooseButton_Click" VerticalAlignment="Center" />
+                                        </Grid>
+
+                                        <Label Content="Resolution:" HorizontalAlignment="Left" VerticalAlignment="Center" Grid.Row="8" Grid.Column="0" />
+                                        <StackPanel Grid.Row="8" Grid.Column="1" Orientation="Horizontal">
+                                            <xctk:DoubleUpDown Minimum="0" Value="{Binding Resolution, UpdateSourceTrigger=PropertyChanged}"
+                                                               VerticalAlignment="Center" />
+                                            <TextBlock Text="arcsec/px" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="3,0,0,0" />
+                                        </StackPanel>
                                     </Grid>
                                 </DataTemplate>
                             </TabControl.ContentTemplate>

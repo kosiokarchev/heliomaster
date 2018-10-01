@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,7 +14,15 @@ namespace heliomaster
     public partial class CamerasWindow : HMWindow {
         public CamerasWindow() {
             InitializeComponent();
-            O.Default.ConnectCameras();
+
+            var t = O.Default.ConnectCameras();
+            Task.Run(() => { t.Wait();
+                Dispatcher.Invoke(() => {
+                    container.UpdateLayout();
+                    MinWidth = ActualWidth;
+                    MinHeight = ActualHeight;
+                });
+            });
         }
 
         protected override async void OnClosing(CancelEventArgs e) {

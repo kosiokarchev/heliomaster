@@ -8,7 +8,7 @@
         xmlns:properties="clr-namespace:heliomaster.Properties"
         xmlns:ASCOMDeviceInterface="clr-namespace:ASCOM.DeviceInterface;assembly=ASCOM.DeviceInterfaces"
         mc:Ignorable="d"
-        Title="MainWindow" DataContext="{x:Static local:O.Default}" Closing="OnExit" SizeToContent="WidthAndHeight" ResizeMode="CanMinimize">
+        Title="Heliomaster" DataContext="{x:Static local:O.Default}" Closing="OnExit" SizeToContent="WidthAndHeight">
     <local:HMWindow.Resources>
         <xctk:ColorToSolidColorBrushConverter x:Key="ColorToSolidColorBrushConverter" />
 
@@ -110,31 +110,19 @@
     <DockPanel>
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Cameras" Click="CamerasMenu_Click" />
+            <MenuItem Header="_Live view" Click="LiveViewMenu_Click" />
             <MenuItem Header="_Settings" Click="SettingsMenu_Click" />
         </Menu>
 
-        <Grid DockPanel.Dock="Bottom">
-            <Button Content="Capture" HorizontalAlignment="Left" Margin="500,20,0,0" VerticalAlignment="Top" Width="75" Click="Button_Click_1"/>
-            <Button Content="Autoexpose" HorizontalAlignment="Left" Margin="500,70,0,0" VerticalAlignment="Top" Click="Autoexposure_Click"/>
-            <Button Content="Track" HorizontalAlignment="Left" Margin="500,120,0,0" VerticalAlignment="Top" Click="Track_Click"/>
-            <ComboBox HorizontalAlignment="Left" Margin="500,142,-45,0" VerticalAlignment="Top"
-                      ItemsSource="{x:Static local:O.CamModels}" x:Name="trackingCamComboBox">
-                <ComboBox.ItemTemplate>
-                    <DataTemplate DataType="{x:Type local:CameraModel}">
-                        <TextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </ComboBox.ItemTemplate>
-            </ComboBox>
-
-            <Grid VerticalAlignment="Stretch">
+        <Grid DockPanel.Dock="Bottom" VerticalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
-                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
                 </Grid.RowDefinitions>
 
                 <GroupBox DataContext="{x:Static local:O.Mount}" Grid.Row="1" Grid.Column="0" Style="{StaticResource HardwareGroupStyle}">
@@ -153,7 +141,7 @@
                         </Style>
                     </GroupBox.Resources>
 
-                    <Grid Margin="0" IsEnabled="{Binding Valid}">
+                    <Grid IsEnabled="{Binding Valid}">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
@@ -347,35 +335,46 @@
                                 <CheckBox Content="{x:Static properties:Resources.slewing}"
                                       IsEnabled="False"
                                       IsChecked="{Binding Slewing, Mode=OneWay}"/>
-                                <CheckBox Content="Tracking"
-                                      IsEnabled="False"
-                                      IsChecked="{Binding Tracking, Mode=OneWay}" />
+                                <CheckBox IsChecked="{Binding Tracking}">
+                                    <TextBlock>
+                                        <TextBlock Text="Tracking:" />
+                                        <LineBreak />
+                                        <InlineUIContainer>
+                                            <ComboBox ItemsSource="{Binding TrackingRates, Mode=OneWay}"
+                                                      SelectedIndex="{Binding SelectedTrackingRateIndex, Mode=OneWay}"
+                                                      SelectedItem="{Binding RateTracking}" />
+                                        </InlineUIContainer>
+                                    </TextBlock>
+                                </CheckBox>
                             </StackPanel>
                         </Grid>
 
-                        <CheckBox Grid.Row="2">
-                            <CheckBox.Style>
-                                <Style>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding SelectedIndex, ElementName=TrackingTypeComboBox}" Value="0">
-                                            <Setter Property="CheckBox.IsChecked" Value="{Binding Tracking}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </CheckBox.Style>
+                        <GroupBox Grid.Row="2" Header="Image tracking">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Tracking:" VerticalAlignment="Center" Margin="5,0" />
-                                <ComboBox x:Name="TrackingTypeComboBox">
-                                    <ComboBoxItem IsSelected="True">
-                                        <TextBlock Text="sidereal" />
-                                    </ComboBoxItem>
-                                    <ComboBoxItem IsEnabled="False">
-                                        <TextBlock Text="image" />
-                                    </ComboBoxItem>
+                                <CheckBox Grid.Column="0" VerticalAlignment="Center" />
+                                <TextBlock Grid.Column="1" VerticalAlignment="Center" Margin="5,0"
+                                           Text="Track from:" />
+                                <ComboBox Grid.Column="2" VerticalAlignment="Center"
+                                          ItemsSource="{x:Static local:O.CamModels}"
+                                          SelectedItem="{Binding TrackingCamera, Source={x:Static local:O.Default}}" >
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate DataType="{x:Type local:CameraModel}">
+                                            <TextBlock Text="{Binding Name}" />
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
                                 </ComboBox>
-                            </StackPanel>
-                        </CheckBox>
+                                <Button Grid.Column="3" Content="Now" Click="Track_Click"
+                                        Margin="5,0" VerticalAlignment="Center" />
+
+                            </Grid>
+                        </GroupBox>
 
                         <StackPanel Grid.Row="3" Orientation="Horizontal" IsEnabled="{Binding IsEnabled, Source={x:Static properties:S.Python}}">
                             <Button Content="{x:Static properties:Resources.goto_}" Click="MountGoTo" />
@@ -407,7 +406,7 @@
                         </Style>
                     </GroupBox.Resources>
 
-                    <Grid Margin="0" IsEnabled="{Binding Valid}">
+                    <Grid IsEnabled="{Binding Valid}">
                         <Grid.RowDefinitions>
                             <RowDefinition/>
                             <RowDefinition Height="Auto"/>
@@ -733,10 +732,10 @@
                         <ScrollViewer Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="3"
                                       HorizontalScrollBarVisibility="Auto"
                                       VerticalScrollBarVisibility="Auto">
-                            <ListView ItemsSource="{Binding Messages}">
+                            <ListView ItemsSource="{Binding Messages}" MinWidth="320">
                                 <ListView.ItemTemplate>
                                     <DataTemplate DataType="{x:Type local:ObservatoryMessage}">
-                                        <TextBlock Text="{Binding Message}" />
+                                        <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
                                     </DataTemplate>
                                 </ListView.ItemTemplate>
                             </ListView>
@@ -744,6 +743,5 @@
                     </Grid>
                 </GroupBox>
             </Grid>
-        </Grid>
     </DockPanel>
 </local:HMWindow>

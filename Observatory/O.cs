@@ -8,10 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Documents;
+using System.Windows.Media;
 using System.Windows.Threading;
 using heliomaster.Annotations;
 using heliomaster.Netio;
 using heliomaster.Properties;
+using Python.Runtime;
 using Renci.SshNet;
 
 namespace heliomaster {
@@ -219,7 +221,7 @@ namespace heliomaster {
 
         #region CAMERAS
 
-        public async void ConnectCameras() {
+        public async Task ConnectCameras() {
             DisconnectCameras();
 
             foreach (var model in S.Cameras.CameraModels) {
@@ -266,6 +268,13 @@ namespace heliomaster {
         #endregion
 
 
+        #region IMAGE_TRACKING
+
+        
+
+        #endregion
+
+
         #region OBJECT_DETECTION
 
         public event Action ObjectNotFound;
@@ -274,8 +283,71 @@ namespace heliomaster {
             // TODO: Search for object
         }
 
-        public bool ObjectIsInView() => false;
-        public bool SearchForObject() { return false; }
+        private CameraModel _trackingCamera;
+        public CameraModel TrackingCamera {
+            get => _trackingCamera;
+            set {
+                if (value == _trackingCamera) return;
+                _trackingCamera = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private class LocateResult {
+            public double X, Y, val, cX, cY;
+            public Transform Transform;
+            public Point RawPoint => new Point(X, Y);
+            public Point Point => Transform.Transform(RawPoint);
+            public Point Centre => Transform.Transform(new Point(cX, cY));
+            public bool Found => val > 0.5;
+
+            public LocateResult() { }
+            public LocateResult(CapturedImage img, double res) {
+                Py.Run(() => {
+                    if (img.Image is CameraImage camimg
+                        && Py.detect_body(camimg.to_numpy(), Pynder.PyObjects.Sun(), res) is PyObject p // TODO: Allow to select which object
+                        && PythonGeneralExtensions.ToCLI(p) is List<object> l
+                        && l.Count == 3 && l.All(i => i.GetType() == typeof(double))) {
+                        X = (double)l[0];
+                        Y = (double)l[1];
+                        val = (double)l[2];
+                        Transform = img.Transform;
+                        cX = camimg.Width / 2.0;
+                        cY = camimg.Height / 2.0;
+                    }
+                });
+            }
+        }
+
+        private async Task<LocateResult> LocateObject() {
+            return (TrackingCamera != null && TrackingCamera.Resolution > 0 && await TrackingCamera.CaptureImage() is CapturedImage img)
+                ? new LocateResult(img, TrackingCamera.Resolution) : new LocateResult();
+        }
+        
+        public async Task Track() {
+            var pre = "IMAGE TRACKING: ";
+
+            Logger.debug(pre + "Locating target.");
+            var locres = await LocateObject();
+            if (locres.Found) {
+                var rawloc = locres.RawPoint;
+                var loc = locres.Point;
+                Logger.debug(pre + $"Found: ({rawloc.X}, {rawloc.Y}) --> ({loc.X}, {loc.Y})");
+                
+                var d = loc - locres.Centre;
+                var ddec = -d.Y / (3600 * TrackingCamera.Resolution);
+                var dra = -d.X / (3600 * TrackingCamera.Resolution) * Mount.rcosphi;
+
+                Logger.debug(pre + $"Offset: ({d.X}, {d.Y}) => dRA={dra}, dDec={ddec}");
+
+                // await Mount.Adjust(dra, ddec);
+                    
+                Logger.debug(pre + "Completed.");
+            } else Logger.debug(pre + "Target not found.");
+        }
+
+        public async Task<bool> ObjectIsInView() => (await LocateObject()).Found;
+        public bool SearchForObject() { return false; } // TODO: Implement object searching
 
         #endregion
 
@@ -529,7 +601,7 @@ namespace heliomaster {
                     } else { } // TODO: What to do when no end time given? Until object sets?
                 }
 
-
+                Inform(await ObjectIsInView() ? "The Sun is in view." : "The Sun is not in view!");
                 if (args.RequireInView && !SearchForObject())
                     throw new ObjectNotLocatedError();
 

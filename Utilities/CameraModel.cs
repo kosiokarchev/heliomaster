@@ -97,6 +97,16 @@ namespace heliomaster {
             }
         }
 
+        private double _resolution;
+        public double Resolution {
+            get => _resolution;
+            set {
+                if (value.Equals(_resolution)) return;
+                _resolution = value;
+                OnPropertyChanged();
+            }
+        }
+
         private double _gain;
         private void coerceGain(double val) {
             if (Cam != null) {

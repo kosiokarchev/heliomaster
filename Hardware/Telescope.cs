@@ -41,6 +41,72 @@ namespace heliomaster {
         public bool CanPulseGuide => Valid && Driver.CanPulseGuide;
 
 
+        [XmlIgnore] private guidingMode                      gMode = guidingMode.incapable;
+        [XmlIgnore] public  ObservableCollection<IRate>      PrimaryAxisRates   { get; } = new ObservableCollection<IRate>();
+        [XmlIgnore] public  ObservableCollection<IRate>      SecondaryAxisRates { get; } = new ObservableCollection<IRate>();
+        [XmlIgnore] public  ObservableCollection<DriveRates> TrackingRates      { get; } = new ObservableCollection<DriveRates>();
+
+        private int _selectedPrimaryRateIndex;
+        public int SelectedPrimaryRateIndex {
+            get => _selectedPrimaryRateIndex;
+            set {
+                if (value == _selectedPrimaryRateIndex) return;
+                _selectedPrimaryRateIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _selectedSecondaryRateIndex;
+        public int SelectedSecondaryRateIndex {
+            get => _selectedSecondaryRateIndex;
+            set {
+                if (value == _selectedSecondaryRateIndex) return;
+                _selectedSecondaryRateIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        private int _selectedTrackingRateIndex;
+        public int SelectedTrackingRateIndex {
+            get => _selectedTrackingRateIndex;
+            set {
+                if (value == _selectedTrackingRateIndex) return;
+                _selectedTrackingRateIndex = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public override void Initialize() {
+
+
+            CanMoveAxes = Driver.CanMoveAxis(TelescopeAxes.axisPrimary) &&
+                          Driver.CanMoveAxis(TelescopeAxes.axisSecondary);
+            if (Driver.CanPulseGuide) {
+                gMode = guidingMode.pulseGuide;
+            }
+
+            if (CanMoveAxes) {
+                foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisPrimary))
+                    PrimaryAxisRates.Add(rate);
+                foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisSecondary))
+                    SecondaryAxisRates.Add(rate);
+
+                gMode = guidingMode.moveAxis;
+            }
+
+            if (Driver.CanSetTracking)
+                foreach (DriveRates rate in Driver.TrackingRates)
+                    TrackingRates.Add(rate);
+
+            base.Initialize();
+        }
+
+
+        #region MOTION
+
+        public event Action Slewed;
+        public void SlewedRaise() => Slewed?.Invoke();
+
         private double _ratePrimary;
         public double RatePrimary {
             get => _ratePrimary;
@@ -77,57 +143,6 @@ namespace heliomaster {
                     || dir == GuideDirections.guideWest)
                 ? 1 : -1;
         }
-
-        [XmlIgnore] private guidingMode                 gMode = guidingMode.incapable;
-        [XmlIgnore] public  ObservableCollection<IRate> PrimaryAxisRates      { get; } = new ObservableCollection<IRate>();
-        [XmlIgnore] public  ObservableCollection<IRate> SecondaryAxisRates    { get; } = new ObservableCollection<IRate>();
-
-        private int _selectedPrimaryRateIndex;
-        public int SelectedPrimaryRateIndex {
-            get => _selectedPrimaryRateIndex;
-            set {
-                if (value == _selectedPrimaryRateIndex) return;
-                _selectedPrimaryRateIndex = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private int _selectedSecondaryRateIndex;
-        public int SelectedSecondaryRateIndex {
-            get => _selectedSecondaryRateIndex;
-            set {
-                if (value == _selectedSecondaryRateIndex) return;
-                _selectedSecondaryRateIndex = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public override void Initialize() {
-
-
-            CanMoveAxes = Driver.CanMoveAxis(TelescopeAxes.axisPrimary) &&
-                          Driver.CanMoveAxis(TelescopeAxes.axisSecondary);
-            if (Driver.CanPulseGuide) {
-                gMode = guidingMode.pulseGuide;
-            }
-
-            if (CanMoveAxes) {
-                foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisPrimary))
-                    PrimaryAxisRates.Add(rate);
-                foreach (IRate rate in Driver.AxisRates(TelescopeAxes.axisSecondary))
-                    SecondaryAxisRates.Add(rate);
-
-                gMode = guidingMode.moveAxis;
-            }
-
-            base.Initialize();
-        }
-
-
-        #region MOTION
-
-        public event Action Slewed;
-        public void SlewedRaise() => Slewed?.Invoke();
 
         public void ControlMotion(GuideDirections dir, bool move=true) {
             if (move) {
@@ -197,6 +212,17 @@ namespace heliomaster {
 
         #endregion
 
+        #region TRACKING
+
+        private DriveRates _rateTracking;
+        [XmlIgnore] public DriveRates RateTracking {
+            get => _rateTracking;
+            set {
+                if (value.Equals(_rateTracking)) return;
+                _rateTracking = value;
+                OnPropertyChanged();
+            }
+        }
 
         public Task<bool> Track(bool state) {
             return Task<bool>.Factory.StartNew(() => {
@@ -205,6 +231,7 @@ namespace heliomaster {
             });
         }
 
+        #endregion
 
         #region ADJUST
 
