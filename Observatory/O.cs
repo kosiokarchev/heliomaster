@@ -268,13 +268,6 @@ namespace heliomaster {
         #endregion
 
 
-        #region IMAGE_TRACKING
-
-        
-
-        #endregion
-
-
         #region OBJECT_DETECTION
 
         public event Action ObjectNotFound;
@@ -336,7 +329,7 @@ namespace heliomaster {
                 
                 var d = loc - locres.Centre;
                 var ddec = -d.Y / (3600 * TrackingCamera.Resolution);
-                var dra = -d.X / (3600 * TrackingCamera.Resolution) * Mount.rcosphi;
+                var dra = -d.X / (3600 * TrackingCamera.Resolution) * Mount.rcosdec;
 
                 Logger.debug(pre + $"Offset: ({d.X}, {d.Y}) => dRA={dra}, dDec={ddec}");
 

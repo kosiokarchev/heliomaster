@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Configuration;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -13,194 +12,107 @@ using heliomaster.Annotations;
 using heliomaster.Properties;
 
 namespace heliomaster {
-    [SettingsSerializeAs(SettingsSerializeAs.Xml)]
-    public class WeatherItem : BaseNotify {
-        public enum Conditions {
-            OK, Warning, Bad
-        }
-        public static readonly Dictionary<Conditions, Color> ConditionColors = new Dictionary<Conditions, Color> {
-            {Conditions.OK,      S.Settings.colorOK},
-            {Conditions.Warning, S.Settings.colorWarning},
-            {Conditions.Bad,     S.Settings.colorBad}
-        };
-
-
-        public double Min { get; set; } = Double.NaN;
-        public double Max { get; set; } = Double.NaN;
-        public bool   IsReversed;
-        public string Unit { get; set; }
-        public string ValueFormat { get; set; } = "{0:F0}";
-        public string IconKey { get; set; }
-
-
-        private readonly IObservingConditions driver;
-        private readonly PropertyInfo pinfo;
-
-
-        public void NotifyChanged() {
-            OnPropertyChanged(nameof(Value));
-            OnPropertyChanged(nameof(DisplayValue));
-            OnPropertyChanged(nameof(Condition));
-        }
-
-        public bool    Valid { get; }
-        public double? Value => Valid ? (double?) pinfo.GetValue(driver) : null;
-
-        public string Name         { get; }
-        public string DisplayName  { get; }
-        public string DisplayValue => $"{String.Format(ValueFormat, Value)} {Unit}";
-        public bool   HasIcon      => IconKey != null;
-
-        private double _boundLow = Double.NegativeInfinity;
-        public double BoundLow {
-            get => _boundLow;
-            set {
-                var toval = value < Min ? Min : value;
-                if (toval.Equals(_boundLow)) return;
-                _boundLow = toval;
-                OnPropertyChanged();
-            }
-        }
-
-        private double _boundHigh = Double.PositiveInfinity;
-        public double BoundHigh {
-            get => _boundHigh;
-            set {
-                var toval = value > Max ? Max : value;
-                if (toval.Equals(_boundHigh)) return;
-                _boundHigh = toval;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _boundsReversed;
-        public bool BoundsReversed {
-            get => _boundsReversed;
-            set {
-                if (value == _boundsReversed) return;
-                _boundsReversed = value;
-                OnPropertyChanged();
-            }
-        }
-
-        private bool _neglect;
-        public bool Neglect {
-            get => _neglect;
-            set {
-                if (value == _neglect) return;
-                _neglect = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(CanSetRange));
-            }
-        }
-
-        public bool CanSetRange => !Neglect;
-
-        public Conditions Condition =>
-            Neglect ? Conditions.OK :
-            BoundsReversed
-                ? ((Value >= BoundHigh) ? Conditions.OK : (Value >= BoundLow) ? Conditions.Warning : Conditions.Bad)
-                : ((Value <= BoundLow) ? Conditions.OK : (Value <= BoundHigh) ? Conditions.Warning : Conditions.Bad);
-
-        // ReSharper disable once UnusedMember.Global
-        // Used by deserializer!
-        public WeatherItem() {}
-        public WeatherItem(IObservingConditions _driver, string name, string displayName = null) {
-            driver      = _driver;
-            Name        = name;
-            DisplayName = displayName ?? name;
-
-            var p = (WeatherItem) WeatherSettings.Default[name];
-            Unit           = p.Unit;
-            ValueFormat    = p.ValueFormat;
-            IconKey        = p.IconKey;
-            BoundsReversed = p.IsReversed;
-            Neglect        = p.Neglect;
-            Min            = p.Min;
-            Max            = p.Max;
-            BoundLow       = p.BoundLow;
-            BoundHigh      = p.BoundHigh;
-
-
-            try {
-                if (typeof(IObservingConditions).GetProperty(name) is PropertyInfo _pinfo) {
-                    _pinfo.GetValue(driver);
-                    pinfo = _pinfo;
-                    Valid = true;
-                }
-            } catch (Exception) {
-                Valid = false;
-            }
-        }
-    }
-
-
     public class Weather : BaseHardwareControl {
         protected override Type driverType => typeof(ObservingConditions);
-        public virtual IObservingConditions Driver => driver as ObservingConditions;
+        public virtual IObservingConditions Driver => driver as IObservingConditions;
 
         public override string Type => Resources.weather;
 
-        public WeatherItem CloudCover     { get; private set; }
-        public WeatherItem DewPoint       { get; private set; }
-        public WeatherItem Humidity       { get; private set; }
-        public WeatherItem Pressure       { get; private set; }
-        public WeatherItem RainRate       { get; private set; }
-        public WeatherItem SkyBrightness  { get; private set; }
-        public WeatherItem SkyQuality     { get; private set; }
-        public WeatherItem SkyTemperature { get; private set; }
-        public WeatherItem StarFWHM       { get; private set; }
-        public WeatherItem Temperature    { get; private set; }
-        public WeatherItem WindDirection  { get; private set; }
-        public WeatherItem WindGust       { get; private set; }
-        public WeatherItem WindSpeed      { get; private set; }
+        #region ITEMS
+        
+        ///<summary> See <see cref="IObservingConditions.CloudCover"/></summary>
+        public WeatherItem CloudCover { get; private set; }
 
+        ///<summary> See <see cref="IObservingConditions.DewPoint"/></summary>
+        public WeatherItem DewPoint { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.Humidity"/></summary>
+        public WeatherItem Humidity { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.Pressure"/></summary>
+        public WeatherItem Pressure { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.RainRate"/></summary>
+        public WeatherItem RainRate { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.SkyBrightness"/></summary>
+        public WeatherItem SkyBrightness { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.SkyQuality"/></summary>
+        public WeatherItem SkyQuality { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.SkyTemperature"/></summary>
+        public WeatherItem SkyTemperature { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.StarFWHM"/></summary>
+        public WeatherItem StarFWHM { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.Temperature"/></summary>
+        public WeatherItem Temperature { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.WindDirection"/></summary>
+        public WeatherItem WindDirection { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.WindGust"/></summary>
+        public WeatherItem WindGust { get; private set; }
+
+        ///<summary> See <see cref="IObservingConditions.WindSpeed"/></summary>
+        public WeatherItem WindSpeed { get; private set; }
+        
+        /// <summary> Used to synchronize access to <see cref="Items"/>. </summary>
+        private readonly ReaderWriterLockSlim itemslock = new ReaderWriterLockSlim();
+        
+        /// <summary> The available weather items. See <see cref="Initialize"/>. </summary>
+        public ObservableCollection<WeatherItem> Items { get; } = new ObservableCollection<WeatherItem>();
+        
+        #endregion
+
+        /// <summary> Whether the weather condition is regarded as safe (not bad). </summary>
+        /// <value> <c>false</c> if <see cref="Condition"/> is <see cref="WeatherItem.Conditions.Bad"/>, <c>null</c> if
+        /// it is <c>null</c> and <c>true</c> otherwise. </value>
         public bool? Safe => Condition == null ? (bool?) null : Condition != WeatherItem.Conditions.Bad;
 
+        /// <summary> The current weather condition. Calculated as the "worst" of all the weather items. </summary>
+        /// <value> The maximal (worst) value from the conditions of the weather items, or <c>null</c> if no
+        /// properties are available or an error occurs.</value>
         public WeatherItem.Conditions? Condition {
             get {
                 itemslock.EnterReadLock();
                 try {
                     var ret = (Valid && Items.Count > 0) ? Items.Max(i => i.Condition) : (WeatherItem.Conditions?) null;
                     return ret;
+                } catch {
+                    return null;
                 } finally {
                     itemslock.ExitReadLock();
                 }
             }
         }
 
-        public ObservableCollection<WeatherItem> Items { get; } = new ObservableCollection<WeatherItem>();
-
         protected readonly string[] propNames = {
             "CloudCover", "DewPoint", "Humidity", "Pressure", "RainRate", "SkyBrightness", "SkyQuality",
             "SkyTemperature", "StarFWHM", "Temperature", "WindDirection", "WindGust", "WindSpeed"
         };
-
         protected static readonly string[] baseProps = { nameof(Safe), nameof(Condition) };
         protected readonly List<string> properties = new List<string>(baseProps);
         protected override IEnumerable<string> props => properties;
-
-        private readonly ReaderWriterLockSlim itemslock = new ReaderWriterLockSlim();
-        protected override void RefreshHandle() {
-            if (Valid) Driver.Refresh();
-            base.RefreshHandle();
-            itemslock.EnterReadLock();
-            try { foreach (var i in Items) i.NotifyChanged(); }
-            finally { itemslock.ExitReadLock(); }
-        }
-
-        public override void Initialize() {
+        
+        /// <summary> Initialize a weather controller by populating its properties with available weather items. </summary>
+        /// <remarks> Iterates over all ASCOM <see cref="IObservingConditions"/> properties, as listed in
+        /// <see cref="propNames"/>, and checks whether the corresponding property has been implemented in the driver.
+        /// If it is (<see cref="WeatherItem.Valid"/> returns <c>true</c>), then the item (it's name) is also added to
+        /// <see cref="properties"/>, which lists all available weather items.
+        /// </remarks>
+        protected override void initialize() {
             itemslock.EnterWriteLock();
             try {
                 foreach (var p in propNames)
-                    if (typeof(Weather).GetProperty(p) is PropertyInfo pinfo)
-                    {
+                    if (typeof(Weather).GetProperty(p) is PropertyInfo pinfo) {
                         var witem = new WeatherItem(Driver, p);
                         pinfo.SetValue(this, witem);
                         OnPropertyChanged(p);
 
-                        if (witem.Valid)
-                        {
+                        if (witem.Valid) {
                             Items.Add(witem);
                             properties.Add(p);
                         }
@@ -209,16 +121,26 @@ namespace heliomaster {
             finally {
                 itemslock.ExitWriteLock();
             }
-            
-            base.Initialize();
         }
 
+        /// <summary> Requests a refresh of the driver and notifies that the weather items are updated. </summary>
+        protected override void refresh() {
+            if (Valid) Driver.Refresh();
+            itemslock.EnterReadLock();
+            try { foreach (var i in Items) try { i.NotifyChanged(); } catch { } }
+            finally { itemslock.ExitReadLock(); }
+        }
+
+        /// <summary> Clears the weather items and delegates to the base method
+        /// <see cref="BaseHardwareControl.Disconnect"/>. </summary>
         public override Task Disconnect() {
             Items.Clear();
-            properties.Clear(); properties.AddRange(baseProps);
+            properties.Clear(); properties.AddRange(baseProps); // Return the array to the initial state.
             return base.Disconnect();
         }
 
+        /// <summary> Populate a <see cref="WeatherSettings"/> instance with the current weather items. </summary>
+        /// <param name="s">The settings instance to populate.</param>
         public void SaveInSettings(WeatherSettings s) {
             foreach (var name in propNames)
                 if (typeof(Weather).GetProperty(name) is PropertyInfo pinfo &&

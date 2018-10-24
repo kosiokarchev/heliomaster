@@ -11,7 +11,7 @@ namespace heliomaster {
     public class QHYCCDCamera : BaseCamera {
 //        private readonly QHYCCDLocalizer libqhyccd = new QHYCCDLocalizer();
 
-        protected override Type driverType { get; } = null;
+        protected override Type driverType => null;
         public override string Type => Resources.cameraQHYCCD;
 
         private         uint     _width;
@@ -64,14 +64,12 @@ namespace heliomaster {
         }
         public static readonly ObservableCollection<string> CameraIDs = new ObservableCollection<string>();
 
-        public override void Initialize() {
+        protected override void initialize() {
             double step = 0;
             libqhyccd.GetQHYCCDParamMinMaxStep(camhandle, libqhyccd.CONTROL_ID.CONTROL_GAIN, ref _minGain, ref _maxGain, ref step);
             libqhyccd.GetQHYCCDParamMinMaxStep(camhandle, libqhyccd.CONTROL_ID.CONTROL_EXPOSURE, ref _minExposure, ref _maxExposure, ref step);
             _minExposure /= 1000;
             _maxExposure /= 1000;
-
-            base.Initialize();
         }
 
         private StringBuilder id;
@@ -105,8 +103,9 @@ namespace heliomaster {
             });
         }
 
-        protected override Task disconnect() {
-            return Task.Run(() => { libqhyccd.CloseQHYCCD(camhandle); });
+        protected override async Task disconnect() {
+            await base.disconnect();
+            libqhyccd.CloseQHYCCD(camhandle);
         }
 
         protected override CameraImage capture() {

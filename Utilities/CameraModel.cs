@@ -269,7 +269,7 @@ namespace heliomaster {
             })
         };
         public Transform FinalTransform =>
-            O.Mount.IsFlipped
+            O.Mount.IsFlipped == true
             ? new TransformGroup {Children = new TransformCollection(new[] {
                 Transform,
                 new ScaleTransform(-1, -1)})}
