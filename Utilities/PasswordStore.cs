@@ -8,9 +8,19 @@ using System.Text;
 using System.Xml.Serialization;
 
 namespace heliomaster {
+    /// <summary>
+    /// A utility class containing extension methods for converting between <see cref="String"/> and
+    /// <see cref="SecureString"/> and for encrypting and decrypting the latter. 
+    /// </summary>
     public static class PassowordStoreUtil {
-        private static readonly byte[] entropy = Encoding.Unicode.GetBytes("Непротивоконституциоснователствувайте!");
+        /// <summary>
+        /// Longest Bulgarian word: Don't act against the constitution!
+        /// </summary>
+        private static readonly byte[] entropy = Encoding.Unicode.GetBytes("Непротивоконституционствувателствувайте!");
 
+        /// <summary>
+        /// Return an encrypted version of the <see cref="SecureString"/>.
+        /// </summary>
         public static string EncryptString(this SecureString input) {
             if (input == null) return null;
             return Convert.ToBase64String(
@@ -18,6 +28,9 @@ namespace heliomaster {
                                       DataProtectionScope.CurrentUser));
         }
 
+        /// <summary>
+        /// Create a <see cref="SecureString"/> from its plain-string encrypted representation (decrypt it).
+        /// </summary>
         public static SecureString DecryptString(this string encryptedData) {
             if (encryptedData == null) return null;
 
@@ -32,6 +45,9 @@ namespace heliomaster {
             }
         }
 
+        /// <summary>
+        /// Put the characters of the <paramref name="input"/> string into a <see cref="SecureString"/>.
+        /// </summary>
         public static SecureString ToSecureString(this IEnumerable<char> input) {
             if (input == null) return null;
 
@@ -44,6 +60,11 @@ namespace heliomaster {
             return secure;
         }
 
+        /// <summary>
+        /// Extract the characters from the <see cref="SecureString"/> <paramref name="input"/> into a plain string.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string ToInsecureString(this SecureString input) {
             if (input == null) return null;
 
