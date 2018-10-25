@@ -13,6 +13,10 @@ using System.Xaml;
 using ASCOM.DeviceInterface;
 
 namespace heliomaster {
+    /// <summary>
+    /// A base class for converters, etc. that allows their simple use in XAML circumventing the need to define them as
+    /// static resources.
+    /// </summary>
     public class BaseMarkupExtension : MarkupExtension {
         public override object ProvideValue(IServiceProvider serviceProvider) {
             return this;
@@ -209,15 +213,4 @@ namespace heliomaster {
             throw new NotImplementedException();
         }
     }
-
-//    public static class EnumPresenters {
-//        public static readonly Dictionary<object, string> P = new Dictionary<object, string> {
-//            {RemoteLoginMethods.UserPass, "Password"},
-//            {RemoteLoginMethods.PrivateKey, "Keyfile"}
-//        };
-//
-//        public static string Get(object o) {
-//            return P[o];
-//        }
-//    }
 }

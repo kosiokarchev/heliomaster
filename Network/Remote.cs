@@ -16,10 +16,8 @@ namespace heliomaster {
     }
 
     public enum RemoteLoginMethods {
-        [Description("Password")]
-        UserPass,
-        [Description("Private key file")]
-        PrivateKey
+        [Description("Password")] UserPass,
+        [Description("Private key file")] PrivateKey
     }
 
     public class Command {
