@@ -526,22 +526,13 @@ namespace heliomaster {
         public bool AdjustExposure(CameraImage img) {
             var npimg = img.to_numpy();
             if (npimg != null) {
-                dynamic ret = null;
-                Py.Run(() => {
-                    switch (O.CamModels[0].AutoMode) {
-                        case AutoExposureModes.max:
-                            ret = Py.lib.expcorr_max(npimg, AutoLevel);
-                            break;
-                        case AutoExposureModes.mean:
-                            ret = Py.lib.expcorr_mean(npimg, AutoLevel);
-                            break;
-                        case AutoExposureModes.percentile:
-                            ret = Py.lib.expcorr_level(npimg, AutoLevel, 95); // TODO: unhardcode 95%?
-                            break;
-                    }
-                });
+                var ret = Py.Run(
+                    () => O.CamModels[0].AutoMode == AutoExposureModes.max        ? Py.lib.expcorr_max(npimg, AutoLevel)
+                        : O.CamModels[0].AutoMode == AutoExposureModes.mean       ? Py.lib.expcorr_mean(npimg, AutoLevel)
+                        : O.CamModels[0].AutoMode == AutoExposureModes.percentile ? Py.lib.expcorr_level(npimg, AutoLevel, 95)
+                        : null); //TODO: Unhardcode 95%?
 
-                if (PythonGeneralExtensions.ToCLI(ret) is List<object> factors
+                if ((ret as Python.Runtime.PyObject)?.ToCLI() is List<object> factors
                     && factors.Count == img.Channels
                     && factors.All(v => v is double)) {
                     var f = (double)factors[0]; // TODO: handle multi-channel case by e.g. getting max/min/avg value

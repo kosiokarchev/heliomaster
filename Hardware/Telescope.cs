@@ -489,8 +489,8 @@ namespace heliomaster {
         /// </summary>
         /// <param name="o">The desired object.</param>
         /// <returns>Whether the operation was succesful.</returns>
-        public async Task<bool> GoTo(Pynder.Objects o = Pynder.Objects.Sun) // TODO: Generic goto (diff. object)
-            => CanGoTo && await Slew(Pynder.find(o)) && await Track(true);
+        public async Task<bool> GoTo(Pynder.RegisteredObject o = Pynder.RegisteredObject.Sun) // TODO: Generic goto (diff. object)
+            => CanGoTo && await Slew(Pynder.Find(o)) && await Track(true);
 
         /// <summary>
         /// Park the mount after stopping tracking.

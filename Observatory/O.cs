@@ -13,7 +13,6 @@ using System.Windows.Threading;
 using heliomaster.Annotations;
 using heliomaster.Netio;
 using heliomaster.Properties;
-using Python.Runtime;
 using Renci.SshNet;
 
 namespace heliomaster {
@@ -296,9 +295,9 @@ namespace heliomaster {
             public LocateResult(CapturedImage img, double res) {
                 Py.Run(() => {
                     if (img.Image is CameraImage camimg
-                        && Py.detect_body(camimg.to_numpy(), Pynder.PyObjects.Sun(), res) is PyObject p // TODO: Allow to select which object
-                        && PythonGeneralExtensions.ToCLI(p) is List<object> l
-                        && l.Count == 3 && l.All(i => i.GetType() == typeof(double))) {
+                        && Py.detect_body(camimg.to_numpy(), Pynder.PyEphemObjects.Sun(), res) is Python.Runtime.PyObject p // TODO: Allow to select which object
+                        && p.ToCLI() is List<object> l
+                        && l.Count == 3 && l.All(i => i is double)) {
                         X = (double)l[0];
                         Y = (double)l[1];
                         val = (double)l[2];
@@ -311,7 +310,9 @@ namespace heliomaster {
         }
 
         private async Task<LocateResult> LocateObject() {
-            return (TrackingCamera != null && TrackingCamera.Resolution > 0 && await TrackingCamera.CaptureImage() is CapturedImage img)
+            return (TrackingCamera != null
+                    && TrackingCamera.Resolution > 0
+                    && await TrackingCamera.CaptureImage() is CapturedImage img)
                 ? new LocateResult(img, TrackingCamera.Resolution) : new LocateResult();
         }
         
@@ -722,10 +723,10 @@ namespace heliomaster {
     public static class O {
         public static readonly Observatory Default = new Observatory();
 
-        public static Telescope        Mount     => Default.Mount;
-        public static Dome             Dome      => Default.Dome;
-        public static Weather          Weather   => Default.Weather;
-        public static Remote           Remote    => Default.Remote;
+        public static Telescope Mount   => Default.Mount;
+        public static Dome      Dome    => Default.Dome;
+        public static Weather   Weather => Default.Weather;
+        public static Remote    Remote  => Default.Remote;
 
         public static ObservableCollection<CameraModel> CamModels => Default.CameraModels;
         public static CommonTimelapse Timelapse => Default.CommonTimelapse;
