@@ -167,14 +167,12 @@ namespace heliomaster {
         private Timer slavingTimer;
 
         private async Task slave() {
-            var az = Mount.Azimuth;
-            if (double.IsNaN(az)) {
+            if (!(Mount.Azimuth is double az) || double.IsNaN(az)) {
                 Emit(new SlavingWarning("Mount state is invalid."));
                 return;
             }
-
-            var domaz = Dome.Azimuth;
-            if (double.IsNaN(domaz)) {
+            
+            if (!(Dome.Azimuth is double domaz) || double.IsNaN(domaz)) {
                 Emit(new SlavingWarning("Dome state is invalid."));
                 return;
             }

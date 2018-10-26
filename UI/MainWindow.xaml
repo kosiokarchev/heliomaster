@@ -335,7 +335,7 @@
                                 <CheckBox Content="{x:Static properties:Resources.slewing}"
                                       IsEnabled="False"
                                       IsChecked="{Binding Slewing, Mode=OneWay}"/>
-                                <CheckBox IsChecked="{Binding Tracking}">
+                                <CheckBox IsEnabled="{Binding CanTrack}" IsChecked="{Binding Tracking}">
                                     <TextBlock>
                                         <TextBlock Text="Tracking:" />
                                         <LineBreak />

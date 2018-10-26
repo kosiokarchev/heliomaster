@@ -246,7 +246,7 @@ namespace heliomaster {
 
         private double _resolution;
         /// <summary>
-        /// The resolution of the camera in px/arcsec
+        /// The resolution of the camera in arcsec/px
         /// </summary>
         public double Resolution {
             get => _resolution;

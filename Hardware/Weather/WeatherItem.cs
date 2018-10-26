@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
-using System.Drawing;
 using System.Reflection;
+using System.Windows.Media;
 using ASCOM.DeviceInterface;
 using heliomaster.Properties;
 

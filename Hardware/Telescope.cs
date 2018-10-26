@@ -105,6 +105,10 @@ namespace heliomaster {
                     catch {return null;}
                 else return null;
             }
+            set {
+                if (value.Equals(Tracking) || value == null) return;
+                Track((bool) value);
+            }
         }
         /// <summary>
         /// See <see cref="ITelescopeV3.SideOfPier"/>
@@ -143,12 +147,6 @@ namespace heliomaster {
         /// <remarks> Checks whether the hardware is connected, the driver supports parking, and the mount is not
         /// slewing. </remarks>
         public bool CanPark => Valid && Driver.CanPark && Slewing==false;
-        
-        /// <summary>
-        /// A string indicating the opposite of the current park state for display purposes.
-        /// </summary>
-        public string ParkAction => AtPark==true ? Resources.unpark : Resources.park;
-        // TODO: do away with the need for this property
 
 
         /// <summary>
@@ -202,8 +200,7 @@ namespace heliomaster {
             nameof(SiderealTime), nameof(Altitude), nameof(Azimuth), nameof(RightAscension), nameof(Declination),
             nameof(AtPark), nameof(Slewing), nameof(Tracking),
             nameof(CanTrack), nameof(CanSlew), nameof(CanGoTo), nameof(CanPark),
-            nameof(Moveable),
-            nameof(ParkAction)
+            nameof(Moveable)
         };
         [XmlIgnore] protected override IEnumerable<string> props => _props;
 
@@ -303,11 +300,13 @@ namespace heliomaster {
             if (Driver.CanSetTracking)
                 foreach (DriveRates rate in Driver.TrackingRates)
                     TrackingRates.Add(rate);
+            RateTracking = _rateTracking;
         }
 
-        
-        #region TRACKING
 
+        #region TRACKING
+        
+        private DriveRates? _rateTracking;
         /// <summary>
         /// See <see cref="ITelescopeV3.TrackingRate"/>.
         /// </summary>
@@ -315,15 +314,16 @@ namespace heliomaster {
         /// <para> A null value indicates that the hardware is not connected. </para>
         /// <para> This property adds a setter that catches errors and notifies on changes. </para>
         /// </remarks>
-        [XmlIgnore] public DriveRates? RateTracking {
+        public DriveRates? RateTracking {
             get {
                 if (Valid) try { return Driver.TrackingRate; } catch { return null;}
-                else return null;
+                else return _rateTracking;
             }
             set {
                 if (value.Equals(RateTracking)) return;
+                _rateTracking = value;
                 try {
-                    if (value is DriveRates val) Driver.TrackingRate = val;
+                    if (_rateTracking is DriveRates val) Driver.TrackingRate = val;
                 } catch { }
                 OnPropertyChanged(nameof(RateTracking));
             }

@@ -30,7 +30,7 @@ namespace heliomaster
         public ObservableConcurrentList<CheckBox> DomeCans { get; set; } = new ObservableConcurrentList<CheckBox>();
         public ObservableConcurrentList<CheckBox> MountCans { get; set; } = new ObservableConcurrentList<CheckBox>();
 
-        private static void fillCans(ASCOM.DriverAccess.AscomDriver driver, ICollection<CheckBox> children) {
+        private static void fillCans(object driver, ICollection<CheckBox> children) {
             children.Clear();
             foreach (var p in driver.GetType().GetProperties()) {
                 if (p.PropertyType == typeof(bool) && p.Name.StartsWith("Can"))
