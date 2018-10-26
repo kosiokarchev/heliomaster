@@ -14,7 +14,7 @@ using ASCOM.DeviceInterface;
 
 namespace heliomaster {
     /// <summary>
-    /// A base class for converters, etc. that allows their simple use in XAML circumventing the need to define them as
+    /// A base class for converters, etc. that allows their simple use in XAML, circumventing the need to define them as
     /// static resources.
     /// </summary>
     public class BaseMarkupExtension : MarkupExtension {
