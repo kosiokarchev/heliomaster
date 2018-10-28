@@ -93,8 +93,6 @@ namespace heliomaster {
 
             Fixing += FixingHandle;
 
-            ObjectNotFound += ObjectNotFoundHandle;
-
             StartupSuccess  += () => Inform("Startup successful.");
             StartupFailure  += (args) => Inform("Startup unsuccessful.");
             ShutdownSuccess += () => Inform("Shutdown successful.");

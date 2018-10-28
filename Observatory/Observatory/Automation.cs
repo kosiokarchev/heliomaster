@@ -95,7 +95,7 @@ namespace heliomaster {
 
                 Inform("Starting cameras.");
                 foreach (var model in CameraModels)
-                    model.Cam.StartLivePreview(30); // TODO: Unhardcode maxfps --> cam setting
+                    model.Cam.StartLivePreview(5); // TODO: Unhardcode maxfps --> cam setting
 
                 CommonTimelapse.TieAll();
                 if (CommonTimelapse.Main is Timelapse m) {
@@ -105,8 +105,9 @@ namespace heliomaster {
                     } else { } // TODO: What to do when no end time given? Until object sets?
                 }
 
+                // TODO: Object detected?
                 Inform(await ObjectIsInView() ? "The Sun is in view." : "The Sun is not in view!");
-                if (args.RequireInView && !SearchForObject()) throw new ObjectNotLocatedError();
+                if (args.RequireInView && !await SearchForObject()) throw new ObjectNotLocatedError();
 
 
                 if (args.Autostart) {
