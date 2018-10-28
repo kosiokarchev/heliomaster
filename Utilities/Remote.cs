@@ -1,12 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Configuration;
 using System.IO;
-using System.Runtime.Serialization;
-using System.Security;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
 using Renci.SshNet;
 
 namespace heliomaster {

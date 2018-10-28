@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using heliomaster.Properties;
 
 namespace heliomaster {
     public partial class Observatory {

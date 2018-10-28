@@ -5,7 +5,6 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using ASCOM.Utilities;
 using heliomaster.Annotations;
 
 namespace heliomaster {

@@ -1,4 +1,6 @@
-﻿namespace heliomaster {
+﻿using System.Windows;
+
+namespace heliomaster {
     public partial class Observatory {
         /// <summary>
         /// Unifies the interface to notify the user of error occurring during observatory automation.

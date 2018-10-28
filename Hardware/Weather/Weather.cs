@@ -5,10 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media;
 using ASCOM.DeviceInterface;
 using ASCOM.DriverAccess;
-using heliomaster.Annotations;
 using heliomaster.Properties;
 
 namespace heliomaster {

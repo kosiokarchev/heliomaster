@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Linq;
-using System.Security;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using ASCOM.DeviceInterface;
 using heliomaster.Properties;
-using heliomaster.Netio;
 using Drivers = ASCOM.DriverAccess;
-using Microsoft.Win32;
-using Python.Runtime;
 
 namespace heliomaster {
     public enum HardwareControlButtons {

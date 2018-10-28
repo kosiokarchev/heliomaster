@@ -2,7 +2,6 @@
 using System.Security.Permissions;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Navigation;
 using heliomaster.Properties;
 
 namespace heliomaster {
