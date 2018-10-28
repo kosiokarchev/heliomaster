@@ -83,20 +83,21 @@ namespace heliomaster {
 
             InitPower();
 
-            Starting += StartingHandle;
-            Shutting += ShuttingHandle;
-
             WeatherSafeChanged += WeatherSafeChangedHandle;
 
-            StartupFailure  += (e) => Emit(new AutoOperationsWarning($"An exception has occurred during startup: {Utilities.FormatException(e)}"));
-            ShutdownFailure += (e) => Emit(new AutoOperationsWarning($"An exception has occurred during shutdown: {Utilities.FormatException(e)}"));
+            Starting += StartingHandle;
+            Shutting += ShuttingHandle;
+            Fixing   += FixingHandle;
 
-            Fixing += FixingHandle;
+
+            StartupFailure  += e => Emit(new AutoOperationsWarning($"An exception has occurred during startup: {Utilities.FormatException(e)}"));
+            ShutdownFailure += e => Emit(new AutoOperationsWarning($"An exception has occurred during shutdown: {Utilities.FormatException(e)}"));
+
 
             StartupSuccess  += () => Inform("Startup successful.");
-            StartupFailure  += (args) => Inform("Startup unsuccessful.");
+            StartupFailure  += args => Inform("Startup unsuccessful.");
             ShutdownSuccess += () => Inform("Shutdown successful.");
-            StartupFailure  += (args) => Inform("Shutdown unsuccessful.");
+            StartupFailure  += args => Inform("Shutdown unsuccessful.");
             FixingSuccess   += () => Inform("Fixing successful");
             FixingFailure   += () => Inform("Fixing unsuccessful.");
         }
