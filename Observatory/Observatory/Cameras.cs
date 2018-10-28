@@ -3,6 +3,19 @@ using heliomaster.Properties;
 
 namespace heliomaster {
     public partial class Observatory {
+        /// <summary>
+        /// Initialises <see cref="CameraModels"/> from the <see cref="CameraSettings.CameraModels"/> setting of
+        /// <see cref="S.Cameras"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>For each <see cref="CameraModel"/> uses <see cref="BaseCamera.Create"/> to create a camera of the
+        /// appropriate <see cref="CameraTypes"/> given in <see cref="CameraModel.CameraType"/> and attempts to connect
+        /// to it. If successful, registers the camera with the global refresh event (<see cref="O.Refresh"/>),
+        /// connects to the camera's <see cref="BaseCamera.Focuser"/> if <see cref="CameraModel.FocuserID"/> is set,
+        /// and adds the model to <see cref="CameraModels"/>.</para>
+        /// <para>Initialises the <see cref="CommonTimelapse"/> with the appropriate number of <see cref="Timelapse"/>s
+        /// with the default settings from <see cref="Settings"/>.</para>
+        /// </remarks>
         public async Task ConnectCameras() {
             DisconnectCameras();
 
@@ -37,13 +50,17 @@ namespace heliomaster {
             }
         }
 
+        /// <summary>
+        /// Disconnect from all cameras, free the images taken with them, stop the <see cref="CommonTimelapse"/> and
+        /// clear the <see cref="CameraModels"/> collection.
+        /// </summary>
         public async void DisconnectCameras() {
-            foreach (var exmodel in CameraModels) {
-                O.Refresh -= exmodel.Cam.RefreshRaise;
-                exmodel.Images.Clear();
-                CommonTimelapse.Stop();
-                await exmodel.Cam.Disconnect();
+            foreach (var model in CameraModels) {
+                O.Refresh -= model.Cam.RefreshRaise;
+                await model.Cam.Disconnect();
+                model.Images.Clear();
             }
+            CommonTimelapse.Stop();
 
             CameraModels.Clear();
         }
