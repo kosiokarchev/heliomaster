@@ -206,7 +206,7 @@ namespace heliomaster {
         #region POWER
         
         protected bool _hasPowerControl;
-        /// <summary> Whether controlling the power of the hardware is currently vailable. </summary>
+        /// <summary> Whether controlling the power of the hardware is currently available. </summary>
         public virtual bool HasPowerControl {
             get => _hasPowerControl;
             set {
