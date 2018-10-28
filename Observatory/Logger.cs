@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Configuration;
-using Python.Runtime;
 
 namespace heliomaster {
     public enum LoggingLevel {
@@ -11,6 +10,10 @@ namespace heliomaster {
         Critical = 50
     }
 
+    /// <summary>
+    /// Parameters describing a Python <a href="https://docs.python.org/3/library/logging.handlers.html#logging.handlers.TimedRotatingFileHandler">TimedRotatingHandler</a>
+    /// as passed to <c>libhm.logger_setup</c>.
+    /// </summary>
     [SettingsSerializeAs(SettingsSerializeAs.Xml)]
     public class LoggerParameters {
         public bool IsEnabled { get; set; }
@@ -20,7 +23,16 @@ namespace heliomaster {
         public LoggingLevel Level;
     }
 
+    /// <summary>
+    /// The global application logging facility. Imitates the Python logging tools by defining methods for each
+    /// <see cref="LoggingLevel"/>.
+    /// </summary>
     public static class Logger {
+        /// <summary>
+        /// Utility function that logs a message using <see cref="Py.logger"/>
+        /// </summary>
+        /// <param name="msg">The message to log.</param>
+        /// <param name="level">The <see cref="LoggingLevel"/> if the message.</param>
         private static void put(string msg, LoggingLevel level = LoggingLevel.Debug) {
             Console.WriteLine($"{DateTime.Now:s}: {level}: {msg}");
             if (Py.Running && Py.logger != null) {

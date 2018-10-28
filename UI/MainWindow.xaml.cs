@@ -132,6 +132,8 @@ namespace heliomaster {
 
         }
 
+        #region MENU
+        
         private void SettingsMenu_Click(object sender, RoutedEventArgs e) {
             SettingsWindow.Show();
             SettingsWindow.Activate();
@@ -143,20 +145,12 @@ namespace heliomaster {
             };
             SettingsWindow.Activate();
         }
-        private void LiveViewMenu_Click(object sender, RoutedEventArgs e)
-        {
+        private void LiveViewMenu_Click(object sender, RoutedEventArgs e) {
             foreach (var m in O.CamModels)
-            {
                 m.Cam.StartLivePreview(5);
-            }
         }
-
-        private void RunUntilButton_Click(object sender, RoutedEventArgs e) {
-            CamerasWindow.Show();
-            O.Default.StartingRaise(new Observatory.StartupArguments {
-                CloseAt = ShutdownTime.Value
-            });
-        }
+        
+        #endregion
 
         private void AutomationControlButton_Click(object sender, RoutedEventArgs e) {
             if (sender is Button b && b.Tag is AutomationControlButtons tag) {

@@ -107,8 +107,7 @@ namespace heliomaster {
                     lib = PyR.Py.Import("libhm");
 
                     logger = lib.logger_setup(
-                        string.IsNullOrWhiteSpace(S.Logging.Directory)
-                            ? "." : S.Logging.Directory,
+                        string.IsNullOrWhiteSpace(S.Logging.Directory) ? "." : S.Logging.Directory,
                         S.Logging.Debug, S.Logging.Info, S.Logging.Error);
 
                     detect_body = lib.detect_planet;
